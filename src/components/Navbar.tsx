@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMenu, FiX, FiChevronDown } from "react-icons/fi";
+import { FiMenu, FiX } from "react-icons/fi";
+// import { FiChevronDown } from "react-icons/fi";
 import { FaHome, FaBookOpen, FaUserFriends } from "react-icons/fa";
 import Button from "./ui/Button";
+import { useNavigate } from "react-router-dom";
 
 const ANNOUNCEMENT_TEXT = "🎉 Big update! Check out our latest features now.";
 
@@ -13,6 +15,8 @@ export default function Navbar() {
     const [showAnnouncement, setShowAnnouncement] = useState(false);
     const [loading, setLoading] = useState(true); // Loading state
 
+
+    const router = useNavigate()
     useEffect(() => {
         const dismissedText = localStorage.getItem("announcementDismissed");
 
@@ -73,7 +77,7 @@ export default function Navbar() {
 
                     {/* Desktop Menu */}
                     <nav className="hidden md:flex space-x-8 text-gray-700 font-medium">
-                        <motion.a href="#" className="flex items-center gap-2 hover:text-gray-900 transition" whileHover={{ scale: 1.05 }}>
+                        <motion.a href="/" className="flex items-center gap-2 hover:text-gray-900 transition" whileHover={{ scale: 1.05 }}>
                             <FaHome className="text-lg" />
                             Home
                         </motion.a>
@@ -84,13 +88,13 @@ export default function Navbar() {
                             onMouseEnter={() => setIsDropdownOpen(true)}
                             onMouseLeave={() => setIsDropdownOpen(false)}
                         >
-                            <motion.button className="flex items-center gap-2 hover:text-gray-900 transition" whileHover={{ scale: 1.05 }}>
+                            <motion.button onClick={() => router('/blogs')} className="flex items-center gap-2 hover:text-gray-900 transition" whileHover={{ scale: 1.05 }}>
                                 <FaBookOpen className="text-lg" />
                                 Resources
-                                <FiChevronDown />
+                                {/* <FiChevronDown /> */}
                             </motion.button>
 
-                            <AnimatePresence>
+                            {/* <AnimatePresence>
                                 {isDropdownOpen && (
                                     <motion.ul
                                         className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-lg overflow-hidden"
@@ -106,7 +110,7 @@ export default function Navbar() {
                                         ))}
                                     </motion.ul>
                                 )}
-                            </AnimatePresence>
+                            </AnimatePresence> */}
                         </div>
 
                         <motion.a href="/influencers" className="flex items-center gap-2 hover:text-gray-900 transition" whileHover={{ scale: 1.05 }}>
@@ -136,7 +140,7 @@ export default function Navbar() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
                         >
-                            <a href="#" className="text-lg flex items-center gap-2 hover:text-gray-900">
+                            <a href="/" className="text-lg flex items-center gap-2 hover:text-gray-900">
                                 <FaHome />
                                 Home
                             </a>
@@ -146,10 +150,10 @@ export default function Navbar() {
                                 <button className="flex items-center gap-2 text-lg hover:text-gray-900" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                                     <FaBookOpen />
                                     Resources
-                                    <FiChevronDown />
+                                    {/* <FiChevronDown /> */}
                                 </button>
 
-                                <AnimatePresence>
+                                {/* <AnimatePresence>
                                     {isDropdownOpen && (
                                         <motion.ul className="w-full mt-2 bg-gray-100 rounded-lg overflow-hidden" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                                             {["Tutorials", "Case Studies", "Guides"].map((item, index) => (
@@ -160,7 +164,7 @@ export default function Navbar() {
                                             ))}
                                         </motion.ul>
                                     )}
-                                </AnimatePresence>
+                                </AnimatePresence> */}
                             </div>
 
                             <a href="#" className="text-lg flex items-center gap-2 hover:text-gray-900">
