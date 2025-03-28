@@ -62,7 +62,7 @@ export default function Navbar() {
 
             {/* Navbar */}
             <motion.header
-                className={`fixed left-0 w-full shadow-md z-50 transition-all duration-300 ${scrolled ? "bg-white py-3 shadow-lg" : "bg-white py-5"} ${isHomePage && showAnnouncement ? "top-12" : "top-0"}`}
+                className={`fixed left-0 w-full shadow-md z-50 transition-all duration-300 ${scrolled ? "bg-white py-3 shadow-lg" : "bg-white py-5"} ${isHomePage && showAnnouncement && !scrolled ? "top-12" : "top-0"}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
             >
@@ -121,8 +121,8 @@ export default function Navbar() {
 
                     {/* Actions */}
                     <div className="hidden md:flex space-x-4">
-                        <Button variant="white">Signup</Button>
-                        <Button variant="primary">Book a Demo</Button>
+                        <Button onClick={() => router('/signup')} variant="white">Signup</Button>
+                        <Button onClick={() => router('/login')} variant="primary">Login</Button>
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -172,8 +172,8 @@ export default function Navbar() {
                                 Find Influencers
                             </a>
 
-                            <Button variant="white">Signup</Button>
-                            <Button variant="primary">Book a Demo</Button>
+                            <Button onClick={() => router('/signup')} variant="white">Signup</Button>
+                            <Button onClick={() => router('/login')} variant="primary">Login</Button>
                         </motion.div>
                     )}
                 </AnimatePresence>
