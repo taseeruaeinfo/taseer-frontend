@@ -24,12 +24,8 @@ export default function Connect() {
                     We are a Dubai-based startup dedicated to connecting talented content creators
                     and leading brands worldwide.
                 </p>
-                <Button
-                    variant="primary"
-                    className="mt-6 px-6 py-3  text-white font-semibold rounded-full shadow-md  transition"
-                >
-                    Contact Us
-                </Button>
+                <Button className="mt-5 -ml-1" variant="primary">I'm a Brand</Button>
+                <Button className="mt-5 ml-4" variant="white">I'm a Creator</Button>
             </motion.div>
 
             {/* Right Side Image */}

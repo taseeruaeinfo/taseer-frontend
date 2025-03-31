@@ -62,21 +62,21 @@ export default function Navbar() {
 
             {/* Navbar */}
             <motion.header
-                className={`fixed left-0 w-full shadow-md z-50 transition-all duration-300 ${scrolled ? "bg-white py-3 shadow-lg" : "bg-white py-5"} ${isHomePage && showAnnouncement && !scrolled ? "top-12" : "top-0"}`}
+                className={`fixed left-0 w-full shadow-md z-50 transition-all bg text-white  duration-300 ${scrolled ? " py-3 shadow-lg" : " py-5"} ${isHomePage && showAnnouncement && !scrolled ? "top-12" : "top-0"}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
             >
-                <div className="container mx-auto flex items-center justify-between px-6">
+                <div className="container mx-auto \ flex items-center justify-between px-6">
                     {/* Logo */}
                     <motion.img
-                        src="/logo.svg"
+                        src="/logo.png"
                         alt="Logo"
                         whileHover={{ scale: 1.1 }}
                         className={`transition-all duration-300 ${scrolled ? "w-24" : "w-32"}`}
                     />
 
                     {/* Desktop Menu */}
-                    <nav className="hidden md:flex space-x-8 text-gray-700 font-medium">
+                    <nav className="hidden md:flex space-x-8  font-medium">
                         <motion.a href="/" className="flex items-center gap-2 hover:text-gray-900 transition" whileHover={{ scale: 1.05 }}>
                             <FaHome className="text-lg" />
                             Home
@@ -126,7 +126,7 @@ export default function Navbar() {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <button className="md:hidden text-2xl text-gray-700" onClick={() => setIsOpen(!isOpen)}>
+                    <button className="md:hidden text-2xl " onClick={() => setIsOpen(!isOpen)}>
                         {isOpen ? <FiX /> : <FiMenu />}
                     </button>
                 </div>
@@ -135,7 +135,7 @@ export default function Navbar() {
                 <AnimatePresence>
                     {isOpen && (
                         <motion.div
-                            className="md:hidden bg-white fixed top-16 left-0 w-full shadow-lg flex flex-col items-center gap-6 py-6 text-gray-700"
+                            className="md:hidden bg-white fixed top-16 left-0 w-full shadow-lg flex flex-col items-center gap-6 py-6 "
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}

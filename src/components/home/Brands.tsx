@@ -60,7 +60,7 @@ export default function BrandsSection() {
                     variant="primary"
                     className="m-5"
                 >
-                    Book a Meeting →
+                    I'm a Brand
                 </Button>
             </motion.div>
 

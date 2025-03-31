@@ -37,14 +37,7 @@ export default function ServicesSection() {
             >
                 <img src={'/services.jpg'} alt="Illustration" className=" h-full" />
                 {/* Contact Button */}
-                <center className="w-full bg-white">
 
-                    <Button
-                        className="mt-8 px-6 py-3 mx-auto  w-fittransition"
-                    >
-                        Contact Us
-                    </Button>
-                </center>
             </motion.div>
 
             {/* Right Side - Text & Services */}
