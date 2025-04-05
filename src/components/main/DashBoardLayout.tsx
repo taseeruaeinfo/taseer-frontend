@@ -7,7 +7,6 @@ import {
     AiOutlineHome,
     AiOutlineMessage,
     AiOutlineBell,
-    AiOutlineCompass,
     AiOutlineSetting,
     AiOutlineUser,
     AiOutlineFileText,
@@ -36,9 +35,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         { icon: <AiOutlineFileText className="w-5 h-5" />, label: "Posts", href: "/posts" },
         { icon: <AiOutlineMessage className="w-5 h-5" />, label: "Messages", href: "/messages" },
         { icon: <AiOutlineBell className="w-5 h-5" />, label: "Notifications", href: "/notifications" },
-        { icon: <AiOutlineCompass className="w-5 h-5" />, label: "Explore", href: "/explore" },
-        { icon: <AiOutlineSetting className="w-5 h-5" />, label: "Settings", href: "/settings" },
-        { icon: <AiOutlineUser className="w-5 h-5" />, label: "Profile", href: "/profile" },
+        // { icon: <AiOutlineCompass className="w-5 h-5" />, label: "Explore", href: "/explore" },
+        { icon: <AiOutlineSetting className="w-5 h-5" />, label: "Deals", href: "/deals" },
+        { icon: <AiOutlineUser className="w-5 h-5" />, label: "Profile", href: "/profile-settings" },
     ];
     return (
         <div className="flex h-screen bg-gray-50">
@@ -78,15 +77,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                         const isActive = location.pathname === item.href;
                                         return (
                                             <li key={index}>
-                                                <a
-                                                    href={item.href}
-                                                    className={`flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors ${isActive ? "bg-blue-50 text-purple-600" : "text-gray-700"
+                                                <button
+                                                    onClick={() => router(item.href)}
+                                                    className={`flex items-center w-full px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors ${isActive ? "bg-blue-50 text-purple-600" : "text-gray-700"
                                                         }`}
                                                 >
                                                     {item.icon}
                                                     <span className="ml-3">{item.label}</span>
                                                     {isActive && <div className="ml-auto w-2 h-2 bg-purple-600 rounded-full"></div>}
-                                                </a>
+                                                </button>
                                             </li>
                                         );
                                     })}

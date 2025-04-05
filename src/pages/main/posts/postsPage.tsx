@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { AiOutlineHeart, AiFillHeart, AiOutlineComment, AiOutlineRetweet, AiOutlineSend, AiOutlineSearch } from "react-icons/ai";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import DashboardLayout from "../../components/main/DashBoardLayout";
+import DashboardLayout from "../../../components/main/DashBoardLayout";
 
 type Post = {
     id: string;

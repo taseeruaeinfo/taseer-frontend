@@ -7,8 +7,8 @@ export default function Footer() {
             link: "/"
         },
         {
-            name: "Join App",
-            link: "/signu["
+            name: "Signup",
+            link: "/signup"
         },
         {
             name: "Influencers",
@@ -31,9 +31,7 @@ export default function Footer() {
                 {/* Left Section - Logo & Contact */}
                 <div className="flex flex-col items-center md:items-start space-y-4">
                     <h2 className="text-2xl font-bold">taseer</h2>
-                    <button className="bg-white text-purple-700 font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-200 transition">
-                        Book a Meeting with Us →
-                    </button>
+
                     <div className="flex items-center gap-2 text-sm">
                         <FaEnvelope className="text-white" />
                         <span>support@taseer.app</span>

@@ -59,7 +59,7 @@ export default function InfluencerSection() {
 
                 {/* Button */}
                 <Button
-                    onClick={() => router('/signup')}
+                    onClick={() => router('/signup/onboarding')}
                     variant="primary"
                     className="my-5"
                 >
