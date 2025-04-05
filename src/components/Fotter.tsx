@@ -1,6 +1,29 @@
 import { FaEnvelope } from "react-icons/fa";
 
 export default function Footer() {
+    const links = [
+        {
+            name: "Home",
+            link: "/"
+        },
+        {
+            name: "Join App",
+            link: "/signu["
+        },
+        {
+            name: "Influencers",
+            link: "/signup/onboarding"
+        },
+        {
+            name: "Brands",
+            link: "/signup/onboarding"
+        },
+        {
+            name: "Blogs",
+            link: "/blogs"
+        }
+
+    ]
     return (
         <footer className="bg text-white py-8">
             <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
@@ -25,9 +48,9 @@ export default function Footer() {
                 {/* Middle Section - Quick Links */}
                 <div className="space-y-2">
                     <h3 className="text-lg font-semibold">Quick Links</h3>
-                    {["Home", "Join App", "Influencers", "Brands", "Contact"].map((link) => (
-                        <a key={link} href="#" className="block text-sm hover:underline">
-                            {link}
+                    {links.map((link) => (
+                        <a key={link.name} href={link.link} className="block text-sm hover:underline">
+                            {link.name}
                         </a>
                     ))}
                 </div>

@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { FaRocket } from "react-icons/fa";
 import Button from "../ui/Button";
+import { useNavigate } from "react-router-dom";
 
 export default function InfluencerSection() {
+    const router = useNavigate()
     return (
         <div className="flex flex-col md:flex-row items-center bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 md:p-12 rounded-lg shadow-lg">
             {/* Left Section - Image */}
@@ -57,6 +59,7 @@ export default function InfluencerSection() {
 
                 {/* Button */}
                 <Button
+                    onClick={() => router('/signup')}
                     variant="primary"
                     className="my-5"
                 >

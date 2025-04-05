@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import Button from "../ui/Button";
+import { useNavigate } from "react-router-dom";
 
 export default function Connect() {
+    const router = useNavigate()
     return (
         <section className="relative w-full  flex flex-col-reverse md:flex-row items-center justify-between  px-6 md:px-10 py-12">
             {/* Left Content */}
@@ -24,8 +26,8 @@ export default function Connect() {
                     We are a Dubai-based startup dedicated to connecting talented content creators
                     and leading brands worldwide.
                 </p>
-                <Button className="mt-5 -ml-1" variant="primary">I'm a Brand</Button>
-                <Button className="mt-5 ml-4" variant="white">I'm a Creator</Button>
+                <Button onClick={() => router('/signup/onboarding')} className="mt-5 -ml-1" variant="primary">I'm a Brand</Button>
+                <Button onClick={() => router('/signup/onboarding')} className="mt-5 ml-4" variant="white">I'm a Creator</Button>
             </motion.div>
 
             {/* Right Side Image */}

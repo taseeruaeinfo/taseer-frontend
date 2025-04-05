@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { FaCheckCircle } from "react-icons/fa";
 import Button from "../ui/Button";
+import { useNavigate } from "react-router-dom";
 
 export default function BrandsSection() {
+    const router = useNavigate();
     return (
         <div className="flex flex-col md:flex-row items-center bg-white text-gray-900 p-8 md:p-16 rounded-lg  gap-8">
             {/* Left Section - Content */}
@@ -59,6 +61,7 @@ export default function BrandsSection() {
                 <Button
                     variant="primary"
                     className="m-5"
+                    onClick={() => router('/signup/onboarding')}
                 >
                     I'm a Brand
                 </Button>

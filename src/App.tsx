@@ -7,6 +7,9 @@ import Login from './pages/auth/login'
 import Signup from './pages/auth/Signup'
 import Onboarding from './pages/auth/Onboardin'
 import Dashboard from './pages/main/Dashboard'
+import GigDetails from './pages/main/GigPage'
+import Posts from './pages/main/postsPage'
+import ProfilePage from './pages/main/profile/ProfilePage'
 export default function App() {
   return (
     <Routes>
@@ -21,6 +24,9 @@ export default function App() {
 
       {/* main - dashboard */}
       <Route path='/dashboard' element={<Dashboard />} />
+      <Route path='/posts' element={<Posts />} />
+      <Route path='/profile/:id' element={<ProfilePage />} />
+      <Route path="/gig/:id" element={<GigDetails />} />
     </Routes>
   )
 }

@@ -15,7 +15,7 @@ import {
     AiOutlineLogout,
     // AiOutlineQuestionCircle,
 } from "react-icons/ai"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -28,17 +28,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         setIsSidebarOpen(!isSidebarOpen)
     }
 
-    const router = useNavigate()
-    const navItems = [
-        { icon: <AiOutlineHome className="w-5 h-5" />, label: "Home", active: true },
-        { icon: <AiOutlineFileText className="w-5 h-5" />, label: "Posts", active: false },
-        { icon: <AiOutlineMessage className="w-5 h-5" />, label: "Messages", active: false },
-        { icon: <AiOutlineBell className="w-5 h-5" />, label: "Notifications", active: false },
-        { icon: <AiOutlineCompass className="w-5 h-5" />, label: "Explore", active: false },
-        { icon: <AiOutlineSetting className="w-5 h-5" />, label: "Settings", active: false },
-        { icon: <AiOutlineUser className="w-5 h-5" />, label: "Profile", active: false },
-    ]
+    const router = useNavigate();
+    const location = useLocation(); // get current route
 
+    const navItems = [
+        { icon: <AiOutlineHome className="w-5 h-5" />, label: "Home", href: "/dashboard" },
+        { icon: <AiOutlineFileText className="w-5 h-5" />, label: "Posts", href: "/posts" },
+        { icon: <AiOutlineMessage className="w-5 h-5" />, label: "Messages", href: "/messages" },
+        { icon: <AiOutlineBell className="w-5 h-5" />, label: "Notifications", href: "/notifications" },
+        { icon: <AiOutlineCompass className="w-5 h-5" />, label: "Explore", href: "/explore" },
+        { icon: <AiOutlineSetting className="w-5 h-5" />, label: "Settings", href: "/settings" },
+        { icon: <AiOutlineUser className="w-5 h-5" />, label: "Profile", href: "/profile" },
+    ];
     return (
         <div className="flex h-screen bg-gray-50">
             {/* Mobile menu button */}
@@ -51,9 +52,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 {isSidebarOpen && (
                     <motion.div
                         className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+
                         onClick={() => setIsSidebarOpen(false)}
                     />
                 )}
@@ -64,10 +63,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 {isSidebarOpen && (
                     <motion.aside
                         className="fixed md:relative z-40 h-full w-64 bg-white shadow-lg"
-                        initial={{ x: -280 }}
-                        animate={{ x: 0 }}
-                        exit={{ x: -280 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+
                     >
                         <div className="flex flex-col h-full">
                             {/* Logo */}
@@ -78,19 +74,22 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             {/* Navigation */}
                             <nav className="flex-1 overflow-y-auto py-4">
                                 <ul className="space-y-2 px-2">
-                                    {navItems.map((item, index) => (
-                                        <li key={index}>
-                                            <a
-                                                href="#"
-                                                className={`flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors ${item.active ? "bg-blue-50 text-purple-600" : "text-gray-700"
-                                                    }`}
-                                            >
-                                                {item.icon}
-                                                <span className="ml-3">{item.label}</span>
-                                                {item.active && <div className="ml-auto w-2 h-2 bg-purple-600 rounded-full"></div>}
-                                            </a>
-                                        </li>
-                                    ))}
+                                    {navItems.map((item, index) => {
+                                        const isActive = location.pathname === item.href;
+                                        return (
+                                            <li key={index}>
+                                                <a
+                                                    href={item.href}
+                                                    className={`flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors ${isActive ? "bg-blue-50 text-purple-600" : "text-gray-700"
+                                                        }`}
+                                                >
+                                                    {item.icon}
+                                                    <span className="ml-3">{item.label}</span>
+                                                    {isActive && <div className="ml-auto w-2 h-2 bg-purple-600 rounded-full"></div>}
+                                                </a>
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                             </nav>
 

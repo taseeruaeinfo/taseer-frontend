@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { FaHandshake, FaGlobe, FaChalkboardTeacher, FaUsers } from "react-icons/fa";
-import Button from "../ui/Button";
 
 const services = [
     {
