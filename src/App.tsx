@@ -17,6 +17,14 @@ import PremiumNotifications from './pages/main/Notifications'
 import ProfileSettings from './pages/main/profile/ProfoleSettings'
 import ContactUspage from './pages/ContactUspage'
 import BrandOnboarding from './pages/auth/BrandOnboarding'
+import BrandPosts from './brand/pages/Brnad.Home'
+import BrandsMessagesPage from './brand/pages/Brand.messages'
+import BrandNotifications from './brand/pages/Brand.Notifications'
+import BrandPost from './brand/pages/Brand.post'
+import FindInfluencers from './brand/pages/Brand.FindInfluencers'
+import MyCampaignsPage from './brand/pages/Brands.my-campaigns'
+import CampaignDetailPage from './brand/pages/Brand.specificCamp'
+import BransProfileSettings from './brand/pages/Brands.profilepage'
 export default function App() {
   return (
     <Routes>
@@ -40,6 +48,17 @@ export default function App() {
       <Route path='/notifications' element={<PremiumNotifications />} />
       <Route path='/profile/viewmore' element={<ViewMoreCreators />} />
       <Route path="/gig/:id" element={<GigDetails />} />
+
+
+      {/* Brand pages / brand dashboard */}
+      <Route path='/brand/home' element={<BrandPosts />} />
+      <Route path='/brand/message' element={<BrandsMessagesPage />} />
+      <Route path='/brand/notifications' element={<BrandNotifications />} />
+      <Route path='/brand/post' element={<BrandPost />} />
+      <Route path='/brand/find-influencers' element={<FindInfluencers />} />
+      <Route path="/brand/my-campaigns" element={<MyCampaignsPage />} />
+      <Route path='//brand/campaign/:campaignId' element={<CampaignDetailPage />} />
+      <Route path='/brand/profile-settings' element={<BransProfileSettings />} />
     </Routes>
   )
 }
