@@ -9,7 +9,6 @@ import {
     AiOutlineBell,
     AiOutlineSetting,
     AiOutlineUser,
-    AiOutlineFileText,
     AiOutlineMenu,
     AiOutlineLogout,
     // AiOutlineQuestionCircle,
@@ -31,12 +30,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const location = useLocation(); // get current route
 
     const navItems = [
-        { icon: <AiOutlineHome className="w-5 h-5" />, label: "Home", href: "/dashboard" },
-        { icon: <AiOutlineFileText className="w-5 h-5" />, label: "Posts", href: "/posts" },
+        { icon: <AiOutlineHome className="w-5 h-5" />, label: "Home", href: "/home" },
+        { icon: <AiOutlineSetting className="w-5 h-5" />, label: "Deals", href: "/deals" },
         { icon: <AiOutlineMessage className="w-5 h-5" />, label: "Messages", href: "/messages" },
         { icon: <AiOutlineBell className="w-5 h-5" />, label: "Notifications", href: "/notifications" },
         // { icon: <AiOutlineCompass className="w-5 h-5" />, label: "Explore", href: "/explore" },
-        { icon: <AiOutlineSetting className="w-5 h-5" />, label: "Deals", href: "/deals" },
         { icon: <AiOutlineUser className="w-5 h-5" />, label: "Profile", href: "/profile-settings" },
     ];
     return (

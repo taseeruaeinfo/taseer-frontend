@@ -5,6 +5,7 @@ import { FiMenu, FiX } from "react-icons/fi";
 import { FaHome, FaBookOpen, FaUserFriends } from "react-icons/fa";
 import Button from "./ui/Button";
 import { useNavigate } from "react-router-dom";
+import { MdContactPage } from "react-icons/md";
 
 const ANNOUNCEMENT_TEXT = "🎉 Big update! Check out our latest features now.";
 
@@ -115,7 +116,11 @@ export default function Navbar() {
 
                         <motion.a href="/influencers" className="flex items-center gap-2 hover:text-gray-900 transition" whileHover={{ scale: 1.05 }}>
                             <FaUserFriends className="text-lg" />
-                            Find Influencers
+                            Find Creators
+                        </motion.a>
+                        <motion.a href="/contact" className="flex items-center gap-2 hover:text-gray-900 transition" whileHover={{ scale: 1.05 }}>
+                            <MdContactPage className="text-lg" />
+                            Contact us
                         </motion.a>
                     </nav>
 
@@ -169,7 +174,11 @@ export default function Navbar() {
 
                             <a href="#" className="text-lg flex items-center gap-2 hover:text-gray-900">
                                 <FaUserFriends />
-                                Find Influencers
+                                Find Creators
+                            </a>
+                            <a href="/contact" className="text-lg flex items-center gap-2 hover:text-gray-900">
+                                <MdContactPage />
+                                Contact Us
                             </a>
 
                             <Button onClick={() => router('/signup')} variant="white">Signup</Button>

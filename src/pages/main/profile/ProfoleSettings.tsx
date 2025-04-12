@@ -10,10 +10,13 @@ import {
     FaBell,
 } from 'react-icons/fa';
 import DashboardLayout from '../../../components/main/DashBoardLayout';
+import { CgWorkAlt } from 'react-icons/cg';
+import Deals from '../Deals';
 
 const menuItems = [
     { key: 'profile', label: 'Profile', icon: <FaUser /> },
     { key: 'portfolio', label: 'My Portfolio', icon: <FaFolderOpen /> },
+    { key: "my work", label: "My Work", icon: <CgWorkAlt /> },
     { key: 'social', label: 'Social Networks', icon: <FaGlobe /> },
     { key: 'settings', label: 'Account Settings', icon: <FaCog /> },
     { key: 'security', label: 'Security & Privacy', icon: <FaShieldAlt /> },
@@ -94,7 +97,10 @@ export default function ProfileSettings() {
                         <p>📱 <strong>Push Notifications:</strong> ❌ Disabled</p>
                     </div>
                 );
-
+            case "my work":
+                return (
+                    <Deals />
+                )
             default:
                 return null;
         }
