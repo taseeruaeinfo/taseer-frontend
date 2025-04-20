@@ -63,7 +63,7 @@ const Onboarding = () => {
     const { register, handleSubmit, watch, formState: { errors }, setValue, trigger } = useForm<OnboardingFormData>({
         mode: "onChange" // Enable validation on field change
     });
-    const totalSteps = 7;
+    const totalSteps = 1;
 
     const sameAsCompanyEmail = watch("sameAsCompanyEmail");
     const companyEmail = watch("email");
