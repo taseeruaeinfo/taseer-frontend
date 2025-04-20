@@ -58,12 +58,12 @@ interface OnboardingFormData {
 }
 
 const Onboarding = () => {
-    const [step, setStep] = useState(7);
+    const [step, setStep] = useState(1);
     const navigate = useNavigate();
     const { register, handleSubmit, watch, formState: { errors }, setValue, trigger } = useForm<OnboardingFormData>({
         mode: "onChange" // Enable validation on field change
     });
-    const totalSteps = 1;
+    const totalSteps = 7;
 
     const sameAsCompanyEmail = watch("sameAsCompanyEmail");
     const companyEmail = watch("email");
