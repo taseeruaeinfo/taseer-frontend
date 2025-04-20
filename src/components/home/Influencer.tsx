@@ -23,7 +23,7 @@ export default function InfluencerSection() {
 
             {/* Right Section - Content */}
             <motion.div
-                className="w-full md:w-1/2 text-center md:text-left"
+                className="w-full md:w-1/2 md:text-left"
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.7, delay: 0.2 }}
@@ -39,21 +39,22 @@ export default function InfluencerSection() {
 
                 {/* Offer List */}
                 <ul className="mt-4 text-gray-100 space-y-3">
-                    <li className="flex items-center">
-                        <FaRocket className="text-purple-300 mr-2" />{" "}
-                        <strong>Global Exposure:</strong> Work with leading brands from around the world.
+                    <li className="grid md:flex items-center">
+
+                        <div className="flex">  <FaRocket className="text-purple-300 mr-2 mt-1" />{" "}
+                            <strong>Global Exposure:</strong> </div>Work with leading brands from around the world.
                     </li>
-                    <li className="flex items-center">
-                        <FaRocket className="text-purple-300 mr-2" />{" "}
-                        <strong>Tailored Opportunities:</strong> Collaborations that match your audience and style.
+                    <li className="grid md:flex items-center">
+                        <div className="flex"> <FaRocket className="text-purple-300 mr-2 mt-1" />{" "}
+                            <strong>Tailored Opportunities:</strong> </div> Collaborations that match your audience and style.
                     </li>
-                    <li className="flex items-center">
-                        <FaRocket className="text-purple-300 mr-2" />{" "}
-                        <strong>Support & Guidance:</strong> Assistance in contract negotiations and strategy.
+                    <li className="grid md:flex items-center">
+                        <div className="flex"> <FaRocket className="text-purple-300 mr-2 mt-1" />{" "}
+                            <strong>Support & Guidance:</strong> </div> Assistance in contract negotiations and strategy.
                     </li>
-                    <li className="flex items-center">
-                        <FaRocket className="text-purple-300 mr-2" />{" "}
-                        <strong>Join now by filling application here:</strong>
+                    <li className="grid md:flex items-center">
+                        <div className="flex">  <FaRocket className="text-purple-300 mr-2 mt-1" />{" "}
+                            <strong>Join now by filling application here</strong> </div>
                     </li>
                 </ul>
 

@@ -5,7 +5,7 @@ import Footer from "../components/Fotter";
 
 interface Blog {
     image: string;
-    link: string
+    link: string;
     title: string;
     description: string;
     author: string;
@@ -63,21 +63,43 @@ const blogs: Blog[] = [
     },
 ];
 
-
 const Blogs: React.FC = () => {
     return (
         <>
             <Navbar />
             <div className='pt-[100px]'></div>
 
-            <div className="p-6 max-w-6xl mx-auto">
-                <h1 className="text-4xl md:text-5xl font-bold text-center text-color mb-6">
-                    Latest Blogs
+            {/* Hero Content */}
+            <div className="px-6 max-w-5xl mx-auto text-center mb-10">
+                <h1 className="text-4xl md:text-5xl font-bold text-purple-800 mb-4">
+                    Welcome to Knowledge Hub
                 </h1>
-                <div className="grid gap-6">
+                <p className="text-lg text-gray-700 mb-6">
+                    Your go-to place for the latest in influencer marketing, branding strategies, and content trends.
+                </p>
+
+            </div>
+
+            {/* Blog List */}
+            <div className="p-6 max-w-6xl mx-auto">
+
+                <div className="grid  gap-6">
                     {blogs.map((blog, index) => (
                         <BlogCard key={index} index={index} {...blog} />
                     ))}
+                </div>
+            </div>
+
+            <div className="mx-auto max-w-5xl text-center p-6 py-20 bg-white shadow-lg rounded-lg mt-10">
+                <p className="text-gray-600 mb-2 italic">Links for articles…</p>
+                <p className="text-lg font-medium text-purple-700 mb-4">
+                    Stay curious. Stay informed. Stay inspired.
+                </p>
+                <div className="flex justify-center">
+                    <input type="text" className="border rounded-md border-gray-300 py-2 px-4 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Enter your email" />
+                    <button className="bg-purple-600 w-fit rounded-md hover:bg-purple-700 text-white py-2 px-2 transition">
+                        Subscribe
+                    </button>
                 </div>
             </div>
             <Footer />

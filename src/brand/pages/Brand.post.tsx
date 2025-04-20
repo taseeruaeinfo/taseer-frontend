@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaPlus, FaSearch, FaUpload, FaTrash, FaCheck } from 'react-icons/fa';
 import BrandLayout from '../components/BrandLayout';
+import CusotmAdsBAr from '../components/CustomAds';
 
 interface FormData {
     title: string;
@@ -441,6 +442,7 @@ export default function BrandPost() {
                         </div>
                     </div>
                 </div>
+                <CusotmAdsBAr />
             </BrandLayout>
         </>
     );

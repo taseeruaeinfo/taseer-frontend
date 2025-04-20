@@ -25,12 +25,14 @@ import FindInfluencers from './brand/pages/Brand.FindInfluencers'
 import MyCampaignsPage from './brand/pages/Brands.my-campaigns'
 import CampaignDetailPage from './brand/pages/Brand.specificCamp'
 import BransProfileSettings from './brand/pages/Brands.profilepage'
+import MyCreators from './brand/pages/Brand.myCreators'
+import BrandAnalytics from './brand/pages/Brand,Analytics'
 export default function App() {
   return (
     <Routes>
       <Route path='/' element={<Home />} />
       <Route path='/influencers' element={<Influencers />} />
-      <Route path='/blogs' element={<Blogs />} />
+      <Route path='/resources' element={<Blogs />} />
       <Route path='/contact' element={<ContactUspage />} />
       {/* Auth */}
       <Route path='/login' element={<Login />} />
@@ -55,7 +57,9 @@ export default function App() {
       <Route path='/brand/message' element={<BrandsMessagesPage />} />
       <Route path='/brand/notifications' element={<BrandNotifications />} />
       <Route path='/brand/post' element={<BrandPost />} />
-      <Route path='/brand/find-influencers' element={<FindInfluencers />} />
+      <Route path='/brand/find-creators' element={<FindInfluencers />} />
+      <Route path='/brand/my-creators' element={<MyCreators />} />
+      <Route path='/brand/analytics' element={<BrandAnalytics />} />
       <Route path="/brand/my-campaigns" element={<MyCampaignsPage />} />
       <Route path='//brand/campaign/:campaignId' element={<CampaignDetailPage />} />
       <Route path='/brand/profile-settings' element={<BransProfileSettings />} />

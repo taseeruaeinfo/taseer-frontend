@@ -11,16 +11,16 @@ export default function Footer() {
             link: "/signup"
         },
         {
-            name: "Influencers",
+            name: "Creators",
             link: "/signup/onboarding"
         },
         {
             name: "Brands",
-            link: "/signup/onboarding"
+            link: "/signup/onboarding/brand"
         },
         {
-            name: "Blogs",
-            link: "/blogs"
+            name: "Resources",
+            link: "/resources"
         }
 
     ]
@@ -28,7 +28,7 @@ export default function Footer() {
     const socialLinks = [
         {
             name: "Instagram",
-            link: "https://www.instagram.com/_taseer_official?igsh=MThsdWY5ZXg1dzQ2aQ=="
+            link: "https://www.instagram.com/taseer.app"
         },
         {
             name: "LinkedIn",
@@ -36,7 +36,7 @@ export default function Footer() {
         },
         {
             name: "Medium",
-            link: "https://medium.com/@taseer"
+            link: "https://medium.com/@taseeruae"
         },
         {
             name: "Facebook",
@@ -62,7 +62,7 @@ export default function Footer() {
 
                     <div className="flex items-center gap-2 text-sm">
                         <FaEnvelope className="text-white" />
-                        <span>support@taseer.app</span>
+                        <a href="mailto:support@taseer.app"><span>support@taseer.app</span></a>
                     </div>
                     <p className="text-sm opacity-80">© taseer 2024</p>
                     <div className="flex space-x-4 text-sm">

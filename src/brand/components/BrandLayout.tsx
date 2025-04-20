@@ -6,16 +6,15 @@ import { motion, AnimatePresence } from "framer-motion"
 
 import {
     AiOutlineHome,
-    AiOutlineSetting,
-    AiOutlineMessage,
     AiOutlineBell,
-    AiOutlineUser,
-    AiOutlineAppstoreAdd,
     AiOutlineMenu,
     AiOutlineLogout,
 } from "react-icons/ai";
 
 import { useLocation, useNavigate } from "react-router-dom"
+import { FiBarChart2, FiCompass, FiMessageSquare, FiSearch } from "react-icons/fi";
+import { BiUserPin } from "react-icons/bi";
+import { MdOutlineMessage, MdPerson } from "react-icons/md";
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -31,38 +30,62 @@ export default function BrandLayout({ children }: DashboardLayoutProps) {
     const router = useNavigate();
     const location = useLocation(); // get current route
 
+
+
     const navItems = [
         {
             icon: <AiOutlineHome className="w-5 h-5" />,
             label: "Home",
-            href: "/brand/home",
+            href: "/brand/post",
         },
         {
-            icon: <AiOutlineSetting className="w-5 h-5" />,
+            icon: <FiMessageSquare className="w-5 h-5" />,
             label: "My Campaigns",
             href: "/brand/my-campaigns",
         },
         {
-            icon: <AiOutlineMessage className="w-5 h-5" />,
-            label: "Messages",
-            href: "/brand/message",
+            icon: <FiSearch className="w-5 h-5" />,
+            label: "Search Creators",
+            href: "/brand/find-creators",
         },
         {
-            icon: <AiOutlineAppstoreAdd className="w-5 h-5" />,
-            label: "Post",
-            href: "/brand/post",
+            icon: <FiCompass className="w-5 h-5" />,
+            label: "Explore",
+            href: "/brand/home",
         },
+        // {
+        //     icon: <FiPlusSquare className="w-5 h-5" />,
+        //     label: "Post",
+        //     href: "/brand/home",
+        // },
         {
             icon: <AiOutlineBell className="w-5 h-5" />,
             label: "Notifications",
             href: "/brand/notifications",
         },
         {
-            icon: <AiOutlineUser className="w-5 h-5" />,
-            label: "More",
+            icon: <MdOutlineMessage className="w-5 h-5" />,
+            label: "Notifications",
+            href: "/brand/message",
+        },
+        {
+            icon: <BiUserPin className="w-5 h-5" />,
+            label: "My Creators",
+            href: "/brand/my-creators",
+        },
+        {
+            icon: <FiBarChart2 className="w-5 h-5" />,
+            label: "Analytics",
+            href: "/brand/analytics",
+        },
+        {
+            icon: <MdPerson className="w-5 h-5" />,
+            label: "Profile",
             href: "/brand/profile-settings",
         },
     ];
+
+
 
     return (
         <div className="flex h-screen bg-gray-50">

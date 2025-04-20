@@ -1,6 +1,7 @@
 import { useState } from "react";
 import clsx from "clsx";
 import BrandLayout from "../components/BrandLayout";
+import CusotmAdsBar from "../components/CustomAds";
 
 const tabs = ["all", "campaigns", "influencers"];
 
@@ -98,6 +99,8 @@ export default function BrandNotifications() {
                         )}
                     </div>
                 </div>
+                <CusotmAdsBar />
+
             </BrandLayout>
         </>
     );

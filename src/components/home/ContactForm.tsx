@@ -63,20 +63,29 @@ export default function ContactForm() {
             {/* Social Links */}
             <div className="mt-8 bg text-white py-4 rounded-lg flex flex-col md:flex-row items-center justify-around">
                 <div className="flex items-center space-x-2">
-                    <FaInstagram className="text-2xl" />
-                    <span>taseer.app</span>
+                    <a className="flex items-center space-x-2" href="https://www.instagram.com/taseer.app">
+                        <FaInstagram className="text-2xl" />
+                        <span>taseer.app</span>
+                    </a>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <FaEnvelope className="text-2xl" />
-                    <span>support@taseer.app</span>
+                    <a className="flex items-center space-x-2" href="mailto:support@taseer.app">
+
+                        <FaEnvelope className="text-2xl" />
+                        <span>support@taseer.app</span>
+                    </a>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <FaPodcast className="text-2xl" />
-                    <span>@taseeruae</span>
+                    <a className="flex items-center space-x-2" href="https://medium.com/@taseeruae">
+                        <FaPodcast className="text-2xl" />
+                        <span>@taseeruae</span>
+                    </a>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <FaLinkedin className="text-2xl" />
-                    <span>Ta’seer On LinkedIn</span>
+                    <a className="flex items-center space-x-2" href="https://www.linkedin.com/company/ta-seer/">
+                        <FaLinkedin className="text-2xl" />
+                        <span>Ta’seer On LinkedIn</span>
+                    </a>
                 </div>
             </div>
         </div>

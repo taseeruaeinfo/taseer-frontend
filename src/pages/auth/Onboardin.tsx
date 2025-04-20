@@ -269,6 +269,8 @@ const Onboarding = () => {
                             <Button className="flex items-center mx-auto gap-x-3 btn" onClick={validateAndProceed}>
                                 Next <FaArrowRight />
                             </Button>
+                            <center className="py-3 w-full mx-auto font-medium">Already have an account? <a className="underline text-purple-600" href="/login">Log in</a>  </center>
+
                         </div>
                     )}
 

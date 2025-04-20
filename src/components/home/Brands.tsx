@@ -63,7 +63,7 @@ export default function BrandsSection() {
                     className="m-5"
                     onClick={() => router('/signup/brand/onboarding')}
                 >
-                    Conttect
+                    Connect
                 </Button>
             </motion.div>
 

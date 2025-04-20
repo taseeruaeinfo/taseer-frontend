@@ -134,7 +134,7 @@ const MyCampaignsPage: React.FC = () => {
                             <h1 className="text-3xl font-semibold text-gray-900">My Campaigns</h1>
                             <button
                                 className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
-                                onClick={() => router('/brand/create-campaign')}
+                                onClick={() => router('/brand/post')}
                             >
                                 <Plus size={18} className="mr-2" />
                                 Create Campaign
