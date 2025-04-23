@@ -7,13 +7,13 @@ import {
     AiOutlineHome,
     AiOutlineMessage,
     AiOutlineBell,
-    AiOutlineSetting,
-    AiOutlineUser,
     AiOutlineMenu,
     AiOutlineLogout,
-    // AiOutlineQuestionCircle,
 } from "react-icons/ai"
 import { useLocation, useNavigate } from "react-router-dom"
+import { IoMdSettings } from "react-icons/io"
+import { FaHandshake } from "react-icons/fa"
+import { BsPlusSquareFill } from "react-icons/bs"
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -31,11 +31,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
     const navItems = [
         { icon: <AiOutlineHome className="w-5 h-5" />, label: "Home", href: "/home" },
-        { icon: <AiOutlineSetting className="w-5 h-5" />, label: "Deals", href: "/deals" },
+        { icon: <FaHandshake className="w-5 h-5" />, label: "Deals", href: "/deals" },
         { icon: <AiOutlineMessage className="w-5 h-5" />, label: "Messages", href: "/messages" },
         { icon: <AiOutlineBell className="w-5 h-5" />, label: "Notifications", href: "/notifications" },
-        // { icon: <AiOutlineCompass className="w-5 h-5" />, label: "Explore", href: "/explore" },
-        { icon: <AiOutlineUser className="w-5 h-5" />, label: "Profile", href: "/profile-settings" },
+
+        { icon: <BsPlusSquareFill className="w-5 h-5" />, label: "Post", href: "/create-post" },
+        { icon: <IoMdSettings className="w-5 h-5" />, label: "Settings", href: "/profile-settings" },
     ];
     return (
         <div className="flex h-screen bg-gray-50">

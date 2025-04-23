@@ -9,6 +9,7 @@ import { MdEmail } from "react-icons/md";
 import { FaInstagram, FaLinkedin, FaMedium, FaFacebook, FaTiktok, FaYoutube } from 'react-icons/fa';
 import { CiSearch } from "react-icons/ci";
 import { BsFillPersonFill } from "react-icons/bs";
+import { IoPricetagsSharp } from "react-icons/io5";
 
 
 
@@ -105,6 +106,10 @@ export default function Navbar() {
                                 )}
                             </AnimatePresence> */}
                         </div>
+                        <motion.a href="/pricing" className="flex items-center gap-2 hover:text-gray-900 transition" whileHover={{ scale: 1.05 }}>
+                            <IoPricetagsSharp className="text-lg" />
+                            Pricing
+                        </motion.a>
 
                         <motion.a href="/influencers" className="flex items-center gap-2 hover:text-gray-900 transition" whileHover={{ scale: 1.05 }}>
                             <CiSearch className="text-lg" />

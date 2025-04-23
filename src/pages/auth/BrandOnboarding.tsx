@@ -905,7 +905,7 @@ const Onboarding = () => {
                             <h2 className="text-2xl font-bold text-gray-800 text-center">Company Details</h2>
 
                             <div className="space-y-4">
-                                <div>
+                                <div className="border-2 border-purple-500 outline-purple-500 rounded-md p-2">
                                     <label className="block text-gray-700 mb-1">Company Size *</label>
                                     <div className="space-y-2">
                                         {[

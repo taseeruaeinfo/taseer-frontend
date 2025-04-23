@@ -27,11 +27,14 @@ import CampaignDetailPage from './brand/pages/Brand.specificCamp'
 import BransProfileSettings from './brand/pages/Brands.profilepage'
 import MyCreators from './brand/pages/Brand.myCreators'
 import BrandAnalytics from './brand/pages/Brand,Analytics'
+import PricingPage from './pages/pricingPage'
+import PostPage from './pages/main/posts/PostPage'
 export default function App() {
   return (
     <Routes>
       <Route path='/' element={<Home />} />
       <Route path='/influencers' element={<Influencers />} />
+      <Route path='/pricing' element={<PricingPage />} />
       <Route path='/resources' element={<Blogs />} />
       <Route path='/contact' element={<ContactUspage />} />
       {/* Auth */}
@@ -43,6 +46,7 @@ export default function App() {
       {/* main - dashboard */}
       <Route path='/home' element={<Posts />} />
       <Route path='/post/:id' element={<PostDetails />} />
+      <Route path='/create-post' element={<PostPage />} />
       <Route path='/profile/:id' element={<ProfilePage />} />
       <Route path='/messages' element={<MessagesPage />} />
       <Route path='/deals' element={<Dashboard />} />

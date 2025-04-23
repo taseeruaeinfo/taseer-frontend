@@ -61,8 +61,7 @@ const Onboarding = () => {
         getValues
     } = useForm<FormData>();
 
-
-    console.log(getValues)
+    console.log(getValues);
 
     // For tracking selected content types
     const [selectedContentTypes, setSelectedContentTypes] = useState<string[]>([]);
@@ -77,13 +76,18 @@ const Onboarding = () => {
         // Define fields to validate based on current step
         if (step === 1) {
             fieldsToValidate = [
-                "firstName", "lastName", "email", "contactNumber",
-                "nationality", "password", "confirmPassword", "city", "dateOfBirth"
+                "firstName", "lastName", "email", "password", "confirmPassword"
             ];
-        } else if (step === 3) {
-            fieldsToValidate = ["creatorType"];
+        } else if (step === 2) {
+            fieldsToValidate = [
+                "contactNumber", "nationality", "city", "dateOfBirth"
+            ];
         } else if (step === 4) {
-            fieldsToValidate = ["deliveryTime", "collaborationType", "preferredCollaboration"];
+            fieldsToValidate = ["creatorType"];
+        } else if (step === 5) {
+            fieldsToValidate = ["deliveryTime", "collaborationType"];
+        } else if (step === 6) {
+            fieldsToValidate = ["preferredCollaboration"];
         }
 
         const result = await trigger(fieldsToValidate as any);
@@ -129,6 +133,31 @@ const Onboarding = () => {
         </label>
     );
 
+    // List of countries for nationality dropdown
+    const countries = [
+        "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia",
+        "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin",
+        "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi",
+        "Côte d'Ivoire", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China",
+        "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czechia", "Denmark", "Djibouti", "Dominica",
+        "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia",
+        "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea",
+        "Guinea-Bissau", "Guyana", "Haiti", "Holy See", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq",
+        "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan",
+        "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar",
+        "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia",
+        "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal",
+        "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman",
+        "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal",
+        "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines",
+        "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone",
+        "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain",
+        "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste",
+        "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine",
+        "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela", "Vietnam",
+        "Yemen", "Zambia", "Zimbabwe"
+    ];
+
     return (
         <>
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4 py-8">
@@ -136,7 +165,7 @@ const Onboarding = () => {
                 <div className="w-full max-w-md text-center mb-6">
                     <img src="/logo.svg" alt="Logo" className="w-24 mx-auto mb-4" />
                     <div className="flex justify-between items-center">
-                        {[1, 2, 3, 4].map((num) => (
+                        {[1, 2, 3, 4, 5, 6].map((num) => (
                             <div
                                 key={num}
                                 className={`w-10 h-10 flex items-center justify-center rounded-full text-white font-semibold transition ${step >= num ? "bg-purple-600" : "bg-gray-300"}`}
@@ -152,7 +181,7 @@ const Onboarding = () => {
                     onSubmit={handleSubmit(onSubmit)}
                     className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8 space-y-6"
                 >
-                    {/* Step 1: Basic Information */}
+                    {/* Step 1: Basic Information - First Page */}
                     {step === 1 && (
                         <div className="space-y-5">
                             <h2 className="text-2xl font-bold text-gray-800 text-center">Basic Information</h2>
@@ -195,27 +224,6 @@ const Onboarding = () => {
                                 </div>
 
                                 <div>
-                                    <RequiredLabel text="Contact Number (with country code)" />
-                                    <input
-                                        {...register("contactNumber", { required: "Contact number is required" })}
-                                        type="tel"
-                                        placeholder="Contact Number (with country code)"
-                                        className={`w-full border-2 ${errors.contactNumber ? "border-red-500" : "border-purple-500"} outline-purple-500 rounded-md p-2 mt-1`}
-                                    />
-                                    {errors.contactNumber && <p className="text-red-500 text-sm mt-1">{errors.contactNumber.message}</p>}
-                                </div>
-
-                                <div>
-                                    <RequiredLabel text="Nationality" />
-                                    <input
-                                        {...register("nationality", { required: "Nationality is required" })}
-                                        placeholder="Nationality"
-                                        className={`w-full border-2 ${errors.nationality ? "border-red-500" : "border-purple-500"} outline-purple-500 rounded-md p-2 mt-1`}
-                                    />
-                                    {errors.nationality && <p className="text-red-500 text-sm mt-1">{errors.nationality.message}</p>}
-                                </div>
-
-                                <div>
                                     <RequiredLabel text="Create Password" />
                                     <input
                                         {...register("password", {
@@ -245,6 +253,43 @@ const Onboarding = () => {
                                     />
                                     {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>}
                                 </div>
+                            </div>
+                            <Button className="flex items-center mx-auto gap-x-3 btn" onClick={validateAndProceed}>
+                                Next <FaArrowRight />
+                            </Button>
+                            <center className="py-3 w-full mx-auto font-medium">Already have an account? <a className="underline text-purple-600" href="/login">Log in</a>  </center>
+                        </div>
+                    )}
+
+                    {/* Step 2: Basic Information - Second Page */}
+                    {step === 2 && (
+                        <div className="space-y-5">
+                            <h2 className="text-2xl font-bold text-gray-800 text-center">Personal Details</h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <RequiredLabel text="Contact Number (with country code)" />
+                                    <input
+                                        {...register("contactNumber", { required: "Contact number is required" })}
+                                        type="tel"
+                                        placeholder="Contact Number (with country code)"
+                                        className={`w-full border-2 ${errors.contactNumber ? "border-red-500" : "border-purple-500"} outline-purple-500 rounded-md p-2 mt-1`}
+                                    />
+                                    {errors.contactNumber && <p className="text-red-500 text-sm mt-1">{errors.contactNumber.message}</p>}
+                                </div>
+
+                                <div>
+                                    <RequiredLabel text="Nationality" />
+                                    <select
+                                        {...register("nationality", { required: "Nationality is required" })}
+                                        className={`w-full border-2 ${errors.nationality ? "border-red-500" : "border-purple-500"} outline-purple-500 rounded-md p-2 mt-1`}
+                                    >
+                                        <option value="">Select your nationality</option>
+                                        {countries.map(country => (
+                                            <option key={country} value={country}>{country}</option>
+                                        ))}
+                                    </select>
+                                    {errors.nationality && <p className="text-red-500 text-sm mt-1">{errors.nationality.message}</p>}
+                                </div>
 
                                 <div>
                                     <RequiredLabel text="What city are you based in?" />
@@ -266,53 +311,56 @@ const Onboarding = () => {
                                     {errors.dateOfBirth && <p className="text-red-500 text-sm mt-1">{errors.dateOfBirth.message}</p>}
                                 </div>
                             </div>
-                            <Button className="flex items-center mx-auto gap-x-3 btn" onClick={validateAndProceed}>
-                                Next <FaArrowRight />
-                            </Button>
-                            <center className="py-3 w-full mx-auto font-medium">Already have an account? <a className="underline text-purple-600" href="/login">Log in</a>  </center>
-
+                            <div className="flex justify-between gap-4">
+                                <Button className="flex items-center gap-x-3 btn" onClick={onPrevious}>
+                                    <FaArrowLeft /> Previous
+                                </Button>
+                                <Button className="flex items-center gap-x-3 btn" onClick={validateAndProceed}>
+                                    Next <FaArrowRight />
+                                </Button>
+                            </div>
                         </div>
                     )}
 
-                    {/* Step 2: Social Media Handles (All Optional) */}
-                    {step === 2 && (
+                    {/* Step 3: Social Media Handles (All Optional) */}
+                    {step === 3 && (
                         <div className="space-y-5">
                             <h2 className="text-2xl font-bold text-gray-800 text-center">Social Media Handles</h2>
-                            <p className="text-sm text-gray-600 text-center">Please add complete URLs (all fields optional)</p>
+                            <p className="text-sm text-gray-600 text-center">Please add complete URLs</p>
                             <div className="space-y-4">
                                 <input
                                     {...register("instagram")}
-                                    placeholder="Instagram URL"
+                                    placeholder="Instagram URL (optional)"
                                     className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
                                 />
                                 <input
                                     {...register("tiktok")}
-                                    placeholder="TikTok URL"
+                                    placeholder="TikTok URL (optional)"
                                     className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
                                 />
                                 <input
                                     {...register("youtube")}
-                                    placeholder="YouTube URL"
+                                    placeholder="YouTube URL (optional)"
                                     className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
                                 />
                                 <input
                                     {...register("facebook")}
-                                    placeholder="Facebook URL"
+                                    placeholder="Facebook URL (optional)"
                                     className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
                                 />
                                 <input
                                     {...register("twitter")}
-                                    placeholder="X (Twitter) URL"
+                                    placeholder="X (Twitter) URL (optional)"
                                     className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
                                 />
                                 <input
                                     {...register("linkedin")}
-                                    placeholder="LinkedIn URL"
+                                    placeholder="LinkedIn URL (optional)"
                                     className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
                                 />
                                 <input
                                     {...register("otherSocial")}
-                                    placeholder="Other Platform URL"
+                                    placeholder="Other Platform URL (optional)"
                                     className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
                                 />
                             </div>
@@ -327,8 +375,8 @@ const Onboarding = () => {
                         </div>
                     )}
 
-                    {/* Step 3: Creator Type & Profile Information */}
-                    {step === 3 && (
+                    {/* Step 4: Creator Type & Profile Information */}
+                    {step === 4 && (
                         <div className="space-y-5">
                             <h2 className="text-2xl font-bold text-gray-800 text-center">Creator Profile</h2>
 
@@ -392,7 +440,7 @@ const Onboarding = () => {
                             <h3 className="text-lg font-semibold text-gray-800 pt-2">Profile Information</h3>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="font-medium text-gray-700">Platform (dropdown)</label>
+                                    <label className="font-medium text-gray-700">Platform</label>
                                     <select
                                         {...register("platform")}
                                         className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2 mt-1"
@@ -490,8 +538,8 @@ const Onboarding = () => {
                         </div>
                     )}
 
-                    {/* Step 4: Collaboration Preferences */}
-                    {step === 4 && (
+                    {/* Step 5: Collaboration Preferences - First Page */}
+                    {step === 5 && (
                         <div className="space-y-5">
                             <h2 className="text-2xl font-bold text-gray-800 text-center">Collaboration Preferences</h2>
 
@@ -576,6 +624,22 @@ const Onboarding = () => {
                                 </div>
                             </div>
 
+                            <div className="flex justify-between gap-4">
+                                <Button className="flex items-center gap-x-3 btn" onClick={onPrevious}>
+                                    <FaArrowLeft /> Previous
+                                </Button>
+                                <Button className="flex items-center gap-x-3 btn" onClick={validateAndProceed}>
+                                    Next <FaArrowRight />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 6: Collaboration Preferences - Second Page */}
+                    {step === 6 && (
+                        <div className="space-y-5">
+                            <h2 className="text-2xl font-bold text-gray-800 text-center">Additional Preferences</h2>
+
                             <div className="space-y-2">
                                 <RequiredLabel text="How do you prefer to collaborate with brands?" />
                                 <div className="space-y-2">
@@ -636,8 +700,8 @@ const Onboarding = () => {
                             </div>
                         </div>
                     )}
-                </form >
-            </div >
+                </form>
+            </div>
             <Footer />
         </>
     );

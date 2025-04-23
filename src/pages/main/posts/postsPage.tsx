@@ -6,6 +6,7 @@ import { AiOutlineHeart, AiFillHeart, AiOutlineComment, AiOutlineRetweet, AiOutl
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DashboardLayout from "../../../components/main/DashBoardLayout";
+import CusotmAdsBar from "../../../brand/components/CustomAds";
 
 type Post = {
     id: string;
@@ -132,92 +133,106 @@ export default function Posts() {
                             </div>
                         </div>
                     ))}
-                </div>
+                    {/* Right Sidebar (Recommended Creators) */}
+                    <div className=" bg-white hidden lg:w-1/3">
+                        <div className=" p-5 rounded-lg shadow">
+                            <h3 className="text-lg font-bold mb-3">Recommended Creators</h3>
 
-                {/* Right Sidebar (Recommended Creators) */}
-                <div className=" bg-white hidden lg:block lg:w-1/3">
-                    <div className=" p-5 rounded-lg shadow">
-                        <h3 className="text-lg font-bold mb-3">Recommended Creators</h3>
+                            {/* Recommended Creator Card */}
+                            {[
+                                {
+                                    name: "Neha Jakhar",
+                                    username: "nehajakhar",
+                                    location: "Dubai, UAE",
+                                    badge: "Creator",
+                                    tags: ["Lifestyle", "Education", "Travel", "Entrepreneur"],
+                                    profilePic: "https://randomuser.me/api/portraits/women/12.jpg",
+                                },
+                                {
+                                    name: "John Doe",
+                                    username: "johndoe",
+                                    location: "New York, USA",
+                                    badge: "Influencer",
+                                    tags: ["Tech", "Business", "Marketing"],
+                                    profilePic: "https://randomuser.me/api/portraits/women/13.jpg",
+                                }
+                            ].map((creator, index) => (
+                                <div
+                                    key={index}
+                                    className="bg-white p-4 rounded-lg shadow mb-3 flex items-start justify-between space-x-4"
+                                >
+                                    {/* Profile Image */}
+                                    <img
+                                        src={creator.profilePic}
+                                        className="w-12 h-12 rounded-full cursor-pointer"
+                                        alt={creator.name}
+                                        onClick={() => navigate(`/profile/${creator.username}`)}
+                                    />
 
-                        {/* Recommended Creator Card */}
-                        {[
-                            {
-                                name: "Neha Jakhar",
-                                username: "nehajakhar",
-                                location: "Dubai, UAE",
-                                badge: "Creator",
-                                tags: ["Lifestyle", "Education", "Travel", "Entrepreneur"],
-                                profilePic: "https://randomuser.me/api/portraits/women/12.jpg",
-                            },
-                            {
-                                name: "John Doe",
-                                username: "johndoe",
-                                location: "New York, USA",
-                                badge: "Influencer",
-                                tags: ["Tech", "Business", "Marketing"],
-                                profilePic: "https://randomuser.me/api/portraits/women/13.jpg",
-                            }
-                        ].map((creator, index) => (
-                            <div key={index} className="bg-white p-4 rounded-lg shadow mb-3 flex items-center">
-                                {/* Profile Image */}
-                                <img
-                                    src={creator.profilePic}
-                                    className="w-12 h-12 rounded-full cursor-pointer"
-                                    alt={creator.name}
-                                    onClick={() => navigate(`/profile/${creator.username}`)}
-                                />
+                                    {/* Main Info */}
+                                    <div className="flex-1">
+                                        {/* Name & Badge */}
+                                        <div className="flex items-center gap-2">
+                                            <h2
+                                                className="font-bold text-md cursor-pointer hover:underline"
+                                                onClick={() => navigate(`/profile/${creator.username}`)}
+                                            >
+                                                {creator.name}
+                                            </h2>
+                                            <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                                                {creator.badge}
+                                            </span>
+                                        </div>
 
-                                {/* Name & Details */}
-                                <div className="ml-3 flex-1">
-                                    <div className="flex items-center">
-                                        <h2
-                                            className="font-bold text-md cursor-pointer hover:underline"
-                                            onClick={() => navigate(`/profile/${creator.username}`)}
-                                        >
-                                            {creator.name}
-                                        </h2>
-                                        <span className="ml-2 text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
-                                            {creator.badge}
-                                        </span>
+                                        {/* Location */}
+                                        <p className="text-xs text-gray-500">{creator.location}</p>
+
+                                        {/* Tags */}
+                                        <div className="mt-2 flex flex-wrap gap-1">
+                                            {creator.tags.slice(0, 3).map((tag, i) => (
+                                                <span
+                                                    key={i}
+                                                    className="border border-gray-400 text-xs px-2 py-1 rounded-lg text-gray-600"
+                                                >
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                            {creator.tags.length > 3 && (
+                                                <span className="border border-gray-400 text-xs px-2 py-1 rounded-lg text-gray-600">
+                                                    +{creator.tags.length - 3} more
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                    <p className="text-xs text-gray-500">{creator.location}</p>
 
-                                    {/* Tags */}
-                                    <div className="mt-2 flex flex-wrap gap-1">
-                                        {creator.tags.slice(0, 3).map((tag, i) => (
-                                            <span key={i} className="border border-gray-400 text-xs px-2 py-1 rounded-lg text-gray-600">
-                                                {tag}
-                                            </span>
-                                        ))}
-                                        {creator.tags.length > 3 && (
-                                            <span className="border border-gray-400 text-xs px-2 py-1 rounded-lg text-gray-600">
-                                                +{creator.tags.length - 3} more
-                                            </span>
-                                        )}
+                                    {/* Follow Button */}
+                                    <div className="self-start">
+                                        <button
+                                            onClick={() => toast.success(`You followed ${creator.name}!`)}
+                                            className="text-blue-500 font-medium hover:underline"
+                                        >
+                                            Follow
+                                        </button>
                                     </div>
                                 </div>
 
-                                {/* Follow Button */}
-                                <button
-                                    onClick={() => toast.success(`You followed ${creator.name}!`)}
-                                    className="text-blue-500 font-medium"
-                                >
-                                    Follow
-                                </button>
-                            </div>
-                        ))}
+                            ))}
 
-                        {/* View More Button */}
-                        <button
-                            onClick={() => navigate("/profile/viewmore")}
-                            className="text-blue-500 mt-3 block w-full text-center"
-                        >
-                            View More
-                        </button>
+                            {/* View More Button */}
+                            <button
+                                onClick={() => navigate("/profile/viewmore")}
+                                className="text-blue-500 mt-3 block w-full text-center"
+                            >
+                                View More
+                            </button>
+                        </div>
                     </div>
                 </div>
 
+
+
             </div>
+            <CusotmAdsBar />
         </DashboardLayout>
     );
 }
