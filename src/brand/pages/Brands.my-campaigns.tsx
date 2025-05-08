@@ -1,5 +1,5 @@
 // /brand/my-campaigns.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Search,
     Plus,
@@ -8,90 +8,70 @@ import {
     CheckCircle,
     Clock as ClockIcon,
     AlertCircle,
+    Loader2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import BrandLayout from '../components/BrandLayout';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 interface Campaign {
     id: string;
     title: string;
     status: 'active' | 'draft' | 'completed' | 'paused';
     budget: string;
-    applications: number;
-    selected: number;
-    deadline: string;
-    category: string;
-    progress: number;
+    applications?: number;
+    selected?: number;
+    description: string;
+    platform: string;
     createdAt: string;
+    duration: string;
 }
 
 const MyCampaignsPage: React.FC = () => {
     const router = useNavigate();
     const [activeFilter, setActiveFilter] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    const campaigns: Campaign[] = [
-        {
-            id: 'camp-1001',
-            title: 'Summer Collection Launch',
-            status: 'active',
-            budget: '$5,000',
-            applications: 24,
-            selected: 8,
-            deadline: 'May 10, 2025',
-            category: 'Fashion',
-            progress: 65,
-            createdAt: 'Apr 2, 2025'
-        },
-        {
-            id: 'camp-1002',
-            title: 'Fitness App Promotion',
-            status: 'active',
-            budget: '$3,500',
-            applications: 31,
-            selected: 12,
-            deadline: 'May 15, 2025',
-            category: 'Health & Fitness',
-            progress: 40,
-            createdAt: 'Apr 5, 2025'
-        },
-        {
-            id: 'camp-1003',
-            title: 'New Skincare Line',
-            status: 'draft',
-            budget: '$7,200',
-            applications: 0,
-            selected: 0,
-            deadline: 'May 30, 2025',
-            category: 'Beauty',
-            progress: 0,
-            createdAt: 'Apr 9, 2025'
-        },
-        {
-            id: 'camp-1004',
-            title: 'Tech Gadget Review',
-            status: 'completed',
-            budget: '$4,800',
-            applications: 42,
-            selected: 15,
-            deadline: 'Mar 25, 2025',
-            category: 'Technology',
-            progress: 100,
-            createdAt: 'Mar 10, 2025'
-        },
-        {
-            id: 'camp-1005',
-            title: 'Eco-Friendly Product Launch',
-            status: 'paused',
-            budget: '$6,300',
-            applications: 18,
-            selected: 5,
-            deadline: 'Jun 5, 2025',
-            category: 'Sustainability',
-            progress: 30,
-            createdAt: 'Apr 8, 2025'
+    useEffect(() => {
+        fetchCampaigns();
+    }, []);
+
+    const fetchCampaigns = async () => {
+        setIsLoading(true);
+        const token = Cookies.get('jwt');
+        try {
+            const response = await axios.get('http://localhost:5000/api/campaigns/brand/all', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            // Format the campaigns data from the backend
+            //@ts-ignore
+            const formattedCampaigns = response.data.map((campaign: any) => ({
+                ...campaign,
+                applications: campaign.campaignApplications?.length || 0,
+                selected: campaign.campaignApplications?.filter((app: any) => app.status === 'accepted').length || 0,
+                createdAt: new Date(campaign.createdAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                })
+            }));
+
+            setCampaigns(formattedCampaigns);
+            setIsLoading(false);
+        } catch (error) {
+            toast.error('Failed to load campaigns. Please try again later.');
+            console.error('Error fetching campaigns:', error);
+            setIsLoading(false);
         }
-    ];
+    };
 
     const navigateToCampaign = (campaignId: string) => {
         router(`/brand/campaign/${campaignId}`);
@@ -117,17 +97,31 @@ const MyCampaignsPage: React.FC = () => {
         }
     };
 
+    // Format date string for deadline display
+    const formatDeadline = (createdAt: string, duration: string) => {
+        const durationDays = parseInt(duration.split(' ')[0]);
+        const startDate = new Date(createdAt);
+        const deadlineDate = new Date(startDate);
+        deadlineDate.setDate(deadlineDate.getDate() + durationDays);
+
+        return deadlineDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    };
+
     const filteredCampaigns = campaigns.filter(campaign => {
         const matchesFilter = activeFilter === 'all' || campaign.status === activeFilter;
         const matchesSearch = campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            campaign.category.toLowerCase().includes(searchQuery.toLowerCase());
+            campaign.platform.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesFilter && matchesSearch;
     });
 
     return (
         <>
             <BrandLayout>
-
+                <ToastContainer position="top-right" autoClose={5000} />
                 <div className="min-h-screen bg-gray-50">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         <div className="flex justify-between items-center mb-8">
@@ -192,107 +186,100 @@ const MyCampaignsPage: React.FC = () => {
                             </div>
 
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Campaign
-                                            </th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Status
-                                            </th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Budget
-                                            </th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Applications
-                                            </th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Deadline
-                                            </th>
-                                            {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Progress
-                                            </th> */}
-                                            <th scope="col" className="relative px-6 py-3">
-                                                <span className="sr-only">Details</span>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {filteredCampaigns.length > 0 ? (
-                                            filteredCampaigns.map((campaign) => (
-                                                <tr
-                                                    key={campaign.id}
-                                                    className="hover:bg-gray-50 cursor-pointer transition-colors"
-                                                    onClick={() => navigateToCampaign(campaign.id)}
-                                                >
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="flex items-center">
-                                                            <div>
-                                                                <div className="text-sm font-medium text-gray-900">{campaign.title}</div>
-                                                                <div className="text-sm text-gray-500">{campaign.category} • Created {campaign.createdAt}</div>
+                                {isLoading ? (
+                                    <div className="flex justify-center items-center py-20">
+                                        <Loader2 size={32} className="animate-spin text-indigo-600" />
+                                        <span className="ml-2 text-gray-600">Loading campaigns...</span>
+                                    </div>
+                                ) : (
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Campaign
+                                                </th>
+                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Status
+                                                </th>
+                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Budget
+                                                </th>
+                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Applications
+                                                </th>
+                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Deadline
+                                                </th>
+                                                <th scope="col" className="relative px-6 py-3">
+                                                    <span className="sr-only">Details</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {filteredCampaigns.length > 0 ? (
+                                                filteredCampaigns.map((campaign) => (
+                                                    <tr
+                                                        key={campaign.id}
+                                                        className="hover:bg-gray-50 cursor-pointer transition-colors"
+                                                        onClick={() => navigateToCampaign(campaign.id)}
+                                                    >
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="flex items-center">
+                                                                <div>
+                                                                    <div className="text-sm font-medium text-gray-900">{campaign.title}</div>
+                                                                    <div className="text-sm text-gray-500">{campaign.platform} • Created {campaign.createdAt}</div>
+                                                                </div>
                                                             </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="flex items-center">
+                                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
+                                                                    {getStatusIcon(campaign.status)}
+                                                                    <span className="ml-1 capitalize">{campaign.status}</span>
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                            {campaign.budget}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="text-sm text-gray-900">{campaign.applications} applications</div>
+                                                            {campaign.selected ? (
+                                                                <div className="text-xs text-gray-500">{campaign.selected} selected</div>
+                                                            ) : null}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                            <div className="flex items-center">
+                                                                <Calendar size={16} className="mr-1 text-gray-400" />
+                                                                {formatDeadline(campaign.createdAt, campaign.duration)}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                            <ChevronRight size={18} className="text-gray-400" />
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
+                                                        No campaigns found. Try adjusting your filters or create a new campaign.
+                                                        <div className="mt-4">
+                                                            <button
+                                                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                                                                onClick={() => router('/brand/post')}
+                                                            >
+                                                                <Plus size={16} className="mr-2" />
+                                                                Create New Campaign
+                                                            </button>
                                                         </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="flex items-center">
-                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
-                                                                {getStatusIcon(campaign.status)}
-                                                                <span className="ml-1 capitalize">{campaign.status}</span>
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        {campaign.budget}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm text-gray-900">{campaign.applications} applications</div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        <div className="flex items-center">
-                                                            <Calendar size={16} className="mr-1 text-gray-400" />
-                                                            {campaign.deadline}
-                                                        </div>
-                                                    </td>
-                                                    {/* <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                            <div
-                                                                className={`h-2.5 rounded-full ${campaign.progress >= 100 ? 'bg-blue-600' :
-                                                                    campaign.progress > 50 ? 'bg-emerald-500' :
-                                                                        campaign.progress > 25 ? 'bg-amber-500' : 'bg-indigo-600'
-                                                                    }`}
-                                                                style={{ width: `${campaign.progress}%` }}
-                                                            ></div>
-                                                        </div>
-                                                        <div className="text-xs text-gray-500 mt-1">{campaign.progress}% complete</div>
-                                                    </td> */}
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <ChevronRight size={18} className="text-gray-400" />
                                                     </td>
                                                 </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={7} className="px-6 py-10 text-center text-gray-500">
-                                                    No campaigns found. Try adjusting your filters or create a new campaign.
-                                                    <div className="mt-4">
-                                                        <button
-                                                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                                                            onClick={() => router('/brand/create-campaign')}
-                                                        >
-                                                            <Plus size={16} className="mr-2" />
-                                                            Create New Campaign
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                )}
                             </div>
                         </div>
-
-
                     </div>
                 </div>
             </BrandLayout>

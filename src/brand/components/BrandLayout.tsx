@@ -15,6 +15,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { FiBarChart2, FiCompass, FiMessageSquare, FiSearch } from "react-icons/fi";
 import { BiUserPin } from "react-icons/bi";
 import { MdOutlineMessage, MdPerson } from "react-icons/md";
+import CusotmAdsBar from "./CustomAds";
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -65,7 +66,7 @@ export default function BrandLayout({ children }: DashboardLayoutProps) {
         },
         {
             icon: <MdOutlineMessage className="w-5 h-5" />,
-            label: "Notifications",
+            label: "Messages",
             href: "/brand/message",
         },
         {
@@ -160,6 +161,7 @@ export default function BrandLayout({ children }: DashboardLayoutProps) {
 
             {/* Main content */}
             <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+            <CusotmAdsBar />
         </div >
     )
 }

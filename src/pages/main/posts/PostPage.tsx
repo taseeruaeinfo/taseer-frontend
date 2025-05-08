@@ -1,37 +1,57 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store";
 import DashboardLayout from "../../../components/main/DashBoardLayout";
 import Button from "../../../components/ui/Button";
 import { useNavigate } from "react-router-dom";
-import { AiFillHeart, AiOutlineComment, AiOutlineHeart, AiOutlineRetweet, AiOutlineSend } from "react-icons/ai";
+import Cookies from "js-cookie";
+import {
 
-
+    AiOutlineComment,
+    AiOutlineHeart,
+    AiOutlineRetweet,
+    AiOutlineSend,
+} from "react-icons/ai";
+import axios from "axios";
 
 export default function PostPage() {
-
-    const data = {
-        id: "1",
-        username: "nehajakhar",
-        name: "Neha Jakhar",
-        profilePic: "https://randomuser.me/api/portraits/women/12.jpg",
-        content: "Looking for a fellow creator to co-host a podcast. Let me know if someone would be interested?",
-        location: "Dubai, UAE",
-        likes: 32,
-        isLiked: false,
-        badge: "Creator",
-    }
-
     const navigate = useNavigate();
     const [content, setContent] = useState("");
 
-    const handlePostSubmit = () => {
+    // ✅ Get user from Redux
+    const user = useSelector((state: RootState) => state.user);
+
+    const handlePostSubmit = async () => {
         if (content.trim() === "") return;
+        const token = Cookies.get("jwt");
 
+        console.log(token)
+        try {
+            const response = await axios.post(
+                "http://localhost:5000/api/posts/create",
+                { text: content },
+                {
+                    headers: {
+                        authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
+            if (response.status === 201) {
+                navigate("/home");
+            }
+        } catch (error) {
+            alert(error)
+            console.error("Error creating post:", error);
+        }
     };
+
+    if (!user) {
+        return <div className="text-center mt-10">Loading user data...</div>;
+    }
 
     return (
         <DashboardLayout>
-
             <div className="max-w-xl mx-auto p-4 space-y-6">
                 <div className="bg-white p-4 rounded-2xl shadow-md space-y-4">
                     <textarea
@@ -50,48 +70,39 @@ export default function PostPage() {
                     </Button>
                 </div>
 
+                {/* Preview card using actual user data */}
                 <div className="bg-white p-5 rounded-lg shadow mb-4">
                     <div className="flex items-start">
-                        {/* Profile Image */}
                         <img
-                            src={data.profilePic}
-                            alt={data.name}
+                            src={user.profilePic || "https://via.placeholder.com/150"}
+                            alt={user.name}
                             className="w-12 h-12 rounded-full cursor-pointer"
-                            onClick={() => navigate(`/profile/${data.username}`)}
+                            onClick={() => navigate(`/profile/${user.username}`)}
                         />
-
-                        {/* Name, Badge & Location */}
                         <div className="ml-3 flex-1">
                             <div className="flex items-center">
                                 <h2
                                     className="font-bold text-lg cursor-pointer hover:underline"
-                                    onClick={() => navigate(`/profile/${data.username}`)}
+                                    onClick={() => navigate(`/profile/${user.username}`)}
                                 >
-                                    {data.name}
+                                    {user.username}
                                 </h2>
-                                <span className="ml-2 text-xs text-gray-700 px-2 py-1 rounded-full">{data.badge}</span>
+                                <span className="ml-2 text-xs text-gray-700 px-2 py-1 rounded-full">
+                                    {user.type === "creator" ? "Creator" : "Brand"}
+                                </span>
                             </div>
-                            <p className="text-sm text-gray-500">{data.location}</p>
+                            <p className="text-sm text-gray-500">{user.nationality || "Unknown"}</p>
                         </div>
-
-                        {/* Follow Button */}
-                        <button
-                            className="text-blue-500 font-medium"
-                        >
-                            Follow
-                        </button>
                     </div>
 
-                    {/* Post Content */}
                     <p className="mt-3 text-gray-700">{content}</p>
 
-                    {/* Actions */}
                     <div className="flex items-center justify-between mt-4 text-gray-600">
                         <button className="flex items-center gap-1">
-                            {data.isLiked ? <AiFillHeart className="text-red-500" /> : <AiOutlineHeart />}
-                            <span>{data.likes}</span>
+                            <AiOutlineHeart />
+                            <span>0</span>
                         </button>
-                        <button onClick={() => navigate(`/post/${data.id}`)} className="flex items-center gap-1">
+                        <button onClick={() => navigate(`/post/preview`)} className="flex items-center gap-1">
                             <AiOutlineComment />
                             <span>Comment</span>
                         </button>
@@ -106,7 +117,6 @@ export default function PostPage() {
                     </div>
                 </div>
             </div>
-        </DashboardLayout >
-
+        </DashboardLayout>
     );
 }

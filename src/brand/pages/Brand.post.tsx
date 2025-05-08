@@ -1,9 +1,12 @@
-import React, { useState, ChangeEvent, FormEvent, useRef } from 'react';
+import { useState, ChangeEvent, FormEvent, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaPlus, FaSearch, FaUpload, FaTrash, FaCheck } from 'react-icons/fa';
+import { FaUpload, FaTrash } from 'react-icons/fa';
 import BrandLayout from '../components/BrandLayout';
-import CusotmAdsBAr from '../components/CustomAds';
+import Cookies from 'js-cookie';
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface FormData {
     title: string;
@@ -12,6 +15,7 @@ interface FormData {
     qualifications: string;
     deliverables: string;
     budget: string;
+    platform: string;
     duration: string;
     image: File | null;
 }
@@ -22,7 +26,7 @@ interface FormErrors {
 
 export default function BrandPost() {
     const navigate = useNavigate();
-    const [formVisible, setFormVisible] = useState(false);
+    const [formVisible, setFormVisible] = useState(true);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -33,6 +37,7 @@ export default function BrandPost() {
         qualifications: '',
         deliverables: '',
         budget: '',
+        platform: '',
         duration: '',
         image: null
     });
@@ -40,104 +45,212 @@ export default function BrandPost() {
     const [formStep, setFormStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    /**
+     * Validates form fields based on current step
+     * @param step Current form step
+     * @returns Object containing validation errors
+     */
     const validateFormStep = (step: number): FormErrors => {
         const newErrors: FormErrors = {};
-
         if (step === 1) {
-            if (!formData.title) newErrors.title = 'Title is required';
-            if (!formData.description) newErrors.description = 'Description is required';
+            if (!formData.title.trim()) newErrors.title = 'Title is required';
+            if (!formData.description.trim()) newErrors.description = 'Description is required';
         } else if (step === 2) {
-            if (!formData.requirements) newErrors.requirements = 'Requirements are required';
-            if (!formData.qualifications) newErrors.qualifications = 'Qualifications are required';
-            if (!formData.deliverables) newErrors.deliverables = 'Deliverables are required';
+            if (!formData.requirements.trim()) newErrors.requirements = 'Requirements are required';
+            if (!formData.qualifications.trim()) newErrors.qualifications = 'Qualifications are required';
+            if (!formData.deliverables.trim()) newErrors.deliverables = 'Deliverables are required';
         } else if (step === 3) {
-            if (!formData.budget || isNaN(Number(formData.budget))) newErrors.budget = 'Valid budget is required';
-            if (!formData.duration) newErrors.duration = 'Duration is required';
+            if (!formData.budget || isNaN(Number(formData.budget))) {
+                newErrors.budget = 'Valid budget is required';
+            }
+            if (!formData.duration.trim()) newErrors.duration = 'Duration is required';
             if (!formData.image) newErrors.image = 'Campaign image is required';
         }
-
         return newErrors;
     };
 
+    /**
+     * Updates form data when input fields change
+     */
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-    };
 
-    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setFormData(prev => ({ ...prev, image: file }));
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+        // Clear error for this field if it exists
+        if (errors[name]) {
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[name];
+                return newErrors;
+            });
         }
     };
 
+    /**
+     * Handles image file selection
+     */
+    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+            setErrors(prev => ({ ...prev, image: 'Image size should be less than 5MB' }));
+            return;
+        }
+
+        // Create preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+
+        // Update form data
+        setFormData(prev => ({ ...prev, image: file }));
+
+        // Clear any previous errors
+        if (errors.image) {
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors.image;
+                return newErrors;
+            });
+        }
+    };
+
+    /**
+     * Removes selected image
+     */
     const handleImageDelete = () => {
         setFormData(prev => ({ ...prev, image: null }));
         setImagePreview(null);
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    /**
+     * Uploads image to Cloudinary and returns secure URL
+     */
+    const uploadImageToCloudinary = async (imageFile: File): Promise<string | null> => {
+        const cloudName = 'drihufdbo'; // Replace with your actual Cloudinary cloud name
+        const uploadPreset = 'taseer'; // Replace with your actual upload preset
+
+        const formData = new FormData();
+        formData.append("file", imageFile);
+        formData.append("upload_preset", uploadPreset);
+
+        try {
+            toast.info("Uploading image...", { autoClose: 2000 });
+
+            const response = await axios.post(
+                `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+            );
+
+            //@ts-ignore
+            if (response.data && response.data?.secure_url) {
+                //@ts-ignore
+
+                return response.data?.secure_url;
+            }
+            throw new Error("Invalid response from Cloudinary");
+        } catch (err) {
+            console.error("Cloudinary upload failed:", err);
+            toast.error("Image upload failed. Please try again.");
+            return null;
         }
     };
 
+    /**
+     * Handles form submission
+     */
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const validationErrors = validateFormStep(formStep);
 
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            return;
-        }
+        const stepErrors = validateFormStep(formStep);
+        setErrors(stepErrors);
+        if (Object.keys(stepErrors).length > 0) return;
 
         if (formStep < 3) {
             setFormStep(prev => prev + 1);
-            setErrors({});
             return;
         }
 
-        // Submit the form
         setIsSubmitting(true);
+
         try {
-            const processedData = {
-                ...formData,
-                requirements: formData.requirements.split(',').map(s => s.trim()),
-                qualifications: formData.qualifications.split(',').map(s => s.trim()),
-                deliverables: formData.deliverables.split(',').map(s => s.trim())
+            let imageUrl = null;
+            if (formData.image) {
+                imageUrl = await uploadImageToCloudinary(formData.image);
+                if (!imageUrl) {
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
+            const token = Cookies.get("jwt");
+            if (!token) {
+                toast.error("Authentication error. Please log in again.");
+                navigate("/login");
+                return;
+            }
+
+            const payload = {
+                title: formData.title,
+                description: formData.description,
+                requirements: formData.requirements,
+                platform: formData.platform,
+
+                qualifications: formData.qualifications,
+                deliverables: formData.deliverables,
+                budget: formData.budget,
+                duration: formData.duration,
+                image: imageUrl
             };
-            console.log(processedData);
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            toast.info("Creating campaign...", { autoClose: 2000 });
 
-            // Reset form and navigate
-            setFormData({
-                title: '',
-                description: '',
-                requirements: '',
-                qualifications: '',
-                deliverables: '',
-                budget: '',
-                duration: '',
-                image: null
+            const res = await axios.post("http://localhost:5000/api/campaigns", payload, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
             });
-            setImagePreview(null);
-            setFormStep(1);
-            setFormVisible(false);
-        } catch (error) {
-            console.error('Error submitting form:', error);
+
+            if (res.status === 201) {
+                toast.success("Campaign created successfully!");
+                setFormVisible(false);
+
+                // Add a small delay before navigation for toast to be visible
+                setTimeout(() => {
+                    navigate("/brand/my-campaigns");
+                }, 1500);
+            } else {
+                throw new Error("Failed to create campaign");
+            }
+        } catch (err: any) {
+            console.error("Campaign creation error:", err);
+            toast.error(err.response?.data?.message || "Failed to create campaign. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    /**
+     * CSS classes for consistent styling
+     */
     const inputClass = "p-4 border border-gray-200 rounded-xl bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#6a38ca] shadow-sm";
     const labelClass = "block text-sm font-medium text-gray-700 mb-2";
     const buttonClass = "bg-[#6a38ca] hover:bg-[#5c2eb8] transition-all duration-300 text-white py-4 px-6 rounded-xl text-base font-semibold shadow-lg flex items-center justify-center gap-2";
 
+    /**
+     * Returns content for current form step
+     */
     const formStepContent = () => {
         switch (formStep) {
             case 1:
@@ -147,7 +260,6 @@ export default function BrandPost() {
                             <h2 className="text-2xl font-bold text-gray-800">Step 1: Basic Information</h2>
                             <p className="text-gray-600">Let's start with the essentials of your campaign</p>
                         </div>
-
                         <div className="mb-6">
                             <label htmlFor="title" className={labelClass}>Campaign Title</label>
                             <input
@@ -155,8 +267,8 @@ export default function BrandPost() {
                                 name="title"
                                 value={formData.title}
                                 onChange={handleChange}
-                                placeholder="Enter an attention-grabbing title"
                                 className={`${inputClass} w-full`}
+                                placeholder="Enter campaign title"
                             />
                             {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
                         </div>
@@ -168,10 +280,22 @@ export default function BrandPost() {
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
-                                placeholder="Describe your campaign goals and vision"
                                 className={`${inputClass} w-full h-40 resize-none`}
+                                placeholder="Describe your campaign in detail"
                             />
                             {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+                        </div>
+                        <div className="mb-6">
+                            <label htmlFor="title" className={labelClass}>Platforms You Want To Run Campaign</label>
+                            <input
+                                id="platform"
+                                name="platform"
+                                value={formData.platform}
+                                onChange={handleChange}
+                                className={`${inputClass} w-full`}
+                                placeholder="Enter platforms seperated with commas e.g. Instagram, TikTok"
+                            />
+                            {errors.platform && <p className="text-red-500 text-sm mt-1">{errors.platform}</p>}
                         </div>
                     </>
                 );
@@ -182,42 +306,39 @@ export default function BrandPost() {
                             <h2 className="text-2xl font-bold text-gray-800">Step 2: Requirements & Qualifications</h2>
                             <p className="text-gray-600">Define what you're looking for in creators</p>
                         </div>
-
                         <div className="mb-6">
-                            <label htmlFor="requirements" className={labelClass}>Campaign Requirements</label>
+                            <label htmlFor="requirements" className={labelClass}>Requirements (comma-separated)</label>
                             <input
                                 id="requirements"
                                 name="requirements"
                                 value={formData.requirements}
                                 onChange={handleChange}
-                                placeholder="Separate requirements with commas"
                                 className={`${inputClass} w-full`}
+                                placeholder="e.g. Original content, High quality, 4K resolution"
                             />
                             {errors.requirements && <p className="text-red-500 text-sm mt-1">{errors.requirements}</p>}
                         </div>
-
                         <div className="mb-6">
-                            <label htmlFor="qualifications" className={labelClass}>Creator Qualifications</label>
+                            <label htmlFor="qualifications" className={labelClass}>Qualifications (comma-separated)</label>
                             <input
                                 id="qualifications"
                                 name="qualifications"
                                 value={formData.qualifications}
                                 onChange={handleChange}
-                                placeholder="Required qualifications (comma separated)"
                                 className={`${inputClass} w-full`}
+                                placeholder="e.g. 5K+ followers, Content creator, Influencer"
                             />
                             {errors.qualifications && <p className="text-red-500 text-sm mt-1">{errors.qualifications}</p>}
                         </div>
-
                         <div className="mb-6">
-                            <label htmlFor="deliverables" className={labelClass}>Expected Deliverables</label>
+                            <label htmlFor="deliverables" className={labelClass}>Deliverables (comma-separated)</label>
                             <input
                                 id="deliverables"
                                 name="deliverables"
                                 value={formData.deliverables}
                                 onChange={handleChange}
-                                placeholder="Content deliverables (comma separated)"
                                 className={`${inputClass} w-full`}
+                                placeholder="e.g. 3 Instagram posts, 2 TikTok videos"
                             />
                             {errors.deliverables && <p className="text-red-500 text-sm mt-1">{errors.deliverables}</p>}
                         </div>
@@ -228,81 +349,75 @@ export default function BrandPost() {
                     <>
                         <div className="mb-8">
                             <h2 className="text-2xl font-bold text-gray-800">Step 3: Budget & Assets</h2>
-                            <p className="text-gray-600">Finalize your campaign details</p>
+                            <p className="text-gray-600">Final details to complete your campaign</p>
                         </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div>
-                                <label htmlFor="budget" className={labelClass}>Campaign Budget ($)</label>
+                                <label htmlFor="budget" className={labelClass}>Budget ($)</label>
                                 <input
                                     id="budget"
                                     name="budget"
-                                    type="number"
                                     value={formData.budget}
                                     onChange={handleChange}
-                                    placeholder="Enter your budget"
                                     className={inputClass}
+                                    type="number"
+                                    min="1"
+                                    placeholder="Enter budget amount"
                                 />
                                 {errors.budget && <p className="text-red-500 text-sm mt-1">{errors.budget}</p>}
                             </div>
-
                             <div>
-                                <label htmlFor="duration" className={labelClass}>Campaign Duration (days)</label>
+                                <label htmlFor="duration" className={labelClass}>Duration (days)</label>
                                 <input
                                     id="duration"
                                     name="duration"
                                     value={formData.duration}
                                     onChange={handleChange}
-                                    placeholder="How long will this run?"
                                     className={inputClass}
+                                    placeholder="e.g. 30"
                                 />
                                 {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration}</p>}
                             </div>
                         </div>
-
                         <div className="mb-6">
                             <label className={labelClass}>Campaign Image</label>
-                            <div className="flex flex-col items-center">
-                                <div className="w-full h-60 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center mb-4 overflow-hidden relative">
-                                    {imagePreview ? (
-                                        <>
-                                            <img
-                                                src={imagePreview}
-                                                alt="Campaign preview"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={handleImageDelete}
-                                                className="absolute bottom-4 right-4 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
-                                            >
-                                                <FaTrash size={16} />
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <div className="text-center p-6">
-                                            <FaUpload size={32} className="mx-auto text-gray-400 mb-4" />
-                                            <p className="text-gray-500 mb-2">Drag and drop an image here or</p>
-                                            <button
-                                                type="button"
-                                                onClick={() => fileInputRef.current?.click()}
-                                                className="text-[#6a38ca] font-medium hover:underline"
-                                            >
-                                                Browse files
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageChange}
-                                    className="hidden"
-                                />
-                                {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
-                                <p className="text-xs text-gray-500 mt-2">Recommended size: 1200x628px. Max size: 5MB</p>
+                            <div className="w-full h-60 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center relative overflow-hidden">
+                                {imagePreview ? (
+                                    <>
+                                        <img
+                                            src={imagePreview}
+                                            alt="Campaign preview"
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleImageDelete}
+                                            className="absolute bottom-4 right-4 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
+                                            aria-label="Remove image"
+                                        >
+                                            <FaTrash size={16} />
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div
+                                        className="text-center p-6 cursor-pointer w-full h-full flex flex-col items-center justify-center"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        <FaUpload size={32} className="text-gray-400 mb-4" />
+                                        <p className="text-[#6a38ca] font-medium hover:underline">Browse files</p>
+                                        <p className="text-gray-500 text-sm mt-2">Click to upload campaign image</p>
+                                    </div>
+                                )}
                             </div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleImageChange}
+                            />
+                            {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+                            <p className="text-xs text-gray-500 mt-2">Recommended size: 1200x628px. Max: 5MB</p>
                         </div>
                     </>
                 );
@@ -311,139 +426,47 @@ export default function BrandPost() {
         }
     };
 
-    if (formVisible) {
-        return (
-            <>
-                <BrandLayout>
-                    <motion.div
-                        className="min-h-screen bg-gray-50 p-8"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                    >
-                        <div className="max-w-4xl mx-auto">
-                            <div className="flex items-center justify-between mb-8">
-                                <h1 className="text-3xl font-bold text-gray-800">
-                                    <span className="text-[#6a38ca]">Create</span> a Premium Campaign
-                                </h1>
-                                <button
-                                    onClick={() => setFormVisible(false)}
-                                    className="text-gray-500 hover:text-gray-700"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-
-                            {/* Progress bar */}
-                            <div className="flex items-center mb-10 px-2">
-                                {[1, 2, 3].map((step) => (
-                                    <React.Fragment key={step}>
-                                        <div
-                                            className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${step < formStep ? 'bg-green-500 text-white' :
-                                                step === formStep ? 'bg-[#6a38ca] text-white' :
-                                                    'bg-gray-200 text-gray-600'
-                                                }`}
-                                        >
-                                            {step < formStep ? <FaCheck size={12} /> : step}
-                                        </div>
-                                        {step < 3 && (
-                                            <div
-                                                className={`flex-1 h-1 mx-2 ${step < formStep ? 'bg-green-500' : 'bg-gray-200'
-                                                    }`}
-                                            />
-                                        )}
-                                    </React.Fragment>
-                                ))}
-                            </div>
-
-                            <div className="bg-white rounded-2xl p-8 shadow-xl">
-                                <form onSubmit={handleSubmit}>
-                                    {formStepContent()}
-
-                                    <div className="flex justify-between mt-8">
-                                        {formStep > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormStep(prev => prev - 1)}
-                                                className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-                                            >
-                                                Back
-                                            </button>
-                                        )}
-
-                                        <button
-                                            type="submit"
-                                            className={`${buttonClass} ml-auto ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
-                                            disabled={isSubmitting}
-                                        >
-                                            {isSubmitting ? (
-                                                <>Processing...</>
-                                            ) : formStep < 3 ? (
-                                                <>Continue</>
-                                            ) : (
-                                                <>Launch Campaign</>
-                                            )}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </motion.div>
-                </BrandLayout>
-            </>
-        );
-    }
-
     return (
-        <>
-            <BrandLayout>
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
-                    <div className="max-w-6xl w-full">
-                        <div className="text-center mb-12">
-                            <h1 className="text-4xl font-bold text-gray-800 mb-4">Creator Campaign Dashboard</h1>
-                            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Create campaigns that connect your brand with the perfect influencers to showcase your products and services.</p>
-                        </div>
+        <BrandLayout>
+            {formVisible && (
+                <motion.form
+                    onSubmit={handleSubmit}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="max-w-4xl mx-auto p-8 bg-white rounded-xl shadow-lg"
+                >
+                    {formStepContent()}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <motion.div
-                                whileHover={{ scale: 1.03, boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)" }}
-                                className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transition-all"
-                                onClick={() => setFormVisible(true)}
+                    <div className="mt-8 flex justify-between">
+                        {formStep > 1 && (
+                            <button
+                                type="button"
+                                onClick={() => setFormStep(prev => prev - 1)}
+                                className="text-gray-600 hover:underline font-medium px-6 py-2"
                             >
-                                <div className="h-40 bg-gradient-to-r from-[#6a38ca] to-[#9969f8] flex items-center justify-center">
-                                    <FaPlus className="text-6xl text-white opacity-70" />
-                                </div>
-                                <div className="p-8">
-                                    <h2 className="text-2xl font-bold text-gray-800 mb-3">Create New Campaign</h2>
-                                    <p className="text-gray-600 mb-6">Launch a professional campaign with custom requirements tailored to your brand's voice and goals.</p>
-                                    <div className={`${buttonClass} w-full justify-center`}>
-                                        <FaPlus className="mr-2" />
-                                        Get Started
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                            <motion.div
-                                whileHover={{ scale: 1.03, boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)" }}
-                                className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transition-all"
-                                onClick={() => navigate('/brand/find-influencers')}
-                            >
-                                <div className="h-40 bg-gradient-to-r from-[#3c8dca] to-[#69b8f8] flex items-center justify-center">
-                                    <FaSearch className="text-6xl text-white opacity-70" />
-                                </div>
-                                <div className="p-8">
-                                    <h2 className="text-2xl font-bold text-gray-800 mb-3">Find Perfect Creators</h2>
-                                    <p className="text-gray-600 mb-6">Discover and connect with influencers who align with your brand values and audience demographics.</p>
-                                    <div className={`${buttonClass} w-full justify-center bg-[#3c8dca] hover:bg-[#2e7ab0]`}>
-                                        <FaSearch className="mr-2" />
-                                        Browse Creators
-                                    </div>
-                                </div>
-                            </motion.div>
-                        </div>
+                                Back
+                            </button>
+                        )}
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className={`${buttonClass} ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        >
+                            {formStep < 3 ? 'Next' : isSubmitting ? 'Submitting...' : 'Create Campaign'}
+                        </button>
                     </div>
-                </div>
-                <CusotmAdsBAr />
-            </BrandLayout>
-        </>
+                </motion.form>
+            )}
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+                draggable
+                limit={3}
+            />
+        </BrandLayout>
     );
 }

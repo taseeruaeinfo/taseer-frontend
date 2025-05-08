@@ -1,69 +1,197 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { AiOutlineHeart, AiFillHeart, AiOutlineComment, AiOutlineRetweet, AiOutlineSend, AiOutlineSearch } from "react-icons/ai";
-import { toast } from "react-toastify";
+import { AiOutlineHeart, AiFillHeart, AiOutlineComment, AiOutlineSearch } from "react-icons/ai";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
+import Cookies from "js-cookie";
+import FollowButton from "../../components/ui/FollowButton";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
 import BrandLayout from "../components/BrandLayout";
-import CusotmAdsBar from "../components/CustomAds";
 
+// Define the post type based on your API response
 type Post = {
     id: string;
-    username: string;
-    name: string;
-    profilePic: string;
-    content: string;
-    location: string;
-    likes: number;
+    text: string;
+    type: string;
+    createdAt: string;
+    updatedAt: string;
+    user: {
+        id: string;
+        username: string;
+        profilePic: string;
+        type: string
+        isFollowing: boolean
+    };
+    likeCount: number;
+    commentCount: number;
+    repostCount: number;
     isLiked: boolean;
-    badge: string;
 };
 
-const posts: Post[] = [
-    {
-        id: "1",
-        username: "nehajakhar",
-        name: "Neha Jakhar",
-        profilePic: "https://randomuser.me/api/portraits/women/12.jpg",
-        content: "Looking for a fellow creator to co-host a podcast. Let me know if someone would be interested?",
-        location: "Dubai, UAE",
-        likes: 32,
-        isLiked: false,
-        badge: "Creator",
-    },
-    {
-        id: "2",
-        username: "taseerbrand",
-        name: "Taseer",
-        profilePic: "https://randomuser.me/api/portraits/women/1.jpg",
-        content: "We're organizing One Billion Summit, a global event bringing together top influencers, creators, and entrepreneurs.",
-        location: "Dubai, UAE",
-        likes: 21,
-        isLiked: false,
-        badge: "Brand",
-    },
-];
+// Define a type for creators
 
-export default function BrandPosts() {
+
+// Sample creators data for the sidebar
+
+
+export default function Posts() {
     const navigate = useNavigate();
-    const [postsData, setPostsData] = useState(posts);
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
+    const [hasMore, setHasMore] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
 
-    const handleFollow = (username: string) => {
-        toast.success(`You followed ${username}!`);
+    const observer = useRef<IntersectionObserver | null>(null);
+    const user = useSelector((state: RootState) => state.user);
+
+    const lastPostElementRef = useCallback((node: HTMLDivElement | null) => {
+        if (loading) return;
+
+        if (observer.current) observer.current.disconnect();
+
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasMore) {
+                fetchMorePosts();
+            }
+        });
+
+        if (node) observer.current.observe(node);
+    }, [loading, hasMore]);
+
+    // Initial fetch of posts
+    useEffect(() => {
+        fetchPosts();
+    }, []);
+
+    // Function to fetch initial posts
+    const fetchPosts = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const token = Cookies.get("jwt");
+            const response = await axios.get('http://localhost:5000/api/posts', {
+                headers: {
+                    authorization: `Bearer ${token}`,
+                },
+            });
+            //@ts-ignore
+            setPosts(response.data.posts);
+            //@ts-ignore
+            setNextCursor(response.data.nextCursor);
+            //@ts-ignore
+            setHasMore(response.data.nextCursor !== null);
+        } catch (err) {
+            console.error("Error fetching posts:", err);
+            setError("Failed to fetch posts. Please try again.");
+            toast.error("Failed to fetch posts");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleLike = (id: string) => {
-        setPostsData((prev) =>
-            prev.map((post) => (post.id === id ? { ...post, isLiked: !post.isLiked, likes: post.isLiked ? post.likes - 1 : post.likes + 1 } : post))
-        );
+    // Function to fetch more posts (for infinite scrolling)
+    const fetchMorePosts = async () => {
+        if (!nextCursor || loading) return;
+
+        setLoading(true);
+
+        try {
+            const token = Cookies.get("jwt")
+            const response = await axios.get(`http://localhost:5000/api/posts?cursor=${nextCursor}`, {
+                headers: {
+                    authorization: `Bearer ${token}`,
+                },
+            });
+            //@ts-ignore
+            setPosts(prevPosts => [...prevPosts, ...response.data.posts]);
+            //@ts-ignore
+            setNextCursor(response.data.nextCursor);
+            //@ts-ignore
+            setHasMore(response.data.nextCursor !== null);
+        } catch (err) {
+            console.error("Error fetching more posts:", err);
+            setError("Failed to load more posts");
+            toast.error("Failed to load more posts");
+        } finally {
+            setLoading(false);
+        }
     };
+
+
+
+
+    const handleLike = async (postId: string) => {
+        try {
+            const token = Cookies.get("jwt");
+            if (!token) {
+                toast.error("You must be logged in to like a post.");
+                return;
+            }
+
+            // Optimistic update
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId
+                        ? {
+                            ...post,
+                            isLiked: !post.isLiked,
+                            likeCount: post.isLiked ? post.likeCount - 1 : post.likeCount + 1,
+                        }
+                        : post
+                )
+            );
+            await axios.post(`http://localhost:5000/api/posts/${postId}/like`, {},
+                {
+                    headers: {
+                        authorization: `Bearer ${token}`,
+                    },
+                });
+        } catch (err) {
+            console.error("Error liking post:", err);
+            toast.error("Failed to like post");
+
+            // Rollback optimistic update
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId
+                        ? {
+                            ...post,
+                            isLiked: !post.isLiked,
+                            likeCount: post.isLiked ? post.likeCount - 1 : post.likeCount + 1,
+                        }
+                        : post
+                )
+            );
+        }
+    };
+
+
+
+
+    // Function to handle search
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value);
+    };
+
+    // Filter posts based on search term
+    const filteredPosts = posts.filter(post =>
+        post.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.user.username.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <BrandLayout>
-            <div className="max-w-6xl mx-auto px-4 lg:flex gap-6">
+            <ToastContainer />
+            <div className="mx-auto px-4 lg:flex gap-6">
                 {/* Main Posts Section */}
-                <div className="lg:w-2/3">
+                <div className="w-full">
                     {/* Search Bar */}
                     <div className="relative w-full mb-6">
                         <AiOutlineSearch className="absolute left-4 top-3 text-gray-500 text-xl" />
@@ -71,73 +199,111 @@ export default function BrandPosts() {
                             type="text"
                             placeholder="Search posts..."
                             className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full focus:ring focus:ring-purple-300"
+                            value={searchTerm}
+                            onChange={handleSearch}
                         />
                     </div>
 
-                    {/* Posts */}
-                    {postsData.map((post) => (
-                        <div key={post.id} className="bg-white p-5 rounded-lg shadow mb-4">
-                            <div className="flex items-start">
-                                {/* Profile Image */}
-                                <img
-                                    src={post.profilePic}
-                                    alt={post.name}
-                                    className="w-12 h-12 rounded-full cursor-pointer"
-                                    onClick={() => navigate(`/profile/${post.username}`)}
-                                />
-
-                                {/* Name, Badge & Location */}
-                                <div className="ml-3 flex-1">
-                                    <div className="flex items-center">
-                                        <h2
-                                            className="font-bold text-lg cursor-pointer hover:underline"
-                                            onClick={() => navigate(`/profile/${post.username}`)}
-                                        >
-                                            {post.name}
-                                        </h2>
-                                        <span className="ml-2 text-xs text-gray-700 px-2 py-1 rounded-full">{post.badge}</span>
-                                    </div>
-                                    <p className="text-sm text-gray-500">{post.location}</p>
-                                </div>
-
-                                {/* Follow Button */}
-                                <button
-                                    onClick={() => handleFollow(post.username)}
-                                    className="text-blue-500 font-medium"
-                                >
-                                    Follow
-                                </button>
-                            </div>
-
-                            {/* Post Content */}
-                            <p className="mt-3 text-gray-700">{post.content}</p>
-
-                            {/* Actions */}
-                            <div className="flex items-center justify-between mt-4 text-gray-600">
-                                <button onClick={() => handleLike(post.id)} className="flex items-center gap-1">
-                                    {post.isLiked ? <AiFillHeart className="text-red-500" /> : <AiOutlineHeart />}
-                                    <span>{post.likes}</span>
-                                </button>
-                                <button onClick={() => navigate(`/post/${post.id}`)} className="flex items-center gap-1">
-                                    <AiOutlineComment />
-                                    <span>Comment</span>
-                                </button>
-                                <button className="flex items-center gap-1">
-                                    <AiOutlineRetweet />
-                                    <span>Repeat</span>
-                                </button>
-                                <button className="flex items-center gap-1">
-                                    <AiOutlineSend />
-                                    <span>Send</span>
-                                </button>
-                            </div>
+                    {/* Error Message */}
+                    {error && (
+                        <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
+                            {error}
+                            <button
+                                className="ml-2 underline"
+                                onClick={fetchPosts}
+                            >
+                                Try again
+                            </button>
                         </div>
-                    ))}
+                    )}
+
+                    {/* Posts */}
+                    {filteredPosts.length === 0 && !loading ? (
+                        <div className="bg-white p-5 rounded-lg shadow mb-4 text-center">
+                            <p className="text-gray-600">
+                                {searchTerm ? "No posts match your search" : "No posts found"}
+                            </p>
+                        </div>
+                    ) : (
+                        filteredPosts.map((post, index) => {
+                            const isLastElement = index === filteredPosts.length - 1;
+                            return (
+                                <div
+                                    key={post.id}
+                                    ref={isLastElement ? lastPostElementRef : null}
+                                    className="bg-white p-5 rounded-lg shadow mb-4"
+                                >
+                                    <div className="flex items-start">
+                                        {/* Profile Image */}
+                                        <img
+                                            src={post.user.profilePic || "https://via.placeholder.com/150"}
+                                            alt={post.user.username}
+                                            className="w-12 h-12 rounded-full cursor-pointer"
+                                            onClick={() => navigate(`/profile/${post.user.username}`)}
+                                        />
+
+                                        {/* Name & Location */}
+                                        <div className="ml-3 flex-1">
+                                            <div className="flex items-center">
+                                                <h2
+                                                    className="font-bold text-lg cursor-pointer hover:underline"
+                                                    onClick={() => navigate(`/profile/${post.user.username}`)}
+                                                >
+                                                    {post.user.username}
+                                                </h2>
+                                                <span className="ml-2 text-xs uppercase bg-purple-500 rounded-full px-2 py-1 text-white">
+                                                    {post.user.type}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-500">
+                                                {new Date(post.createdAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
+
+                                        {/* Follow Button */}
+                                        <FollowButton followingId={post.user.id} disable={post.user.id == user?.id || post.user.isFollowing} />
+
+
+
+                                    </div>
+
+                                    {/* Post Content */}
+                                    <p className="mt-3 text-gray-700">{post.text}</p>
+
+                                    {/* Actions */}
+                                    <div className="grid grid-cols-4 justify-between mt-4 text-gray-600">
+                                        <button onClick={() => handleLike(post.id)} className="flex items-center gap-1">
+                                            {post.isLiked ? <AiFillHeart className="text-red-500" /> : <AiOutlineHeart />}
+                                            <span>{post.likeCount}</span>
+                                        </button>
+                                        <button onClick={() => navigate(`/post/${post.id}`)} className="flex items-center gap-1">
+                                            <AiOutlineComment />
+                                            <span>{post.commentCount}</span>
+                                        </button>
+                                        {/* <button className="flex items-center gap-1">
+                                            <AiOutlineRetweet />
+                                            <span>{post.repostCount}</span>
+                                        </button>
+                                        <button className="flex items-center gap-1">
+                                            <AiOutlineSend />
+                                            <span>Send</span>
+                                        </button> */}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+
+                    {/* Loading Indicator */}
+                    {loading && (
+                        <div className="flex justify-center items-center p-4">
+                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
+                        </div>
+                    )}
                 </div>
 
 
             </div>
-            <CusotmAdsBar />
         </BrandLayout>
     );
 }

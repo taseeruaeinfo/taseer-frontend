@@ -1,43 +1,65 @@
 import { motion } from 'framer-motion';
 
-export default function CusotmAdsBar({
-    longBoxContent = "Long Box Content",
-    smallBoxContent = "Small Box Content",
-    longBoxStyles = "bg-white border-2 border-black",
-    smallBoxStyles = "bg-white border-2 border-dashed border-black",
+export default function CustomAdsBar({
+    videoOneSrc = "/ad1.mp4",
+    textOne = "Jyo Culture - Marketing Campaign with Neeta",
+    videoTwoSrc = "/ad2.mp4",
+    textTwo = "Roriko x Ta’seer - Barter collaboration with Sanskriti Chauhan",
+    textStyles = "bg-white text-black shadow-md border border-gray-300",
 }) {
-
-    // Animation variants for the boxes
     const boxVariants = {
-        initial: { opacity: 0, x: 100 },
-        animate: { opacity: 1, x: 0, transition: { duration: 0.5 } },
-        hover: { scale: 1.02, transition: { duration: 0.2 } }
+        initial: { opacity: 0, y: 30 },
+        animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+        hover: { scale: 1.03, transition: { duration: 0.2 } },
     };
 
     return (
-        <div className="fixed top-0 right-0 h-full flex flex-col items-end justify-between p-4 z-50">
-            {/* Long box at the right - wider now */}
+        <div className="h-screen w-[300px] overflow-y-auto flex flex-col items-center gap-6 p-4 bg-[#f8f8f8]">
+            {/* Video 1 */}
             <motion.div
-                className={`w-40 h-96 ${longBoxStyles} flex items-center justify-center`}
-
+                className="w-full overflow-hidden rounded-xl shadow-lg h-[300px]"
+                initial="initial"
+                animate="animate"
                 whileHover="hover"
                 variants={boxVariants}
             >
-                <div className="text-center p-2">
-                    {longBoxContent}
-                </div>
+                <video
+                    src={videoOneSrc}
+                    muted
+                    playsInline
+                    autoPlay
+                    loop
+                    className="w-full h-full object-cover"
+                />
             </motion.div>
 
-            {/* Small box at the bottom right - wider now */}
+            {/* Text 1 */}
+            <div className={`p-4 text-sm text-center -mt-5 font-medium rounded-xl ${textStyles}`}>
+                {textOne}
+            </div>
+
+            {/* Video 2 */}
             <motion.div
-                className={`w-40 h-24 mt-4 ${smallBoxStyles} flex items-center justify-center`}
+                className="w-full overflow-hidden rounded-xl shadow-lg h-[300px]"
+                initial="initial"
+                animate="animate"
                 whileHover="hover"
                 variants={boxVariants}
             >
-                <div className="text-center p-2">
-                    {smallBoxContent}
-                </div>
+                <video
+                    src={videoTwoSrc}
+                    muted
+                    playsInline
+                    autoPlay
+                    loop
+                    className="w-full h-full object-cover"
+                />
             </motion.div>
+
+            {/* Text 2 */}
+            <div className={`p-4 text-sm text-center  -mt-5 font-medium rounded-xl ${textStyles}`}>
+                {textTwo}
+            </div>
         </div>
     );
 }

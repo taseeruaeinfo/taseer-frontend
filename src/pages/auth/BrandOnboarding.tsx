@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import { FaArrowRight } from "react-icons/fa";
 import { FiCheckCircle } from "react-icons/fi";
 import Button from "../../components/ui/Button";
@@ -8,14 +7,18 @@ import Footer from "../../components/Fotter";
 
 interface OnboardingFormData {
     // Step 1: Basic Info
+
     companyName: string;
     email: string;
-    countrycode: string,
-    contactNumber: string;
+    countryCode: string,
+    phone: string;
     website?: string;
     password: string;
     confirmPassword: string;
     otp: number
+    dob: string,
+    nationality: string,
+
 
     // Step 2: Company Details
     companySize: "startup" | "small" | "medium" | "large" | "enterprise";
@@ -26,22 +29,22 @@ interface OnboardingFormData {
 
     // Step 3: Representative
     representativeName: string;
-    designation: string;
-    department: string;
+    representativeDesignation: string;
+    representativeDepartment: string;
     otherDepartment?: string;
-    representativeEmail?: string;
+    representativeEmail: string;
     sameAsCompanyEmail: boolean;
-    representativeContactNumber?: string;
+    representativePhone: string;
 
     // Step 4: Marketing & Goals
-    marketingBudget: string;
-    workedWithCreators: "yes" | "no";
-    supportType: string;
-    platformUse: string;
+    annualMarketingBudget: string;
+    workedWithCreatorsBefore: "yes" | "no";
+    expectationsFromUs: string;
+    platformUsagePlan: string;
 
     // Step 5: Content Preferences
-    creatorType: string;
-    socialMedia: {
+    lookingForCreatorType: string;
+    focusPlatforms: {
         instagram?: boolean;
         facebook?: boolean;
         twitter?: boolean;
@@ -51,7 +54,7 @@ interface OnboardingFormData {
         youtube?: boolean;
         other?: boolean;
     };
-    otherSocialMedia?: string;
+    otherfocusPlatforms?: string;
 
     // Terms
     acceptTerms: boolean;
@@ -59,7 +62,6 @@ interface OnboardingFormData {
 
 const Onboarding = () => {
     const [step, setStep] = useState(1);
-    const navigate = useNavigate();
     const { register, handleSubmit, watch, formState: { errors }, setValue, trigger } = useForm<OnboardingFormData>({
         mode: "onChange" // Enable validation on field change
     });
@@ -68,7 +70,7 @@ const Onboarding = () => {
     const sameAsCompanyEmail = watch("sameAsCompanyEmail");
     const companyEmail = watch("email");
     const industry = watch("industry");
-    const department = watch("department");
+    const department = watch("representativeDepartment");
 
     useEffect(() => {
         if (sameAsCompanyEmail) {
@@ -82,25 +84,25 @@ const Onboarding = () => {
         // Define which fields to validate based on current step
         switch (step) {
             case 1:
-                fieldsToValidate = ["companyName", "email", "contactNumber", "countrycode", "password", "confirmPassword"];
+                fieldsToValidate = ["companyName", "email", "contactNumber", "countryCode", "password", "confirmPassword"];
                 break;
             case 2:
                 fieldsToValidate = ["companySize", "industry", "city"];
                 if (industry === "other") fieldsToValidate.push("otherIndustry");
                 break;
             case 3:
-                fieldsToValidate = ["representativeName", "designation", "department"];
+                fieldsToValidate = ["representativeName", "representativeDesignation", "department"];
                 if (department === "other") fieldsToValidate.push("otherDepartment");
                 break;
             case 4:
-                fieldsToValidate = ["marketingBudget", "workedWithCreators", "supportType", "platformUse"];
+                fieldsToValidate = ["annualMarketingBudget", "workedWithCreatorsBefore", "expectationsFromUs", "platformUsagePlan"];
                 break;
             case 5:
-                fieldsToValidate = ["supportType", "platformUse"];
+                fieldsToValidate = ["expectationsFromUs", "platformUsagePlan"];
                 break;
 
             case 6:
-                fieldsToValidate = ["creatorType", "acceptTerms"];
+                fieldsToValidate = ["lookingForCreatorType", "acceptTerms"];
                 break;
             case 7:
                 fieldsToValidate = ["otp"];
@@ -122,8 +124,38 @@ const Onboarding = () => {
     const onBack = () => setStep((prev) => prev - 1);
 
     const onSubmit = (data: OnboardingFormData) => {
-        console.log("User Data:", data);
-        navigate("/brand/home");
+        fetch("http://localhost:5000/api/auth/signup", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ...data, type: "brand" }),
+        })
+            .then((response) => response.json())
+            .then((result) => {
+                console.log(result); // Log the result to check its structure
+
+                if (result?.message == "User created successfully.") {
+                    window.location.href = "/login";
+                } else if (result?.message == "Internal server error") {
+                    alert("Internal server error from server side - Contact dev");
+                } else if (result?.message == "User already exists.") {
+                    alert("Please login with your previous credentials");
+                    window.location.href = "/login";
+                } else if (result?.status == 400) {
+                    alert("You already have an account, so please login.");
+                } else if (result?.message == "Missing required fields.") {
+                    alert("please fill all the things");
+
+                } else {
+                    alert("please fill again");
+                }
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                alert("An error occurred. Please try again.");
+            });
+
     };
 
     // Check if email is a company domain (not gmail, yahoo, etc.)
@@ -190,12 +222,20 @@ const Onboarding = () => {
                                     />
                                     {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
                                 </div>
+                                <div>
+                                    <input
+                                        {...register("nationality", { required: "Company name is required" })}
+                                        placeholder="Company Name *"
+                                        className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                                    />
+                                    {errors.nationality && <p className="text-red-500 text-sm mt-1">{errors.nationality.message}</p>}
+                                </div>
 
                                 <div className="grid">
                                     <select
                                         className="bg-transparent border-2 mb-1 border-purple-500 outline-purple-500 rounded-md p-2 "
                                         id=""
-                                        {...register("countrycode")}
+                                        {...register("countryCode")}
 
                                     >
                                         <option data-countryCode="nan" value="nan">
@@ -844,14 +884,14 @@ const Onboarding = () => {
                                             Zimbabwe (+263)
                                         </option>
                                     </select>
-                                    {errors.countrycode && <p className="text-red-500 text-sm mt-1">{errors.countrycode.message}</p>}
+                                    {errors.countryCode && <p className="text-red-500 text-sm mt-1">{errors.countryCode.message}</p>}
 
                                     <input
-                                        {...register("contactNumber", { required: "Contact number is required" })}
+                                        {...register("phone", { required: "Contact number is required" })}
                                         placeholder="Contact Number (with country code) *"
                                         className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
                                     />
-                                    {errors.contactNumber && <p className="text-red-500 text-sm mt-1">{errors.contactNumber.message}</p>}
+                                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
                                 </div>
 
                                 <div>
@@ -861,7 +901,14 @@ const Onboarding = () => {
                                         className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
                                     />
                                 </div>
-
+                                <div>
+                                    <input
+                                        {...register("dob", { required: "Date of birth is required" })}
+                                        type="date"
+                                        className={`w-full border-2 ${errors.dob ? "border-red-500" : "border-purple-500"} outline-purple-500 rounded-md p-2 mt-1`}
+                                    />
+                                    {errors.dob && <p className="text-red-500 text-sm mt-1">{errors.dob.message}</p>}
+                                </div>
                                 <div>
                                     <input
                                         {...register("password", {
@@ -1019,16 +1066,16 @@ const Onboarding = () => {
 
                                 <div>
                                     <input
-                                        {...register("designation", { required: "Designation is required" })}
-                                        placeholder="Designation *"
+                                        {...register("representativeDesignation", { required: "representativeDesignation is required" })}
+                                        placeholder="representativeDesignation *"
                                         className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
                                     />
-                                    {errors.designation && <p className="text-red-500 text-sm mt-1">{errors.designation.message}</p>}
+                                    {errors.representativeDesignation && <p className="text-red-500 text-sm mt-1">{errors.representativeDesignation.message}</p>}
                                 </div>
 
                                 <div>
                                     <select
-                                        {...register("department", { required: "Department is required" })}
+                                        {...register("representativeDepartment", { required: "Department is required" })}
                                         className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
                                     >
                                         <option value="">Select Department</option>
@@ -1045,8 +1092,8 @@ const Onboarding = () => {
                                         <option value="admin">Administration</option>
                                         <option value="other">Other (Please specify)</option>
                                     </select>
-                                    {errors.department && <p className="text-red-500 text-sm mt-1">{errors.department.message}</p>}
-                                </div>
+                                    {errors.representativeDepartment && <p className="text-red-500 text-sm mt-1">{errors.representativeDepartment.message}</p>}
+                                </div>representativeDepartment
 
                                 {department === "other" && (
                                     <div>
@@ -1087,7 +1134,7 @@ const Onboarding = () => {
 
                                     </div>
                                     <input
-                                        {...register("representativeContactNumber")}
+                                        {...register("representativePhone")}
                                         placeholder="Contact Number (optional)"
                                         className="w-fit border-2 border-purple-500 outline-purple-500 rounded-md p-2"
                                     />
@@ -1132,7 +1179,7 @@ const Onboarding = () => {
                                         ].map((option) => (
                                             <div key={option.value} className="flex items-center">
                                                 <input
-                                                    {...register("marketingBudget", { required: "Please select your marketing budget" })}
+                                                    {...register("annualMarketingBudget", { required: "Please select your marketing budget" })}
                                                     type="radio"
                                                     id={option.value}
                                                     value={option.value}
@@ -1142,7 +1189,7 @@ const Onboarding = () => {
                                             </div>
                                         ))}
                                     </div>
-                                    {errors.marketingBudget && <p className="text-red-500 text-sm mt-1">{errors.marketingBudget.message}</p>}
+                                    {errors.annualMarketingBudget && <p className="text-red-500 text-sm mt-1">{errors.annualMarketingBudget.message}</p>}
                                 </div>
 
                                 <div>
@@ -1150,7 +1197,7 @@ const Onboarding = () => {
                                     <div className="space-y-2">
                                         <div className="flex items-center">
                                             <input
-                                                {...register("workedWithCreators", { required: "Please select an option" })}
+                                                {...register("workedWithCreatorsBefore", { required: "Please select an option" })}
                                                 type="radio"
                                                 id="yes"
                                                 value="yes"
@@ -1160,7 +1207,7 @@ const Onboarding = () => {
                                         </div>
                                         <div className="flex items-center">
                                             <input
-                                                {...register("workedWithCreators", { required: "Please select an option" })}
+                                                {...register("workedWithCreatorsBefore", { required: "Please select an option" })}
                                                 type="radio"
                                                 id="no"
                                                 value="no"
@@ -1169,7 +1216,7 @@ const Onboarding = () => {
                                             <label htmlFor="no" className="text-gray-700">No</label>
                                         </div>
                                     </div>
-                                    {errors.workedWithCreators && <p className="text-red-500 text-sm mt-1">{errors.workedWithCreators.message}</p>}
+                                    {errors.workedWithCreatorsBefore && <p className="text-red-500 text-sm mt-1">{errors.workedWithCreatorsBefore.message}</p>}
                                 </div>
 
 
@@ -1210,7 +1257,7 @@ const Onboarding = () => {
                                         ].map((option) => (
                                             <div key={option.value} className="flex items-center">
                                                 <input
-                                                    {...register("supportType", { required: "Please select a support option" })}
+                                                    {...register("expectationsFromUs", { required: "Please select a support option" })}
                                                     type="radio"
                                                     id={option.value}
                                                     value={option.value}
@@ -1220,7 +1267,7 @@ const Onboarding = () => {
                                             </div>
                                         ))}
                                     </div>
-                                    {errors.supportType && <p className="text-red-500 text-sm mt-1">{errors.supportType.message}</p>}
+                                    {errors.expectationsFromUs && <p className="text-red-500 text-sm mt-1">{errors.expectationsFromUs.message}</p>}
                                 </div>
 
                                 <div>
@@ -1228,7 +1275,7 @@ const Onboarding = () => {
                                     <div className="space-y-2">
                                         <div className="flex items-center">
                                             <input
-                                                {...register("platformUse", { required: "Please select an option" })}
+                                                {...register("platformUsagePlan", { required: "Please select an option" })}
                                                 type="radio"
                                                 id="self_use"
                                                 value="self_use"
@@ -1238,7 +1285,7 @@ const Onboarding = () => {
                                         </div>
                                         <div className="flex items-center">
                                             <input
-                                                {...register("platformUse", { required: "Please select an option" })}
+                                                {...register("platformUsagePlan", { required: "Please select an option" })}
                                                 type="radio"
                                                 id="training"
                                                 value="training"
@@ -1247,7 +1294,7 @@ const Onboarding = () => {
                                             <label htmlFor="training" className="text-gray-700">I need a training session to use it better</label>
                                         </div>
                                     </div>
-                                    {errors.platformUse && <p className="text-red-500 text-sm mt-1">{errors.platformUse.message}</p>}
+                                    {errors.platformUsagePlan && <p className="text-red-500 text-sm mt-1">{errors.platformUsagePlan.message}</p>}
                                 </div>
                                 <div className="flex justify-between">
                                     <Button
@@ -1286,7 +1333,7 @@ const Onboarding = () => {
                                         ].map((option) => (
                                             <div key={option.value} className="flex items-center">
                                                 <input
-                                                    {...register("creatorType", { required: "Please select a creator type" })}
+                                                    {...register("lookingForCreatorType", { required: "Please select a creator type" })}
                                                     type="radio"
                                                     id={option.value}
                                                     value={option.value}
@@ -1296,7 +1343,7 @@ const Onboarding = () => {
                                             </div>
                                         ))}
                                     </div>
-                                    {errors.creatorType && <p className="text-red-500 text-sm mt-1">{errors.creatorType.message}</p>}
+                                    {errors.lookingForCreatorType && <p className="text-red-500 text-sm mt-1">{errors.lookingForCreatorType.message}</p>}
                                 </div>
 
                                 <div>
@@ -1314,7 +1361,7 @@ const Onboarding = () => {
                                         ].map((platform) => (
                                             <div key={platform.name} className="flex items-center">
                                                 <input
-                                                    {...register(`socialMedia.${platform.name as keyof OnboardingFormData["socialMedia"]}`)}
+                                                    {...register(`focusPlatforms.${platform.name as keyof OnboardingFormData["focusPlatforms"]}`)}
                                                     type="checkbox"
                                                     id={platform.name}
                                                     className="mr-3 h-5 w-5 accent-purple-600"
