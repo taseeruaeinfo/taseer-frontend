@@ -1,7 +1,6 @@
 import { useState } from "react";
 import clsx from "clsx";
 import DashboardLayout from "../../components/main/DashBoardLayout";
-import CusotmAdsBar from "../../brand/components/CustomAds";
 
 const tabs = ["all", "brand"];
 
@@ -99,7 +98,6 @@ export default function PremiumNotifications() {
                         )}
                     </div>
                 </div>
-                <CusotmAdsBar />
             </DashboardLayout>
         </>
     );

@@ -28,7 +28,6 @@ import BransProfileSettings from './brand/pages/Brands.profilepage'
 import MyCreators from './brand/pages/Brand.myCreators'
 import BrandAnalytics from './brand/pages/Brand,Analytics'
 import PricingPage from './pages/pricingPage'
-import PostPage from './pages/main/posts/PostPage'
 export default function App() {
   return (
     <Routes>
@@ -46,7 +45,6 @@ export default function App() {
       {/* main - dashboard */}
       <Route path='/home' element={<Posts />} />
       <Route path='/post/:id' element={<PostDetails />} />
-      <Route path='/create-post' element={<PostPage />} />
       <Route path='/profile/:id' element={<ProfilePage />} />
       <Route path='/messages' element={<MessagesPage />} />
       <Route path='/deals' element={<Dashboard />} />

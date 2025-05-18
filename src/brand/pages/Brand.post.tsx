@@ -152,9 +152,9 @@ export default function BrandPost() {
                 }
             );
 
-            //@ts-ignore
+            //@ts-expect-error - idk
             if (response.data && response.data?.secure_url) {
-                //@ts-ignore
+                //@ts-expect-error - idk
 
                 return response.data?.secure_url;
             }
