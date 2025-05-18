@@ -13,7 +13,6 @@ import {
 import { useLocation, useNavigate } from "react-router-dom"
 import { IoMdSettings } from "react-icons/io"
 import { FaHandshake } from "react-icons/fa"
-import { BsPlusSquareFill } from "react-icons/bs"
 import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "../../store"
 import { logout } from "../../store/userSlice"
@@ -47,7 +46,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         { icon: <FaHandshake className="w-5 h-5" />, label: "Deals", href: "/deals" },
         { icon: <AiOutlineMessage className="w-5 h-5" />, label: "Messages", href: "/messages" },
         { icon: <AiOutlineBell className="w-5 h-5" />, label: "Notifications", href: "/notifications" },
-        { icon: <BsPlusSquareFill className="w-5 h-5" />, label: "Post", href: "/create-post" },
         { icon: <IoMdSettings className="w-5 h-5" />, label: "Settings", href: "/profile-settings" },
     ]
 
