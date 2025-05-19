@@ -16,7 +16,6 @@ import {
     Share2,
     Download,
     Search,
-    MoreVertical,
     Star,
     Instagram,
     Twitter,
