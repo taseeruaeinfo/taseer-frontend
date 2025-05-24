@@ -28,14 +28,14 @@ const Login: React.FC = () => {
                 password,
             });
 
-            //@ts-ignore 
+            //@ts-expect-error - wtf 
 
             Cookies.set('jwt', response.data?.token, { expires: 14 }, { HTMLOptionElement: true }); // expires in 7 days
 
-            //@ts-ignore
+            //@ts-expect-error - wtf
             dispatch(loginSuccess(response.data?.user));
 
-            //@ts-ignore
+            //@ts-expect-error - wtf
             if (response.data?.user.type == "brand") {
                 router('/brand/home');
 

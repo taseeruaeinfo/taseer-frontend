@@ -23,7 +23,7 @@ const FollowButton = ({ followingId, disable }: { followingId: string, disable: 
 
             // If successful, toggle the following state
             setIsFollowing(true);
-            //@ts-ignore
+            //@ts-expect-error - wtf
             toast.success(response.data.message);
         } catch (error) {
             console.error("Error following user:", error);

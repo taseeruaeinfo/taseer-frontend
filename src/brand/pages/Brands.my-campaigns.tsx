@@ -52,7 +52,7 @@ const MyCampaignsPage: React.FC = () => {
             });
 
             // Format the campaigns data from the backend
-            //@ts-ignore
+            //@ts-expect-error - network
             const formattedCampaigns = response.data.map((campaign: any) => ({
                 ...campaign,
                 applications: campaign.campaignApplications?.length || 0,

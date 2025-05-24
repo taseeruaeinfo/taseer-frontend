@@ -1,549 +1,677 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { FaSearch, FaInstagram, FaTiktok, FaYoutube, FaFacebook, FaLinkedin, FaTwitter, FaFilter, FaStar } from 'react-icons/fa';
-import BrandLayout from '../components/BrandLayout';
-import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
+"use client"
 
-// Mock data for influencers
-const mockInfluencers: Influencer[] = [
-    {
-        id: 1,
-        username: 'neha_jakhar',
-        name: 'Neha Jakhar',
-        avatar: '/path/to/avatar1.jpg', // In production, use actual avatar paths
-        location: 'Dubai, UAE',
-        categories: ['Lifestyle', 'Education', 'Travel', 'Entrepreneur'],
-        platforms: ['instagram', 'tiktok', 'youtube'],
-        followers: { instagram: '120K', tiktok: '80K', youtube: '50K' },
-        engagementRate: '4.5%',
-        previousBrands: ['Nike', 'Adidas', 'Samsung'],
-        verified: true,
-        rating: 4.8
-    },
-    {
-        id: 2,
-        username: 'travel_with_sarah',
-        name: 'Sarah Johnson',
-        avatar: '/path/to/avatar2.jpg',
-        location: 'London, UK',
-        categories: ['Travel', 'Photography', 'Lifestyle'],
-        platforms: ['instagram', 'facebook', 'twitter'],
-        followers: { instagram: '200K', facebook: '150K', twitter: '100K' },
-        engagementRate: '3.8%',
-        previousBrands: ['Airbnb', 'Canon', 'Expedia'],
-        verified: true,
-        rating: 4.5
-    },
-    {
-        id: 3,
-        username: 'tech_mike',
-        name: 'Mike Chen',
-        avatar: '/path/to/avatar3.jpg',
-        location: 'San Francisco, USA',
-        categories: ['Technology', 'Gadgets', 'Reviews'],
-        platforms: ['youtube', 'instagram', 'linkedin'],
-        followers: { youtube: '500K', instagram: '150K', linkedin: '50K' },
-        engagementRate: '5.2%',
-        previousBrands: ['Apple', 'Microsoft', 'Google'],
-        verified: true,
-        rating: 4.9
-    },
-    {
-        id: 4,
-        username: 'fitness_alex',
-        name: 'Alex Rodriguez',
-        avatar: '/path/to/avatar4.jpg',
-        location: 'Miami, USA',
-        categories: ['Fitness', 'Health', 'Nutrition'],
-        platforms: ['instagram', 'tiktok', 'youtube'],
-        followers: { instagram: '300K', tiktok: '250K', youtube: '100K' },
-        engagementRate: '6.1%',
-        previousBrands: ['Under Armour', 'Protein World', 'MyFitnessPal'],
-        verified: false,
-        rating: 4.7
-    },
-    {
-        id: 5,
-        username: 'beauty_emma',
-        name: 'Emma Williams',
-        avatar: '/path/to/avatar5.jpg',
-        location: 'Paris, France',
-        categories: ['Beauty', 'Fashion', 'Lifestyle'],
-        platforms: ['instagram', 'youtube', 'tiktok'],
-        followers: { instagram: '450K', youtube: '300K', tiktok: '200K' },
-        engagementRate: '4.3%',
-        previousBrands: ['L\'Oréal', 'Sephora', 'Dior'],
-        verified: true,
-        rating: 4.6
-    },
-];
+import React, { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { motion } from "framer-motion"
+import {
+  FaSearch,
+  FaInstagram,
+  FaTiktok,
+  FaYoutube,
+  FaFacebook,
+  FaLinkedin,
+  FaTwitter,
+  FaFilter,
+  FaStar,
+} from "react-icons/fa"
+import BrandLayout from "../components/BrandLayout"
+import { AiFillHeart } from "react-icons/ai"
+
+// API base URL - replace with your actual API URL
+const API_BASE_URL = "http://localhost:5000/api"
 
 // Available categories for filtering
 const availableCategories = [
-    'Lifestyle', 'Education', 'Travel', 'Entrepreneur', 'Beauty', 'Fashion',
-    'Technology', 'Fitness', 'Health', 'Photography', 'Food', 'Gaming', 'Music',
-    'Art', 'Parenting', 'Finance', 'DIY', 'Sports', 'Comedy', 'Movies'
-];
+  "Lifestyle",
+  "Education",
+  "Travel",
+  "Entrepreneur",
+  "Beauty",
+  "Fashion",
+  "Technology",
+  "Fitness",
+  "Health",
+  "Photography",
+  "Food",
+  "Gaming",
+  "Music",
+  "Art",
+  "Parenting",
+  "Finance",
+  "DIY",
+  "Sports",
+  "Comedy",
+  "Movies",
+]
 
 // Available platforms for filtering
 const availablePlatforms = [
-    { name: 'Instagram', value: 'instagram', icon: <FaInstagram /> },
-    { name: 'TikTok', value: 'tiktok', icon: <FaTiktok /> },
-    { name: 'YouTube', value: 'youtube', icon: <FaYoutube /> },
-    { name: 'Facebook', value: 'facebook', icon: <FaFacebook /> },
-    { name: 'LinkedIn', value: 'linkedin', icon: <FaLinkedin /> },
-    { name: 'Twitter', value: 'twitter', icon: <FaTwitter /> }
-];
+  { name: "Instagram", value: "instagram", icon: <FaInstagram /> },
+  { name: "TikTok", value: "tiktok", icon: <FaTiktok /> },
+  { name: "YouTube", value: "youtube", icon: <FaYoutube /> },
+  { name: "Facebook", value: "facebook", icon: <FaFacebook /> },
+  { name: "LinkedIn", value: "linkedin", icon: <FaLinkedin /> },
+  { name: "Twitter", value: "x", icon: <FaTwitter /> },
+]
 
+// Interface for creator/influencer data
+interface Creator {
+  id: string
+  username: string
+  firstName: string
+  lastName: string
+  profilePic: string
+  city: string
+  creatorMeta?: {
+    typeOfContent: any
+    averageEngagementRate: string
+    brandsWorkedWith: string
+  }
+  socialHandles?: {
+    instagram?: string
+    tiktok?: string
+    youtube?: string
+    facebook?: string
+    linkedin?: string
+    x?: string
+  }
+}
 
-// Update the Influencer interface to correctly handle the followers property
-interface Influencer {
-    id: number;
-    username: string;
-    name: string;
-    avatar: string;
-    location: string;
-    categories: string[];
-    platforms: string[];
-    followers: {
-        [key: string]: string;
-    };
-    engagementRate: string;
-    previousBrands: string[];
-    verified: boolean;
-    rating: number;
+// Interface for pagination data
+interface PaginationData {
+  total: number
+  pages: number
+  page: number
+  limit: number
 }
 
 const MyCreators: React.FC = () => {
-    const navigate = useNavigate();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-    const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-    const [filteredInfluencers, setFilteredInfluencers] = useState<Influencer[]>(mockInfluencers);
-    const [showFilters, setShowFilters] = useState(false);
-    const [minFollowers, setMinFollowers] = useState<number>(0);
-    const [minEngagement, setMinEngagement] = useState<number>(0);
+  const navigate = useNavigate()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
+  const [creators, setCreators] = useState<Creator[]>([])
+  const [showFilters, setShowFilters] = useState(false)
+  const [minFollowers, setMinFollowers] = useState<number>(0)
+  const [minEngagement, setMinEngagement] = useState<number>(0)
+  const [loading, setLoading] = useState(false)
+  const [pagination, setPagination] = useState<PaginationData>({
+    total: 0,
+    pages: 0,
+    page: 1,
+    limit: 9,
+  })
+  const [currentBrandId, setCurrentBrandId] = useState<string>("")
 
-    // Generate a placeholder image URL for each influencer
-    useEffect(() => {
-        setFilteredInfluencers(
-            mockInfluencers.map(influencer => ({
-                ...influencer,
-                avatar: `/api/placeholder/150/150?text=${influencer.name.charAt(0)}`,
-                followers: Object.fromEntries(
-                    Object.entries(influencer.followers).filter(
-                        ([_, value]) => typeof value === 'string'
-                    )
-                ),
-            }))
-        );
-    }, []);
+  // Fetch the current brand ID (this would come from your auth system)
+  useEffect(() => {
+    // This is a placeholder - replace with your actual auth logic
+    const fetchCurrentUser = async () => {
+      try {
+        // Replace with your actual API call to get the current user
+        // const response = await fetch(`${API_BASE_URL}/auth/me`)
+        // const data = await response.json()
+        // if (data.user && data.user.id) {
+        //   setCurrentBrandId(data.user.id)
+        // }
 
-    const [isFavorite, setIsFavorite] = useState<number[]>(
-        mockInfluencers.map(influencer => influencer.id)
-    );
+        // For demo purposes, set a mock brand ID
+        setCurrentBrandId("mock-brand-id")
+      } catch (error) {
+        console.error("Error fetching current user:", error)
+        // For demo purposes, set a mock brand ID
+        setCurrentBrandId("mock-brand-id")
+      }
+    }
 
-    const toggleFavorite = (id: number) => {
-        setIsFavorite((prev) =>
-            prev.includes(id)
-                ? prev.filter((favId) => favId !== id) // remove if already favorited
-                : [...prev, id]                        // add if not
-        );
-    };
+    fetchCurrentUser()
+  }, [])
 
+  // Fetch favorite creators with filters and pagination
+  const fetchFavoriteCreators = async (page = 1) => {
+    if (!currentBrandId) return
 
-    // Apply filters when criteria changes
-    useEffect(() => {
-        let results = [...mockInfluencers];
+    setLoading(true)
+    try {
+      const queryParams = new URLSearchParams({
+        brandId: currentBrandId,
+        page: page.toString(),
+        limit: pagination.limit.toString(),
+        search: searchTerm,
+        categories: selectedCategories.join(","),
+        platforms: selectedPlatforms.join(","),
+        minFollowers: minFollowers.toString(),
+        minEngagement: minEngagement.toString(),
+      })
 
-        // Apply search term filter
-        if (searchTerm) {
-            results = results.filter(
-                influencer =>
-                    influencer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    influencer.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    influencer.location.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
+      const response = await fetch(`${API_BASE_URL}/creators/favorites?${queryParams}`)
+      const data = await response.json()
 
-        // Apply category filters
-        if (selectedCategories.length > 0) {
-            results = results.filter(influencer =>
-                selectedCategories.some(category => influencer.categories.includes(category))
-            );
-        }
+      if (data.creators) {
+        setCreators(data.creators)
+        setPagination(data.pagination)
+      }
+    } catch (error) {
+      console.error("Error fetching favorite creators:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-        // Apply platform filters
-        if (selectedPlatforms.length > 0) {
-            results = results.filter(influencer =>
-                selectedPlatforms.some(platform => influencer.platforms.includes(platform))
-            );
-        }
+  // Initial fetch
+  useEffect(() => {
+    if (currentBrandId) {
+      fetchFavoriteCreators()
+    }
+  }, [currentBrandId])
 
-        // Apply follower count filter
-        if (minFollowers > 0) {
-            results = results.filter(influencer => {
-                const totalFollowers = Object.values(influencer.followers).reduce((sum, followers) => {
-                    const num = parseInt(followers.replace(/[^0-9]/g, ''));
-                    return sum + (followers.includes('M') ? num * 1000000 : followers.includes('K') ? num * 1000 : num);
-                }, 0);
-                return totalFollowers >= minFollowers;
-            });
-        }
+  // Fetch when filters change
+  useEffect(() => {
+    if (currentBrandId) {
+      fetchFavoriteCreators(1) // Reset to first page when filters change
+    }
+  }, [currentBrandId, searchTerm, selectedCategories, selectedPlatforms, minFollowers, minEngagement])
 
-        // Apply engagement rate filter
-        if (minEngagement > 0) {
-            results = results.filter(influencer => {
-                const engagementRate = parseFloat(influencer.engagementRate.replace('%', ''));
-                return engagementRate >= minEngagement;
-            });
-        }
+  const handleCategoryToggle = (category: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
+    )
+  }
 
-        // Update avatars to use placeholders
-        results = results.map(influencer => ({
-            ...influencer,
-            avatar: `/api/placeholder/150/150?text=${influencer.name.charAt(0)}`
-        }));
+  const handlePlatformToggle = (platform: string) => {
+    setSelectedPlatforms((prev) => (prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]))
+  }
 
-        setFilteredInfluencers(results);
-    }, [searchTerm, selectedCategories, selectedPlatforms, minFollowers, minEngagement]);
+  const handlePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= pagination.pages) {
+      fetchFavoriteCreators(newPage)
+    }
+  }
 
-    const handleCategoryToggle = (category: string) => {
-        setSelectedCategories(prev =>
-            prev.includes(category)
-                ? prev.filter(c => c !== category)
-                : [...prev, category]
-        );
-    };
+  const toggleFavorite = async (creatorId: string) => {
+    if (!currentBrandId) return
 
-    const handlePlatformToggle = (platform: string) => {
-        setSelectedPlatforms(prev =>
-            prev.includes(platform)
-                ? prev.filter(p => p !== platform)
-                : [...prev, platform]
-        );
-    };
+    try {
+      const response = await fetch(`${API_BASE_URL}/creators/favorites/toggle`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          brandId: currentBrandId,
+          creatorId,
+        }),
+      })
 
-    const handleVisitProfile = (username: string) => {
-        navigate(`/profile/${username}`);
-    };
+      const data = await response.json()
 
-    const handleMessage = (username: string) => {
-        navigate(`/brand/message?username=${username}`);
-    };
+      if (!data.isFavorite) {
+        // Remove from the list if unfavorited
+        setCreators((prev) => prev.filter((creator) => creator.id !== creatorId))
+        // Update pagination
+        setPagination((prev) => ({
+          ...prev,
+          total: prev.total - 1,
+          pages: Math.ceil((prev.total - 1) / prev.limit),
+        }))
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error)
+    }
+  }
 
-    const getPlatformIcon = (platform: string) => {
-        switch (platform) {
-            case 'instagram': return <FaInstagram />;
-            case 'tiktok': return <FaTiktok />;
-            case 'youtube': return <FaYoutube />;
-            case 'facebook': return <FaFacebook />;
-            case 'linkedin': return <FaLinkedin />;
-            case 'twitter': return <FaTwitter />;
-            default: return null;
-        }
-    };
+  const handleVisitProfile = (username: string) => {
+    navigate(`/profile/${username}`)
+  }
 
-    return (
-        <>
-            <BrandLayout>
-                <div className="min-h-screen bg-gray-50 pt-6 pb-12">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="text-center mb-10">
-                            <h1 className="text-4xl font-bold capitalize text-gray-900 mb-4">
-                                Creators those you have <span className="text-[#6a38ca]">Loved </span> to work with .
-                            </h1>
-                            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                                Connect with top-tier influencers who can elevate your brand and engage with your target audience across multiple platforms.
-                            </p>
-                        </div>
+  const handleMessage = (username: string) => {
+    navigate(`/brand/message?username=${username}`)
+  }
 
-                        {/* Search and Filter Section */}
-                        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
-                            <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
-                                {/* Search Bar */}
-                                <div className="relative flex-grow">
-                                    <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Search by name, username, or location..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6a38ca]"
-                                    />
-                                </div>
+  const getPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case "instagram":
+        return <FaInstagram />
+      case "tiktok":
+        return <FaTiktok />
+      case "youtube":
+        return <FaYoutube />
+      case "facebook":
+        return <FaFacebook />
+      case "linkedin":
+        return <FaLinkedin />
+      case "x":
+        return <FaTwitter />
+      default:
+        return null
+    }
+  }
 
-                                {/* Filter Toggle Button */}
-                                <button
-                                    onClick={() => setShowFilters(!showFilters)}
-                                    className="flex items-center gap-2 px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
-                                >
-                                    <FaFilter /> {showFilters ? 'Hide Filters' : 'Show Filters'}
-                                </button>
-                            </div>
+  // Helper function to get platform follower counts
+  const getFollowerCounts = (creator: Creator) => {
+    if (!creator.socialHandles) return []
 
-                            {/* Expanded Filters */}
-                            {showFilters && (
-                                <div className="bg-gray-50 rounded-xl p-6 animate-fadeIn">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        {/* Categories Filter */}
-                                        <div>
-                                            <h3 className="font-medium text-gray-700 mb-3">Categories</h3>
-                                            <div className="flex flex-wrap gap-2">
-                                                {availableCategories.slice(0, 12).map(category => (
-                                                    <button
-                                                        key={category}
-                                                        onClick={() => handleCategoryToggle(category)}
-                                                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${selectedCategories.includes(category)
-                                                            ? 'bg-[#6a38ca] text-white'
-                                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                                            }`}
-                                                    >
-                                                        {category}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
+    return Object.entries(creator.socialHandles)
+      .filter(([_, value]) => value) // Only include platforms with values
+      .map(([platform, _]) => ({
+        platform,
+        count: "100K", // This would come from your actual data
+      }))
+  }
 
-                                        {/* Platforms Filter */}
-                                        <div>
-                                            <h3 className="font-medium text-gray-700 mb-3">Platforms</h3>
-                                            <div className="flex flex-wrap gap-2">
-                                                {availablePlatforms.map(platform => (
-                                                    <button
-                                                        key={platform.value}
-                                                        onClick={() => handlePlatformToggle(platform.value)}
-                                                        className={`px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors ${selectedPlatforms.includes(platform.value)
-                                                            ? 'bg-[#6a38ca] text-white'
-                                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                                            }`}
-                                                    >
-                                                        {platform.icon} {platform.name}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
+  // Helper function to get creator categories
+  const getCategories = (creator: Creator) => {
+    if (!creator.creatorMeta?.typeOfContent) return []
 
-                                        {/* Numeric Filters */}
-                                        <div className="grid grid-cols-1 gap-4">
-                                            {/* Followers Range */}
-                                            <div>
-                                                <label className="block font-medium text-gray-700 mb-2">
-                                                    Minimum Followers: {minFollowers > 0 ? (minFollowers >= 1000000 ? `${minFollowers / 1000000}M` : `${minFollowers / 1000}K`) : 'Any'}
-                                                </label>
-                                                <input
-                                                    type="range"
-                                                    min="0"
-                                                    max="1000000"
-                                                    step="10000"
-                                                    value={minFollowers}
-                                                    onChange={(e) => setMinFollowers(Number(e.target.value))}
-                                                    className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-[#6a38ca]"
-                                                />
-                                            </div>
+    try {
+      return Array.isArray(creator.creatorMeta.typeOfContent)
+        ? creator.creatorMeta.typeOfContent
+        : JSON.parse(creator.creatorMeta.typeOfContent.toString())
+    } catch (e) {
+      return []
+    }
+  }
 
-                                            {/* Engagement Rate */}
-                                            <div>
-                                                <label className="block font-medium text-gray-700 mb-2">
-                                                    Minimum Engagement: {minEngagement}%
-                                                </label>
-                                                <input
-                                                    type="range"
-                                                    min="0"
-                                                    max="10"
-                                                    step="0.5"
-                                                    value={minEngagement}
-                                                    onChange={(e) => setMinEngagement(Number(e.target.value))}
-                                                    className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-[#6a38ca]"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+  // Helper function to get previous brands
+  const getPreviousBrands = (creator: Creator) => {
+    if (!creator.creatorMeta?.brandsWorkedWith) return []
 
-                                    {/* Reset Filters */}
-                                    <div className="mt-6 flex justify-end">
-                                        <button
-                                            onClick={() => {
-                                                setSelectedCategories([]);
-                                                setSelectedPlatforms([]);
-                                                setMinFollowers(0);
-                                                setMinEngagement(0);
-                                                setSearchTerm('');
-                                            }}
-                                            className="px-4 py-2 text-[#6a38ca] hover:underline font-medium"
-                                        >
-                                            Reset All Filters
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+    return creator.creatorMeta.brandsWorkedWith.split(",").map((brand) => brand.trim())
+  }
 
-                        {/* Results Count */}
-                        <div className="mb-6 px-2">
-                            <p className="text-gray-600">
-                                {filteredInfluencers.length} creators found {searchTerm || selectedCategories.length > 0 || selectedPlatforms.length > 0 || minFollowers > 0 || minEngagement > 0 ? 'matching your criteria' : ''}
-                            </p>
-                        </div>
+  return (
+    <>
+      <BrandLayout>
+        <div className="min-h-screen bg-gray-50 pt-6 pb-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-10">
+              <h1 className="text-4xl font-bold capitalize text-gray-900 mb-4">
+                Creators those you have <span className="text-[#6a38ca]">Loved </span> to work with .
+              </h1>
+              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                Connect with top-tier influencers who can elevate your brand and engage with your target audience across
+                multiple platforms.
+              </p>
+            </div>
 
-                        {/* Influencers Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredInfluencers.map(influencer => (
-                                <motion.div
-                                    key={influencer.id}
-                                    whileHover={{ y: -5, boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)" }}
-                                    className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all"
-                                >
-                                    <div className="relative">
-                                        {/* Top background accent */}
-                                        <div className="h-20 bg-gradient-to-r from-[#6a38ca] to-[#9969f8]" />
-
-                                        {/* Avatar */}
-                                        <div className="absolute left-6 top-6 w-20 h-20 rounded-full border-4 border-white overflow-hidden bg-gray-200">
-                                            <img
-                                                src={influencer.avatar}
-                                                alt={influencer.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-
-                                        {/* Verified badge */}
-                                        {influencer.verified && (
-                                            <div className="absolute right-6 top-6 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
-                                                <FaCheck className="mr-1" size={10} /> Verified
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="px-6 pt-12 pb-6">
-                                        <div className="mb-4">
-                                            <div className="flex items-center justify-between">
-                                                <h2 className="text-xl font-bold text-gray-800">{influencer.name}</h2>
-                                                <button onClick={() => toggleFavorite(influencer.id)} className="text-red-500 hover:scale-110 transition-transform duration-200">
-                                                    {isFavorite.includes(influencer.id) ? (
-                                                        <AiFillHeart className="w-6 h-6" />
-                                                    ) : (
-                                                        <AiOutlineHeart className="w-6 h-6" />
-                                                    )}
-                                                </button>
-                                            </div>
-                                            <p className="text-gray-500 text-sm">@{influencer.username}</p>
-                                            <p className="text-gray-600 text-sm mt-1 flex items-center">
-                                                <FaMapMarkerAlt className="mr-1" /> {influencer.location}
-                                            </p>
-                                        </div>
-
-                                        {/* Categories */}
-                                        <div className="mb-4">
-                                            <div className="flex flex-wrap gap-2">
-                                                {influencer.categories.slice(0, 3).map(category => (
-                                                    <span key={category} className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs">
-                                                        {category}
-                                                    </span>
-                                                ))}
-                                                {influencer.categories.length > 3 && (
-                                                    <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs">
-                                                        +{influencer.categories.length - 3} more
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Social platforms with follower counts */}
-                                        <div className="mb-4">
-                                            <div className="flex items-center gap-3">
-                                                {Object.entries(influencer.followers).map(([platform, count]) => (
-                                                    <div key={platform} className="flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1">
-                                                        {getPlatformIcon(platform)}
-                                                        <span className="text-sm font-medium">{count}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* Stats */}
-                                        <div className="grid grid-cols-2 gap-4 mb-6">
-                                            <div className="bg-gray-50 p-3 rounded-lg text-center">
-                                                <p className="text-sm text-gray-500">Engagement</p>
-                                                <p className="font-bold text-[#6a38ca]">{influencer.engagementRate}</p>
-                                            </div>
-                                            <div className="bg-gray-50 p-3 rounded-lg text-center">
-                                                <p className="text-sm text-gray-500">Rating</p>
-                                                <p className="font-bold text-[#6a38ca] flex items-center justify-center">
-                                                    {influencer.rating} <FaStar className="ml-1 text-yellow-500" size={14} />
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {/* Previous brands */}
-                                        <div className="mb-6">
-                                            <p className="text-sm text-gray-500 mb-2">Previous collaborations:</p>
-                                            <p className="text-sm font-medium">
-                                                {influencer.previousBrands.join(', ')}
-                                            </p>
-                                        </div>
-
-                                        {/* Action buttons */}
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <button
-                                                onClick={() => handleVisitProfile(influencer.username)}
-                                                className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition-colors"
-                                            >
-                                                Visit Profile
-                                            </button>
-                                            <button
-                                                onClick={() => handleMessage(influencer.username)}
-                                                className="px-4 py-3 bg-[#6a38ca] hover:bg-[#5c2eb8] text-white font-medium rounded-xl transition-colors"
-                                            >
-                                                Message
-                                            </button>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-
-                        {/* Empty state */}
-                        {filteredInfluencers.length === 0 && (
-                            <div className="bg-white rounded-2xl shadow p-8 text-center">
-                                <FaSearch className="mx-auto text-gray-300 text-5xl mb-4" />
-                                <h3 className="text-xl font-bold text-gray-800 mb-2">No creators found</h3>
-                                <p className="text-gray-600 mb-6">Try adjusting your search criteria or filters</p>
-                                <button
-                                    onClick={() => {
-                                        setSelectedCategories([]);
-                                        setSelectedPlatforms([]);
-                                        setMinFollowers(0);
-                                        setMinEngagement(0);
-                                        setSearchTerm('');
-                                    }}
-                                    className="px-6 py-3 bg-[#6a38ca] text-white font-medium rounded-xl"
-                                >
-                                    Reset All Filters
-                                </button>
-                            </div>
-                        )}
-                    </div>
+            {/* Search and Filter Section */}
+            <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+              <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
+                {/* Search Bar */}
+                <div className="relative flex-grow">
+                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by name, username, or location..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6a38ca]"
+                  />
                 </div>
-            </BrandLayout>
-        </>
-    );
-};
+
+                {/* Filter Toggle Button */}
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center gap-2 px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
+                >
+                  <FaFilter /> {showFilters ? "Hide Filters" : "Show Filters"}
+                </button>
+              </div>
+
+              {/* Expanded Filters */}
+              {showFilters && (
+                <div className="bg-gray-50 rounded-xl p-6 animate-fadeIn">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Categories Filter */}
+                    <div>
+                      <h3 className="font-medium text-gray-700 mb-3">Categories</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {availableCategories.slice(0, 12).map((category) => (
+                          <button
+                            key={category}
+                            onClick={() => handleCategoryToggle(category)}
+                            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                              selectedCategories.includes(category)
+                                ? "bg-[#6a38ca] text-white"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                          >
+                            {category}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Platforms Filter */}
+                    <div>
+                      <h3 className="font-medium text-gray-700 mb-3">Platforms</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {availablePlatforms.map((platform) => (
+                          <button
+                            key={platform.value}
+                            onClick={() => handlePlatformToggle(platform.value)}
+                            className={`px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors ${
+                              selectedPlatforms.includes(platform.value)
+                                ? "bg-[#6a38ca] text-white"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                          >
+                            {platform.icon} {platform.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Numeric Filters */}
+                    <div className="grid grid-cols-1 gap-4">
+                      {/* Followers Range */}
+                      <div>
+                        <label className="block font-medium text-gray-700 mb-2">
+                          Minimum Followers:{" "}
+                          {minFollowers > 0
+                            ? minFollowers >= 1000000
+                              ? `${minFollowers / 1000000}M`
+                              : `${minFollowers / 1000}K`
+                            : "Any"}
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1000000"
+                          step="10000"
+                          value={minFollowers}
+                          onChange={(e) => setMinFollowers(Number(e.target.value))}
+                          className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-[#6a38ca]"
+                        />
+                      </div>
+
+                      {/* Engagement Rate */}
+                      <div>
+                        <label className="block font-medium text-gray-700 mb-2">
+                          Minimum Engagement: {minEngagement}%
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="10"
+                          step="0.5"
+                          value={minEngagement}
+                          onChange={(e) => setMinEngagement(Number(e.target.value))}
+                          className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-[#6a38ca]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Reset Filters */}
+                  <div className="mt-6 flex justify-end">
+                    <button
+                      onClick={() => {
+                        setSelectedCategories([])
+                        setSelectedPlatforms([])
+                        setMinFollowers(0)
+                        setMinEngagement(0)
+                        setSearchTerm("")
+                      }}
+                      className="px-4 py-2 text-[#6a38ca] hover:underline font-medium"
+                    >
+                      Reset All Filters
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Results Count */}
+            <div className="mb-6 px-2">
+              <p className="text-gray-600">
+                {pagination.total} favorite creators found{" "}
+                {searchTerm ||
+                selectedCategories.length > 0 ||
+                selectedPlatforms.length > 0 ||
+                minFollowers > 0 ||
+                minEngagement > 0
+                  ? "matching your criteria"
+                  : ""}
+              </p>
+            </div>
+
+            {/* Loading State */}
+            {loading && (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6a38ca]"></div>
+              </div>
+            )}
+
+            {/* Creators Grid */}
+            {!loading && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {creators.map((creator) => {
+                  const creatorCategories = getCategories(creator)
+                  const followerCounts = getFollowerCounts(creator)
+                  const previousBrands = getPreviousBrands(creator)
+
+                  return (
+                    <motion.div
+                      key={creator.id}
+                      whileHover={{
+                        y: -5,
+                        boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+                      }}
+                      className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all"
+                    >
+                      <div className="relative">
+                        {/* Top background accent */}
+                        <div className="h-20 bg-gradient-to-r from-[#6a38ca] to-[#9969f8]" />
+
+                        {/* Avatar */}
+                        <div className="absolute left-6 top-6 w-20 h-20 rounded-full border-4 border-white overflow-hidden bg-gray-200">
+                          <img
+                            src={creator.profilePic || `/api/placeholder/150/150?text=${creator.firstName.charAt(0)}`}
+                            alt={`${creator.firstName} ${creator.lastName}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="px-6 pt-12 pb-6">
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-gray-800">{`${creator.firstName} ${creator.lastName}`}</h2>
+                            <button
+                              onClick={() => toggleFavorite(creator.id)}
+                              className="text-red-500 hover:scale-110 transition-transform duration-200"
+                            >
+                              <AiFillHeart className="w-6 h-6" />
+                            </button>
+                          </div>
+                          <p className="text-gray-500 text-sm">@{creator.username}</p>
+                          <p className="text-gray-600 text-sm mt-1 flex items-center">
+                            <FaMapMarkerAlt className="mr-1" /> {creator.city}
+                          </p>
+                        </div>
+
+                        {/* Categories */}
+                        <div className="mb-4">
+                          <div className="flex flex-wrap gap-2">
+                            {/* @typescript-eslint/no-explicit-any */}
+                            {creatorCategories.slice(0, 3).map((category:any) => (
+                              <span key={category} className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs">
+                                {category}
+                              </span>
+                            ))}
+                            {creatorCategories.length > 3 && (
+                              <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs">
+                                +{creatorCategories.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Social platforms with follower counts */}
+                        <div className="mb-4">
+                          <div className="flex items-center gap-3 flex-wrap">
+                            {followerCounts.map(({ platform, count }) => (
+                              <div
+                                key={platform}
+                                className="flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1"
+                              >
+                                {getPlatformIcon(platform)}
+                                <span className="text-sm font-medium">{count}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Stats */}
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                          <div className="bg-gray-50 p-3 rounded-lg text-center">
+                            <p className="text-sm text-gray-500">Engagement</p>
+                            <p className="font-bold text-[#6a38ca]">
+                              {creator.creatorMeta?.averageEngagementRate || "0%"}
+                            </p>
+                          </div>
+                          <div className="bg-gray-50 p-3 rounded-lg text-center">
+                            <p className="text-sm text-gray-500">Rating</p>
+                            <p className="font-bold text-[#6a38ca] flex items-center justify-center">
+                              4.5 <FaStar className="ml-1 text-yellow-500" size={14} />
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Previous brands */}
+                        <div className="mb-6">
+                          <p className="text-sm text-gray-500 mb-2">Previous collaborations:</p>
+                          <p className="text-sm font-medium">
+                            {previousBrands.length > 0 ? previousBrands.join(", ") : "No previous collaborations"}
+                          </p>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            onClick={() => handleVisitProfile(creator.username)}
+                            className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition-colors"
+                          >
+                            Visit Profile
+                          </button>
+                          <button
+                            onClick={() => handleMessage(creator.username)}
+                            className="px-4 py-3 bg-[#6a38ca] hover:bg-[#5c2eb8] text-white font-medium rounded-xl transition-colors"
+                          >
+                            Message
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {!loading && creators.length === 0 && (
+              <div className="bg-white rounded-2xl shadow p-8 text-center">
+                <FaSearch className="mx-auto text-gray-300 text-5xl mb-4" />
+                <h3 className="text-xl font-bold text-gray-800 mb-2">No favorite creators found</h3>
+                <p className="text-gray-600 mb-6">
+                  Try adjusting your search criteria or filters, or add some creators to your favorites
+                </p>
+                <button
+                  onClick={() => {
+                    setSelectedCategories([])
+                    setSelectedPlatforms([])
+                    setMinFollowers(0)
+                    setMinEngagement(0)
+                    setSearchTerm("")
+                  }}
+                  className="px-6 py-3 bg-[#6a38ca] text-white font-medium rounded-xl"
+                >
+                  Reset All Filters
+                </button>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {!loading && creators.length > 0 && pagination.pages > 1 && (
+              <div className="flex justify-center mt-8">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={pagination.page === 1}
+                    className={`px-3 py-2 rounded-lg ${
+                      pagination.page === 1
+                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    Previous
+                  </button>
+
+                  {Array.from({ length: pagination.pages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      // Show current page, first page, last page, and pages around current page
+                      return page === 1 || page === pagination.pages || Math.abs(page - pagination.page) <= 1
+                    })
+                    .map((page, index, array) => {
+                      // Add ellipsis if there are gaps
+                      const showEllipsisBefore = index > 0 && array[index - 1] !== page - 1
+                      const showEllipsisAfter = index < array.length - 1 && array[index + 1] !== page + 1
+
+                      return (
+                        <React.Fragment key={page}>
+                          {showEllipsisBefore && <span className="px-3 py-2">...</span>}
+
+                          <button
+                            onClick={() => handlePageChange(page)}
+                            className={`w-10 h-10 rounded-lg ${
+                              pagination.page === page
+                                ? "bg-[#6a38ca] text-white"
+                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            }`}
+                          >
+                            {page}
+                          </button>
+
+                          {showEllipsisAfter && <span className="px-3 py-2">...</span>}
+                        </React.Fragment>
+                      )
+                    })}
+
+                  <button
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={pagination.page === pagination.pages}
+                    className={`px-3 py-2 rounded-lg ${
+                      pagination.page === pagination.pages
+                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </BrandLayout>
+    </>
+  )
+}
 
 // Helper component for the location icon
 const FaMapMarkerAlt = ({ className }: { className?: string }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M8 1a5 5 0 0 0-5 5c0 2.761 2.01 5.924 4.59 8.384.792.849 2.028.849 2.82 0C12.99 11.924 15 8.761 15 6a5 5 0 0 0-5-5zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
-    </svg>
-);
+  <svg
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    fill="currentColor"
+    viewBox="0 0 16 16"
+  >
+    <path d="M8 1a5 5 0 0 0-5 5c0 2.761 2.01 5.924 4.59 8.384.792.849 2.028.849 2.82 0C12.99 11.924 15 8.761 15 6a5 5 0 0 0-5-5zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+  </svg>
+)
 
-// Helper component for the check icon
-const FaCheck = ({ className, size }: { className?: string, size?: number }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" width={size || 16} height={size || 16} fill="currentColor" viewBox="0 0 16 16">
-        <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z" />
-    </svg>
-);
-
-export default MyCreators;
+export default MyCreators

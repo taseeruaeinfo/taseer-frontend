@@ -36,7 +36,7 @@ export default function PostDetails() {
                         authorization: `Bearer ${token}`,
                     }
                 });
-                //@ts-ignore
+                //@ts-expect-error - wtf
                 setComments(commentsResponse.data); // Set the fetched comments
             } catch (error) {
                 console.error("Error fetching post or comments", error);

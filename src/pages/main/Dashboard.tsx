@@ -68,7 +68,7 @@ export default function Dashboard() {
     }, [transformCampaignToGig])
 
     // Fetch campaigns by tab
-    //@ts-ignore
+    //@ts-expect-error - wtf
     const fetchCampaignsByTab = useCallback(async (tab: keyof omit<GigTabs, "Recommended">) => {
         try {
             setLoading(true)
@@ -97,9 +97,9 @@ export default function Dashboard() {
                 [tab]: Array.isArray(campaigns) ? campaigns.map(transformCampaignToGig) : []
             }))
         } catch (err) {
-            //@ts-ignore
+            //@ts-expect-error - wtf
             console.error(`Error fetching ${tab.toLowerCase()} campaigns:`, err)
-            //@ts-ignore
+            //@ts-expect-error - wtf
             setError(`Failed to load ${tab.toLowerCase()} deals`)
         } finally {
             setLoading(false)
@@ -122,8 +122,6 @@ export default function Dashboard() {
             Recommended: prev.Recommended.filter(gig => gig.id !== gigId)
         }))
     }, [])
-
-
 
     // Render content based on tabs
     const renderContent = () => {
@@ -164,11 +162,12 @@ export default function Dashboard() {
                                 key={tab}
                                 role="tab"
                                 aria-selected={myDealsTab === tab}
-                                className={`px-4 py-2 text-sm rounded-full whitespace-nowrap ${myDealsTab === tab
-                                    ? "bg-purple-100 text-purple-600 font-medium"
-                                    : "text-gray-500 hover:bg-gray-100"
-                                    }`}
-                                //@ts-ignore
+                                className={`px-4 py-2 text-sm rounded-full whitespace-nowrap ${
+                                    myDealsTab === tab
+                                        ? "bg-purple-100 text-purple-600 font-medium"
+                                        : "text-gray-500 hover:bg-gray-100"
+                                }`}
+                                //@ts-expect-error - wtf
                                 onClick={() => setMyDealsTab(tab as keyof omit<GigTabs, "Recommended">)}
                             >
                                 {tab}

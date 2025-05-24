@@ -28,6 +28,7 @@ import BransProfileSettings from './brand/pages/Brands.profilepage'
 import MyCreators from './brand/pages/Brand.myCreators'
 import BrandAnalytics from './brand/pages/Brand,Analytics'
 import PricingPage from './pages/pricingPage'
+import CreatorCampaigns from './pages/main/CreatorCampaign'
 export default function App() {
   return (
     <Routes>
@@ -52,6 +53,7 @@ export default function App() {
       <Route path='/notifications' element={<PremiumNotifications />} />
       <Route path='/profile/viewmore' element={<ViewMoreCreators />} />
       <Route path="/gig/:id" element={<GigDetails />} />
+      <Route path='/creator/campaigns' element={<CreatorCampaigns/>} />
 
 
       {/* Brand pages / brand dashboard */}

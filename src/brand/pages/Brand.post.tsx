@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, type ChangeEvent, type FormEvent, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -280,7 +278,6 @@ export default function BrandPost() {
           newErrors.approvalType = "Please select an approval type";
         if (!formData.usageRights)
           newErrors.usageRights = "Please select usage rights duration";
-        if (!formData.image) newErrors.image = "Campaign image is required";
         break;
     }
 
@@ -467,52 +464,80 @@ export default function BrandPost() {
         return;
       }
 
-      // Prepare payload from formData
+      // Prepare payload from formData - using the full form data now
       const payload = {
+        // Basic Information
         title: formData.campaignName,
         description: formData.campaignDescription,
         duration: formData.campaignDuration,
-        campaignGoals: formData.campaignGoals.join(", "),
+        contentRequirements: formData.contentRequirements,
+        
+        // Campaign Goal
+        campaignGoals: formData.campaignGoals,
         kpiReach: formData.kpiReach,
         kpiLeads: formData.kpiLeads,
         kpiDownloads: formData.kpiDownloads,
         kpiWebsiteVisits: formData.kpiWebsiteVisits,
         kpiPromoCode: formData.kpiPromoCode,
+        
+        // Compensation Model
         compensationType: formData.compensationType,
-        budget:
-          formData.budget === "custom"
-            ? formData.customBudget
-            : formData.budget,
-        targetAudience: {
-          age: formData.audienceAge.join(", "),
-          gender: formData.audienceGender.join(", "),
-          geography: formData.audienceGeography,
-          nationality: formData.audienceNationality,
-          behavior: formData.audienceBehavior,
-        },
-        creatorPreferences: {
-          count: formData.creatorCount,
-          age: formData.creatorAge.join(", "),
-          gender: formData.creatorGender.join(", "),
-          geography: formData.creatorGeography,
-          nationality: formData.creatorNationality,
-          platforms: formData.creatorPlatforms.join(", "),
-          followers: formData.creatorFollowers.join(", "),
-          engagementRate: formData.creatorEngagementRate,
-          contentTypes: formData.creatorContentTypes.join(", "),
-        },
-        contentRequirements: {
-          showFace: formData.showFace,
-          requireUnboxing: formData.requireUnboxing,
-          requireExperience: formData.requireExperience,
-          requireCrossPromotion: formData.requireCrossPromotion,
-          useHashtags: formData.useHashtags,
-          deliveryTime: formData.deliveryTime,
-        },
-        contentApprovals: {
-          approvalType: formData.approvalType,
-          usageRights: formData.usageRights,
-        },
+        barterProductValue: formData.barterProductValue,
+        fixedFeeAmount: formData.fixedFeeAmount,
+        payPerViews: formData.payPerViews,
+        minimumViews: formData.minimumViews,
+        payPerSale: formData.payPerSale,
+        trackingMethod: formData.trackingMethod,
+        payPerLead: formData.payPerLead,
+        otherCompensation: formData.otherCompensation,
+        hybridBasicFee: formData.hybridBasicFee,
+        hybridBonusType: formData.hybridBonusType,
+        
+        // Budget
+        budget: formData.budget === "custom" ? formData.customBudget : formData.budget,
+        customBudget: formData.customBudget,
+        
+        // Target Audience
+        audienceAge: formData.audienceAge,
+        audienceGender: formData.audienceGender,
+        audienceGeography: formData.audienceGeography,
+        audienceNationality: formData.audienceNationality,
+        audienceBehavior: formData.audienceBehavior,
+        
+        // Creator Preferences
+        creatorCount: formData.creatorCount,
+        creatorAge: formData.creatorAge,
+        creatorGender: formData.creatorGender,
+        creatorGeography: formData.creatorGeography,
+        creatorNationality: formData.creatorNationality,
+        creatorPlatforms: formData.creatorPlatforms,
+        creatorFollowers: formData.creatorFollowers,
+        creatorEngagementRate: formData.creatorEngagementRate,
+        creatorReach: formData.creatorReach,
+        creatorContentTypes: formData.creatorContentTypes,
+        
+        // Content Requirements
+        requirements: formData.contentRequirements.join(", "),
+        qualifications: formData.campaignGoals.join(", "),
+        platform: formData.creatorPlatforms.join(", "),
+        deliverables: [
+          formData.showFace && `Show face: ${formData.showFace}`,
+          formData.requireUnboxing && `Unboxing: ${formData.requireUnboxing}`,
+          formData.useHashtags && `Use hashtags: ${formData.useHashtags}`,
+          formData.deliveryTime && `Delivery time: ${formData.deliveryTime}`,
+        ].filter(Boolean).join(", "),
+        showFace: formData.showFace,
+        requireUnboxing: formData.requireUnboxing,
+        requireExperience: formData.requireExperience,
+        requireCrossPromotion: formData.requireCrossPromotion,
+        useHashtags: formData.useHashtags,
+        deliveryTime: formData.deliveryTime,
+        
+        // Content Approvals
+        approvalType: formData.approvalType,
+        usageRights: formData.usageRights,
+        
+        // Campaign Image
         image: imageUrl,
       };
 
@@ -540,6 +565,7 @@ export default function BrandPost() {
       } else {
         throw new Error("Failed to create campaign");
       }
+  
     } catch (err: any) {
       console.error("Campaign creation error:", err);
       toast.error(
@@ -780,7 +806,7 @@ export default function BrandPost() {
                     value={formData.kpiLeads}
                     onChange={handleChange}
                     className={`${inputClass} ml-2 w-48`}
-                    placeholder="Enter target number"
+                    placeholder="100k"
                   />
                 </div>
                 <div>
@@ -793,7 +819,7 @@ export default function BrandPost() {
                     value={formData.kpiDownloads}
                     onChange={handleChange}
                     className={`${inputClass} ml-2 w-48`}
-                    placeholder="Enter target number"
+                    placeholder="100k"
                   />
                 </div>
                 <div>
@@ -809,7 +835,7 @@ export default function BrandPost() {
                     value={formData.kpiWebsiteVisits}
                     onChange={handleChange}
                     className={`${inputClass} ml-2 w-48`}
-                    placeholder="Enter target number"
+                    placeholder="100k"
                   />
                 </div>
                 <div>
@@ -822,7 +848,7 @@ export default function BrandPost() {
                     value={formData.kpiPromoCode}
                     onChange={handleChange}
                     className={`${inputClass} ml-2 w-48`}
-                    placeholder="Enter target number"
+                    placeholder="100"
                   />
                 </div>
               </div>
@@ -1956,9 +1982,6 @@ export default function BrandPost() {
                   accept="image/png, image/jpeg, image/jpg"
                   className="hidden"
                 />
-                {errors.image && (
-                  <p className="text-red-500 text-sm mt-3">{errors.image}</p>
-                )}
               </div>
             </div>
           </>
@@ -2036,15 +2059,15 @@ export default function BrandPost() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center py-12"
+            className="text-center py-12 h-[80vh] flex flex-col justify-center"
           >
-            <h1 className="text-4xl font-bold text-gray-800 mb-6">
+            <h1 className="text-6xl font-bold text-gray-800 mb-20">
               What would you like to do?
             </h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6  mx-auto">
               <div
                 onClick={() => handleOptionSelect("create")}
-                className="p-8 rounded-xl border-2 border-gray-200 hover:border-[#6a38ca] cursor-pointer transition-all duration-300"
+                className="p-8 rounded-xl border-2 border-gray-200  hover:border-[#6a38ca] flex flex-col justify-center h-[400px] cursor-pointer transition-all duration-300"
               >
                 <h2 className="text-2xl font-bold mb-4">Create a Campaign</h2>
                 <p className="text-gray-600">
@@ -2053,7 +2076,7 @@ export default function BrandPost() {
               </div>
               <div
                 onClick={() => handleOptionSelect("explore")}
-                className="p-8 rounded-xl border-2 border-gray-200 hover:border-[#6a38ca] cursor-pointer transition-all duration-300"
+                className="p-8 rounded-xl border-2 border-gray-200 hover:border-[#6a38ca] flex flex-col justify-center h-[400px] cursor-pointer transition-all duration-300"
               >
                 <h2 className="text-2xl font-bold mb-4">Explore Creators</h2>
                 <p className="text-gray-600">

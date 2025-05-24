@@ -51,7 +51,7 @@ export default function PostPopup({ onClose }: PostPopupProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 scale-[2] right-44 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white text-black p-6 rounded-2xl shadow-xl max-w-md w-full space-y-4">
         <h2 className="text-xl font-bold">Create a Post</h2>
         <textarea

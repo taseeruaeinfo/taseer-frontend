@@ -16,10 +16,7 @@ import FollowButton from "../../components/ui/FollowButton";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import BrandLayout from "../components/BrandLayout";
-import Button from "../../components/ui/Button";
-import PostPopup from "../../pages/main/posts/PostPage";
 
-// Define the post type based on your API response
 type Post = {
   id: string;
   text: string;
@@ -44,7 +41,6 @@ type Post = {
 // Sample creators data for the sidebar
 
 export default function Posts() {
-  const [showPopup, setShowPopup] = useState(false);
 
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -217,13 +213,7 @@ export default function Posts() {
               value={searchTerm}
               onChange={handleSearch}
             />
-            <Button
-              onClick={() => setShowPopup(true)}
-              className="w-[150px] text-sm"
-              variant="primary"
-            >
-              Create Post
-            </Button>
+          
           </div>
 
           {/* Error Message */}
@@ -343,7 +333,6 @@ export default function Posts() {
         </div>
       </div>
 
-      {showPopup && <PostPopup onClose={() => setShowPopup(false)} />}
     </BrandLayout>
   );
 }
