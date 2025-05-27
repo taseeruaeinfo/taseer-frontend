@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
-import { Check, X, Clock, ExternalLink, ChevronDown, ChevronUp, AlertCircle } from "lucide-react"
+import { Check, X, Clock, ExternalLink, ChevronDown, ChevronUp, AlertCircle, Send } from "lucide-react"
 import axios from "axios"
 import { toast } from "react-toastify"
 import Cookies from "js-cookie"
@@ -47,6 +47,8 @@ interface Deliverable {
   contentType: string
   notes: string
   status: string
+  creatorUrl: string | null
+  brandUrl: string | null
   url: string | null
   approvalDate: string | null
   postDate: string | null
@@ -65,12 +67,15 @@ export default function CreatorCampaigns() {
   const [loading, setLoading] = useState(true)
   const [expandedApplication, setExpandedApplication] = useState<string | null>(null)
   const [showInfoModal, setShowInfoModal] = useState(false)
+  const [showUrlModal, setShowUrlModal] = useState(false)
   const [currentApplication, setCurrentApplication] = useState<Application | null>(null)
+  const [currentDeliverable, setCurrentDeliverable] = useState<Deliverable | null>(null)
   const [creatorInfo, setCreatorInfo] = useState({
     email: "",
     phone: "",
     shippingAddress: "",
   })
+  const [contentUrl, setContentUrl] = useState("")
 
   useEffect(() => {
     fetchApplications()
@@ -126,16 +131,21 @@ export default function CreatorCampaigns() {
   }
 
   const handleSubmitInfo = async (applicationId: string) => {
-    if (!creatorInfo.email && !creatorInfo.phone && !creatorInfo.shippingAddress) {
-      toast.error("Please provide at least one piece of information")
-      return
-    }
+    // if (!creatorInfo.email && !creatorInfo.phone && !creatorInfo.shippingAddress) {
+    //   toast.error("Please provide at least one piece of information")
+    //   console.log("wtf")
+    //   return
+    // }
 
     try {
+                console.log("wtfasdasd")
+
       const token = Cookies.get("jwt")
       await axios.post(`http://localhost:5000/api/creator/applications/${applicationId}/info`, creatorInfo, {
         headers: { Authorization: `Bearer ${token}` },
       })
+                console.log("done")
+
       toast.success("Information submitted successfully")
       setShowInfoModal(false)
       setCreatorInfo({ email: "", phone: "", shippingAddress: "" })
@@ -143,6 +153,31 @@ export default function CreatorCampaigns() {
     } catch (error) {
       console.error("Error submitting information:", error)
       toast.error("Failed to submit information")
+    }
+          console.log("wtfasdasd")
+
+  }
+
+  const handleSubmitContentUrl = async () => {
+    if (!currentApplication || !currentDeliverable || !contentUrl) {
+      toast.error("Please enter a valid content URL")
+      return
+    }
+
+    try {
+      const token = Cookies.get("jwt")
+      await axios.post(
+        `http://localhost:5000/api/creator/applications/${currentApplication.id}/deliverables/${currentDeliverable.id}/submit-url`,
+        { url: contentUrl },
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
+      toast.success("Content URL submitted successfully")
+      setShowUrlModal(false)
+      setContentUrl("")
+      fetchApplications()
+    } catch (error) {
+      console.error("Error submitting content URL:", error)
+      toast.error("Failed to submit content URL")
     }
   }
 
@@ -161,8 +196,34 @@ export default function CreatorCampaigns() {
     }
   }
 
+  const getDeliverableStatusColor = (status: string) => {
+    switch (status) {
+      case "awaiting_creator_content":
+        return "bg-blue-100 text-blue-800"
+      case "creator_content_submitted":
+        return "bg-purple-100 text-purple-800"
+      case "awaiting_brand_url":
+        return "bg-orange-100 text-orange-800"
+      case "brand_url_submitted":
+        return "bg-indigo-100 text-indigo-800"
+      case "content_approved":
+        return "bg-green-100 text-green-800"
+      case "live":
+        return "bg-emerald-100 text-emerald-800"
+      case "analytics_submitted":
+        return "bg-purple-100 text-purple-800"
+      case "payment_pending":
+        return "bg-yellow-100 text-yellow-800"
+      case "completed":
+        return "bg-gray-100 text-gray-800"
+      case "cancelled":
+        return "bg-red-100 text-red-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
   const getApplicationStatusIndicator = (application: Application) => {
-    // Check if questions are pending
     if (application.questions) {
       return (
         <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
@@ -174,7 +235,6 @@ export default function CreatorCampaigns() {
       )
     }
 
-    // Check if contract is pending
     if (application.contract && application.contract.status === "pending") {
       return (
         <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
@@ -186,13 +246,12 @@ export default function CreatorCampaigns() {
       )
     }
 
-    // Check if deliverables are waiting for content
-    if (application.deliverables && application.deliverables.some((d) => d.status === "content_in_progress")) {
+    if (application.deliverables && application.deliverables.some((d) => d.status === "awaiting_creator_content")) {
       return (
         <div className="mt-2 p-3 bg-purple-50 border border-purple-200 rounded-md">
           <p className="text-sm text-purple-800 flex items-center">
             <Clock size={14} className="mr-1" />
-            Deliverables assigned. Content creation in progress.
+            Deliverables assigned. Ready to create content.
           </p>
         </div>
       )
@@ -405,7 +464,7 @@ export default function CreatorCampaigns() {
                                     <p className="mt-1 text-sm text-gray-500">{deliverable.notes}</p>
                                   </div>
                                   <span
-                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(
+                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDeliverableStatusColor(
                                       deliverable.status,
                                     )}`}
                                   >
@@ -416,54 +475,85 @@ export default function CreatorCampaigns() {
                                   </span>
                                 </div>
 
-                                {deliverable.url && (
-                                  <div className="mt-2">
-                                    <a
-                                      href={deliverable.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+                                {/* URLs Display */}
+                                <div className="mt-2 space-y-1">
+                                  {deliverable.creatorUrl && (
+                                    <div>
+                                      <a
+                                        href={deliverable.creatorUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+                                      >
+                                        <ExternalLink size={14} className="mr-1" /> My Content URL
+                                      </a>
+                                    </div>
+                                  )}
+                                  {deliverable.brandUrl && (
+                                    <div>
+                                      <a
+                                        href={deliverable.brandUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center text-sm text-purple-600 hover:text-purple-800"
+                                      >
+                                        <ExternalLink size={14} className="mr-1" /> Brand URL
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="mt-3">
+                                  {deliverable.status === "awaiting_creator_content" && (
+                                    <button
+                                      onClick={() => {
+                                        setCurrentApplication(application)
+                                        setCurrentDeliverable(deliverable)
+                                        setShowUrlModal(true)
+                                      }}
+                                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                                     >
-                                      <ExternalLink size={14} className="mr-1" /> View Content
-                                    </a>
-                                  </div>
-                                )}
+                                      <Send size={14} className="mr-1" /> Submit Content URL
+                                    </button>
+                                  )}
 
-                                {deliverable.status === "content_in_progress" && (
-                                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                                    <p className="text-sm text-blue-800 flex items-center">
-                                      <Clock size={14} className="mr-1" />
-                                      Create content and wait for brand to submit the URL once posted.
-                                    </p>
-                                  </div>
-                                )}
+                                  {deliverable.status === "creator_content_submitted" && (
+                                    <div className="p-3 bg-purple-50 border border-purple-200 rounded-md">
+                                      <p className="text-sm text-purple-800 flex items-center">
+                                        <Clock size={14} className="mr-1" />
+                                        Content URL submitted. Waiting for brand to submit their URL.
+                                      </p>
+                                    </div>
+                                  )}
 
-                                {deliverable.status === "content_submitted" && (
-                                  <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-md">
-                                    <p className="text-sm text-purple-800 flex items-center">
-                                      <Clock size={14} className="mr-1" />
-                                      Content URL submitted by brand. Waiting for approval.
-                                    </p>
-                                  </div>
-                                )}
+                                  {deliverable.status === "brand_url_submitted" && (
+                                    <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-md">
+                                      <p className="text-sm text-indigo-800 flex items-center">
+                                        <Clock size={14} className="mr-1" />
+                                        Both URLs submitted. Waiting for brand approval.
+                                      </p>
+                                    </div>
+                                  )}
 
-                                {deliverable.status === "approved_for_posting" && (
-                                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
-                                    <p className="text-sm text-green-800 flex items-center">
-                                      <Check size={14} className="mr-1" />
-                                      Content approved! You can now post it.
-                                    </p>
-                                  </div>
-                                )}
+                                  {deliverable.status === "content_approved" && (
+                                    <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                                      <p className="text-sm text-green-800 flex items-center">
+                                        <Check size={14} className="mr-1" />
+                                        Content approved! You can now post it.
+                                      </p>
+                                    </div>
+                                  )}
 
-                                {deliverable.status === "live" && (
-                                  <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-md">
-                                    <p className="text-sm text-emerald-800 flex items-center">
-                                      <Check size={14} className="mr-1" />
-                                      Content is live! Great work!
-                                    </p>
-                                  </div>
-                                )}
+                                  {deliverable.status === "live" && (
+                                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-md">
+                                      <p className="text-sm text-emerald-800 flex items-center">
+                                        <Check size={14} className="mr-1" />
+                                        Content is live! Great work!
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -554,6 +644,45 @@ export default function CreatorCampaigns() {
                 className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700"
               >
                 Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Content URL Modal */}
+      {showUrlModal && currentApplication && currentDeliverable && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Submit Content URL for {currentDeliverable.contentType} on {currentDeliverable.platform}
+            </h3>
+
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">
+                Please provide the URL where you've posted or will post the content:
+              </p>
+              <input
+                type="url"
+                value={contentUrl}
+                onChange={(e) => setContentUrl(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                placeholder="https://..."
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowUrlModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitContentUrl}
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700"
+              >
+                Submit URL
               </button>
             </div>
           </div>
