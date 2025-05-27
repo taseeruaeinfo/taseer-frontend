@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+"use client";
+
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { FiSend, FiPaperclip, FiSearch, FiArrowLeft } from "react-icons/fi";
 import { BsEmojiSmile } from "react-icons/bs";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import clsx from "clsx";
 import axios from "axios";
-import { useSocket } from "../../hooks/useSocket";
+import { useOptimizedSocket } from "../../hooks/useSocket";
 import BrandLayout from "../components/BrandLayout";
 import Cookies from "js-cookie";
 
@@ -18,6 +20,7 @@ interface User {
   unreadCount?: number;
   lastMessage?: string;
   lastMessageTime?: string;
+  isOnline?: boolean;
 }
 
 interface Message {
@@ -41,6 +44,7 @@ interface Message {
   seen: boolean;
   delivered: boolean;
   createdAt: string;
+  status: "sending" | "sent" | "delivered" | "seen" | "failed";
 }
 
 const emojiGroups = [
@@ -58,7 +62,7 @@ const emojiGroups = [
   },
 ];
 
-export default function BrandsMessagesPage() {
+export default function OptimizedMessagesPage() {
   const [conversations, setConversations] = useState<User[]>([]);
   const [selectedUserIndex, setSelectedUserIndex] = useState<number | null>(
     null
@@ -76,19 +80,21 @@ export default function BrandsMessagesPage() {
   const [newChatUser, setNewChatUser] = useState<User | null>(null);
   const [isNewChat, setIsNewChat] = useState(false);
   const [fetchingNewUser, setFetchingNewUser] = useState(false);
+  const [connectionRetries, setConnectionRetries] = useState(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>(null);
+  const messageCache = useRef<Map<string, Message[]>>(new Map());
+  const conversationCache = useRef<User[]>([]);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Get token from localStorage or your auth context
   const token = Cookies.get("jwt");
 
-  // Initialize socket
+  // Optimized socket with better connection management
   const {
     socket,
-    isConnected,
+    connectionStatus,
     onlineUsers,
     sendMessage,
     markConversationSeen,
@@ -96,106 +102,147 @@ export default function BrandsMessagesPage() {
     stopTyping,
     joinConversation,
     leaveConversation,
-  } = useSocket(token ?? "");
+    reconnect,
+  } = useOptimizedSocket(token ?? "");
 
-  const selectedUser =
-    selectedUserIndex !== null ? conversations[selectedUserIndex] : newChatUser;
+  const selectedUser = useMemo(
+    () =>
+      selectedUserIndex !== null
+        ? conversations[selectedUserIndex]
+        : newChatUser,
+    [selectedUserIndex, conversations, newChatUser]
+  );
 
-  // Scroll to bottom of messages
-  const scrollToBottom = () => {
+  // Optimized scroll to bottom with debouncing
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
-  // Load user for new chat
-  const loadNewChatUser = async (userId: string) => {
-    setFetchingNewUser(true);
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/api/messages/user/${userId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      //@ts-expect-error -network
-      if (response.data.success) {
-        //@ts-expect-error -network
-        const userData = response.data.user;
-        setNewChatUser(userData);
-        //@ts-expect-error -network
-        if (response.data.hasExistingChat) {
-          // If chat exists, load conversations and select this user
-          await loadConversations();
-          const existingConvIndex = conversations.findIndex(
-            (conv) => conv.id === userId
-          );
-          if (existingConvIndex !== -1) {
-            setSelectedUserIndex(existingConvIndex);
-            setIsNewChat(false);
-            setNewChatUser(null);
+  // Cached API calls to reduce database queries
+  const loadNewChatUser = useCallback(
+    async (userId: string) => {
+      setFetchingNewUser(true);
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/api/messages/user/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
           }
-        } else {
-          // New chat
-          setIsNewChat(true);
-          setSelectedUserIndex(null);
-          setMessages([]);
-        }
-      }
-    } catch (error) {
-      console.error("Error loading new chat user:", error);
-      // If user not found or error, redirect to messages without params
-      navigate("/brand/message", { replace: true });
-    } finally {
-      setFetchingNewUser(false);
-    }
-  };
+        );
+        //@ts-expect-error - server resposne erroor
 
-  // Load conversations
-  const loadConversations = async () => {
+        if (response.data.success) {
+          //@ts-expect-error - server resposne erroor
+
+          const userData = response.data.user;
+          setNewChatUser(userData);
+          //@ts-expect-error - server resposne erroor
+
+          if (response.data.hasExistingChat) {
+            await loadConversations();
+            const existingConvIndex = conversations.findIndex(
+              (conv) => conv.id === userId
+            );
+            if (existingConvIndex !== -1) {
+              setSelectedUserIndex(existingConvIndex);
+              setIsNewChat(false);
+              setNewChatUser(null);
+            }
+          } else {
+            setIsNewChat(true);
+            setSelectedUserIndex(null);
+            setMessages([]);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading new chat user:", error);
+        navigate("/brand/messages", { replace: true });
+      } finally {
+        setFetchingNewUser(false);
+      }
+    },
+    [token, conversations, navigate]
+  );
+
+  // Optimized conversation loading with caching
+  const loadConversations = useCallback(async () => {
     try {
+      // Return cached data if available and recent
+      if (conversationCache.current.length > 0) {
+        setConversations(conversationCache.current);
+        return conversationCache.current;
+      }
+
       const response = await axios.get(
         "http://localhost:5000/api/messages/conversations",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      //@ts-expect-error -network
-      if (response.data.success) {
-        //@ts-expect-error -network
-        setConversations(response.data.conversations);
-        //@ts-expect-error -network
-        return response.data.conversations;
-      }
-    } catch (error) { 
-      console.error("Error loading conversations:", error);
-    }
-  };
+      //@ts-expect-error - server resposne erroor
 
-  // Load messages for selected conversation
-  const loadMessages = async (partnerId: string) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/api/messages/conversation/${partnerId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      //@ts-expect-error -network
       if (response.data.success) {
-        //@ts-expect-error -network
-        setMessages(response.data.messages);
-        scrollToBottom();
+        //@ts-expect-error - server resposne erroor
 
-        // Mark conversation as seen
-        if (socket) {
-          markConversationSeen(partnerId);
-        }
+        const conversationsWithOnlineStatus = response.data.conversations.map(
+          (conv: User) => ({
+            ...conv,
+            isOnline: onlineUsers.some((user) => user.userId === conv.id),
+          })
+        );
+
+        setConversations(conversationsWithOnlineStatus);
+        conversationCache.current = conversationsWithOnlineStatus;
+        return conversationsWithOnlineStatus;
       }
     } catch (error) {
-      console.error("Error loading messages:", error);
+      console.error("Error loading conversations:", error);
     }
-  };
+  }, [token, onlineUsers]);
 
-  // Handle URL parameters on component mount
+  // Optimized message loading with caching
+  const loadMessages = useCallback(
+    async (partnerId: string) => {
+      try {
+        // Check cache first
+        const cachedMessages = messageCache.current.get(partnerId);
+        if (cachedMessages) {
+          setMessages(cachedMessages);
+          scrollToBottom();
+          return;
+        }
+
+        const response = await axios.get(
+          `http://localhost:5000/api/messages/conversation/${partnerId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        //@ts-expect-error - server resposne erroor
+        if (response.data.success) {
+          //@ts-expect-error - server resposne erroor
+
+          const messagesWithStatus = response.data.messages.map((msg: any) => ({
+            ...msg,
+            status: msg.seen ? "seen" : msg.delivered ? "delivered" : "sent",
+          }));
+
+          setMessages(messagesWithStatus);
+          messageCache.current.set(partnerId, messagesWithStatus);
+          scrollToBottom();
+
+          if (socket) {
+            markConversationSeen(partnerId);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading messages:", error);
+      }
+    },
+    [token, socket, markConversationSeen, scrollToBottom]
+  );
+
+  // Handle URL parameters
   useEffect(() => {
     const userId = searchParams.get("id");
 
@@ -204,55 +251,68 @@ export default function BrandsMessagesPage() {
     } else if (token) {
       loadConversations().then(() => setLoading(false));
     }
-  }, [searchParams, token]);
+  }, [searchParams, token, loadNewChatUser, loadConversations]);
 
-  // Socket event listeners
+  // Optimized socket event handlers
   useEffect(() => {
     const handleNewMessage = (event: CustomEvent) => {
       const newMessage = event.detail;
 
-      // Add to messages if it's for current conversation
-      if (
-        selectedUser &&
-        (newMessage.senderId === selectedUser.id ||
-          newMessage.receiverId === selectedUser.id)
-      ) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            ...newMessage,
-            from: newMessage.senderId === selectedUser.id ? "them" : "me",
-          },
-        ]);
-        scrollToBottom();
+      // Update message cache
+      if (selectedUser) {
+        const cacheKey = selectedUser.id;
+        const cachedMessages = messageCache.current.get(cacheKey) || [];
 
-        // Mark as seen if conversation is active
-        if (newMessage.senderId === selectedUser.id) {
-          markConversationSeen(selectedUser.id);
+        if (
+          newMessage.senderId === selectedUser.id ||
+          newMessage.receiverId === selectedUser.id
+        ) {
+          const updatedMessages = [
+            ...cachedMessages,
+            {
+              ...newMessage,
+              from: newMessage.senderId === selectedUser.id ? "them" : "me",
+              status: "delivered",
+            },
+          ];
+
+          setMessages(updatedMessages);
+          messageCache.current.set(cacheKey, updatedMessages);
+          scrollToBottom();
+
+          if (newMessage.senderId === selectedUser.id) {
+            markConversationSeen(selectedUser.id);
+          }
         }
       }
 
-      // Update conversations list
+      // Invalidate conversation cache to refresh unread counts
+      conversationCache.current = [];
       loadConversations();
     };
 
     const handleMessageSent = (event: CustomEvent) => {
       const sentMessage = event.detail;
 
-      // Add to messages if it's for current conversation
       if (selectedUser && sentMessage.receiverId === selectedUser.id) {
-        setMessages((prev) => [
-          ...prev,
+        const cacheKey = selectedUser.id;
+        const cachedMessages = messageCache.current.get(cacheKey) || [];
+        const updatedMessages = [
+          ...cachedMessages,
           {
             ...sentMessage,
             from: "me",
+            status: "sent",
           },
-        ]);
+        ];
+
+        setMessages(updatedMessages);
+        messageCache.current.set(cacheKey, updatedMessages);
         scrollToBottom();
 
-        // If this was a new chat, convert it to existing chat
         if (isNewChat) {
           setIsNewChat(false);
+          conversationCache.current = []; // Invalidate cache
           loadConversations().then((convs) => {
             const newConvIndex = convs.findIndex(
               (conv: User) => conv.id === selectedUser.id
@@ -266,12 +326,18 @@ export default function BrandsMessagesPage() {
       }
 
       setSending(false);
-      loadConversations();
     };
 
     const handleMessageError = (event: CustomEvent) => {
       console.error("Message error:", event.detail.error);
       setSending(false);
+
+      // Update message status to failed
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.status === "sending" ? { ...msg, status: "failed" } : msg
+        )
+      );
     };
 
     const handleUserTyping = (event: CustomEvent) => {
@@ -288,6 +354,16 @@ export default function BrandsMessagesPage() {
       });
     };
 
+    const handleOnlineStatusUpdate = () => {
+      // Update online status in conversations
+      setConversations((prev) =>
+        prev.map((conv) => ({
+          ...conv,
+          isOnline: onlineUsers.some((user) => user.userId === conv.id),
+        }))
+      );
+    };
+
     // Add event listeners
     window.addEventListener("new_message", handleNewMessage as EventListener);
     window.addEventListener("message_sent", handleMessageSent as EventListener);
@@ -300,8 +376,11 @@ export default function BrandsMessagesPage() {
       "user_stopped_typing",
       handleUserStoppedTyping as EventListener
     );
+    window.addEventListener(
+      "online_users_updated",
+      handleOnlineStatusUpdate as EventListener
+    );
 
-    // Cleanup
     return () => {
       window.removeEventListener(
         "new_message",
@@ -323,8 +402,20 @@ export default function BrandsMessagesPage() {
         "user_stopped_typing",
         handleUserStoppedTyping as EventListener
       );
+      window.removeEventListener(
+        "online_users_updated",
+        handleOnlineStatusUpdate as EventListener
+      );
     };
-  }, [selectedUser, socket, markConversationSeen, isNewChat]);
+  }, [
+    selectedUser,
+    socket,
+    markConversationSeen,
+    isNewChat,
+    onlineUsers,
+    loadConversations,
+    scrollToBottom,
+  ]);
 
   // Load messages when selected user changes
   useEffect(() => {
@@ -336,23 +427,75 @@ export default function BrandsMessagesPage() {
         leaveConversation(selectedUser.id);
       };
     }
-  }, [selectedUser, joinConversation, leaveConversation, isNewChat]);
+  }, [
+    selectedUser,
+    joinConversation,
+    leaveConversation,
+    isNewChat,
+    loadMessages,
+  ]);
 
   // Auto-scroll when messages change
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
-  // Set loading to false when conversations are loaded or new chat user is loaded
+  // Set loading to false when data is ready
   useEffect(() => {
     if (conversations.length > 0 || newChatUser || !searchParams.get("id")) {
       setLoading(false);
     }
   }, [conversations, newChatUser, searchParams]);
 
-  const handleSend = () => {
-    if (message.trim() && selectedUser && !sending) {
+  // Handle connection retries
+  useEffect(() => {
+    if (connectionStatus === "disconnected" && connectionRetries < 3) {
+      const timer = setTimeout(() => {
+        setConnectionRetries((prev) => prev + 1);
+        reconnect();
+      }, 2000 * (connectionRetries + 1)); // Exponential backoff
+
+      return () => clearTimeout(timer);
+    }
+  }, [connectionStatus, connectionRetries, reconnect]);
+
+  const handleSend = useCallback(() => {
+    if (
+      message.trim() &&
+      selectedUser &&
+      !sending &&
+      connectionStatus === "connected"
+    ) {
       setSending(true);
+
+      // Optimistic update
+      const tempMessage: Message = {
+        id: `temp-${Date.now()}`,
+        content: message.trim(),
+        from: "me",
+        sender: {
+          id: "current-user",
+          firstName: "",
+          lastName: "",
+          username: "",
+          profilePic: "",
+        },
+        receiver: {
+          id: selectedUser.id,
+          firstName: selectedUser.name.split(" ")[0],
+          lastName: selectedUser.name.split(" ")[1] || "",
+          username: selectedUser.username,
+          profilePic: selectedUser.profilePic,
+        },
+        seen: false,
+        delivered: false,
+        createdAt: new Date().toISOString(),
+        status: "sending",
+      };
+
+      setMessages((prev) => [...prev, tempMessage]);
+      scrollToBottom();
+
       sendMessage(selectedUser.id, message.trim());
       setMessage("");
 
@@ -362,75 +505,117 @@ export default function BrandsMessagesPage() {
         clearTimeout(typingTimeoutRef.current);
       }
     }
-  };
+  }, [
+    message,
+    selectedUser,
+    sending,
+    connectionStatus,
+    sendMessage,
+    stopTyping,
+    scrollToBottom,
+  ]);
 
-  const handleInputChange = (value: string) => {
-    setMessage(value);
+  const handleInputChange = useCallback(
+    (value: string) => {
+      setMessage(value);
 
-    // Handle typing indicators
-    if (selectedUser && value.trim()) {
-      startTyping(selectedUser.id);
+      if (selectedUser && value.trim() && connectionStatus === "connected") {
+        startTyping(selectedUser.id);
 
-      // Clear existing timeout
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
 
-      // Set new timeout to stop typing
-      typingTimeoutRef.current = setTimeout(() => {
+        typingTimeoutRef.current = setTimeout(() => {
+          stopTyping(selectedUser.id);
+        }, 2000);
+      } else if (selectedUser) {
         stopTyping(selectedUser.id);
-      }, 2000);
-    } else if (selectedUser) {
-      stopTyping(selectedUser.id);
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
       }
-    }
-  };
+    },
+    [selectedUser, connectionStatus, startTyping, stopTyping]
+  );
 
-  const handleEmojiClick = (emoji: string) => {
+  const handleEmojiClick = useCallback((emoji: string) => {
     setMessage((prev) => prev + emoji);
     setShowEmojiPicker(false);
-  };
+  }, []);
 
-  const handleAttachment = (type: string) => {
+  const handleAttachment = useCallback((type: string) => {
     console.log(`Attachment of type ${type} selected`);
     setShowAttachments(false);
-  };
+  }, []);
 
-  const isUserOnline = (userId: string) => {
-    return onlineUsers.some((user) => user.userId === userId);
-  };
+  const isUserOnline = useCallback(
+    (userId: string) => {
+      return onlineUsers.some((user) => user.userId === userId);
+    },
+    [onlineUsers]
+  );
 
-  const handleSelectConversation = (index: number) => {
-    setSelectedUserIndex(index);
-    setIsNewChat(false);
-    setNewChatUser(null);
-    // Clear URL params
-    navigate("/brand/message", { replace: true });
-  };
+  const handleSelectConversation = useCallback(
+    (index: number) => {
+      setSelectedUserIndex(index);
+      setIsNewChat(false);
+      setNewChatUser(null);
+      navigate("/brand/messages", { replace: true });
+    },
+    [navigate]
+  );
 
-  const handleBackToConversations = () => {
+  const handleBackToConversations = useCallback(() => {
     setSelectedUserIndex(null);
     setIsNewChat(false);
     setNewChatUser(null);
-    navigate("/brand/message", { replace: true });
+    navigate("/brand/messages", { replace: true });
+  }, [navigate]);
+
+  const filteredConversations = useMemo(() => {
+    return conversations.filter((user) => {
+      if (filter === "Unread" && !user.unread) return false;
+      if (filter === "Archived" && !user.unread) return false;
+
+      if (
+        searchQuery &&
+        !user.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !user.username.toLowerCase().includes(searchQuery.toLowerCase())
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [conversations, filter, searchQuery]);
+
+  // Connection status indicator
+  const getConnectionStatusColor = () => {
+    switch (connectionStatus) {
+      case "connected":
+        return "bg-green-100 text-green-800";
+      case "connecting":
+        return "bg-yellow-100 text-yellow-800";
+      case "disconnected":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
 
-  const filteredConversations = conversations.filter((user) => {
-    if (filter === "Unread" && !user.unread) return false;
-    if (filter === "Archived" && !user.unread) return false; // Assuming archived logic
-
-    if (
-      searchQuery &&
-      !user.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !user.username.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
-      return false;
+  const getConnectionStatusText = () => {
+    switch (connectionStatus) {
+      case "connected":
+        return "🟢 Connected";
+      case "connecting":
+        return "🟡 Connecting...";
+      case "disconnected":
+        return "🔴 Disconnected";
+      default:
+        return "⚪ Unknown";
     }
-
-    return true;
-  });
+  };
 
   if (loading || fetchingNewUser) {
     return (
@@ -458,16 +643,17 @@ export default function BrandsMessagesPage() {
   return (
     <BrandLayout>
       <div className="flex h-[95vh] -m-4 text-gray-800">
-        {/* Connection Status */}
+        {/* Enhanced Connection Status */}
         <div
           className={clsx(
-            "fixed top-4 right-4 z-50 px-3 py-1 rounded-full text-sm font-medium",
-            isConnected
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
+            "fixed top-4 right-4 z-50 px-3 py-1 rounded-full text-sm font-medium transition-all duration-300",
+            getConnectionStatusColor()
           )}
         >
-          {isConnected ? "🟢 Connected" : "🔴 Disconnected"}
+          {getConnectionStatusText()}
+          {connectionStatus === "disconnected" && connectionRetries > 0 && (
+            <span className="ml-2 text-xs">(Retry {connectionRetries}/3)</span>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -528,7 +714,7 @@ export default function BrandsMessagesPage() {
               >
                 <div className="relative">
                   <img
-                    src={user.profilePic}
+                    src={user.profilePic || "/placeholder.svg"}
                     alt={user.name}
                     className="w-10 h-10 rounded-full mr-3 cursor-pointer"
                     onClick={(e) => {
@@ -536,7 +722,7 @@ export default function BrandsMessagesPage() {
                       navigate(`/profile/${user.username}`);
                     }}
                   />
-                  {isUserOnline(user.id) && (
+                  {user.isOnline && (
                     <div className="absolute bottom-0 right-2 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                   )}
                 </div>
@@ -584,7 +770,7 @@ export default function BrandsMessagesPage() {
               </button>
               <div className="relative">
                 <img
-                  src={selectedUser.profilePic}
+                  src={selectedUser.profilePic || "/placeholder.svg"}
                   className="w-12 h-12 rounded-full"
                   alt={selectedUser.name}
                 />
@@ -630,8 +816,16 @@ export default function BrandsMessagesPage() {
                   >
                     <div>{msg.content}</div>
                     {msg.from === "me" && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        {msg.delivered && "✓"} {msg.seen && "✓"}
+                      <div className="text-xs text-gray-500 mt-1 flex items-center justify-end gap-1">
+                        {msg.status === "sending" && <span>⏳</span>}
+                        {msg.status === "sent" && <span>✓</span>}
+                        {msg.status === "delivered" && <span>✓✓</span>}
+                        {msg.status === "seen" && (
+                          <span className="text-blue-500">✓✓</span>
+                        )}
+                        {msg.status === "failed" && (
+                          <span className="text-red-500">❌</span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -732,23 +926,31 @@ export default function BrandsMessagesPage() {
                 <input
                   value={message}
                   onChange={(e) => handleInputChange(e.target.value)}
-                 
+                  onKeyPress={(e) => e.key === "Enter" && handleSend()}
                   className="flex-1 border rounded-full px-4 py-2 outline-none"
                   placeholder={
                     isNewChat
                       ? `Send your first message to ${selectedUser.name}...`
-                      : "Type a message..."
+                      : connectionStatus === "connected"
+                      ? "Type a message..."
+                      : "Connecting..."
                   }
-                //   disabled={sending || !isConnected}
+                  disabled={sending || connectionStatus !== "connected"}
                 />
                 <button
                   onClick={handleSend}
-                //   disabled={sending || !isConnected || !message.trim()}
+                  disabled={
+                    sending ||
+                    connectionStatus !== "connected" ||
+                    !message.trim()
+                  }
                   className={clsx(
                     "px-4 py-2 rounded-full transition-colors",
-                    // sending || !isConnected || !message.trim()
-                    //   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    //   : "bg-blue-500 text-white hover:bg-blue-600"
+                    sending ||
+                      connectionStatus !== "connected" ||
+                      !message.trim()
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-blue-500 text-white hover:bg-blue-600"
                   )}
                 >
                   {sending ? "..." : <FiSend />}

@@ -208,7 +208,7 @@ export default function Posts() {
         <div className="w-full">
           {/* Search Bar */}
           <div className="relative ">
-            <div className="fixed top-5  bg-white/40 w-full max-w-6xl flex gap-x-10 mb-6">
+            <div className="absolute   bg-white/40 w-full flex gap-x-10 mb-6">
               <AiOutlineSearch className="absolute left-4 top-3 text-gray-500 text-xl" />
               <input
                 type="text"
@@ -222,7 +222,7 @@ export default function Posts() {
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
+            <div className="bg-red-100 mt-16 text-red-700 p-4 rounded-lg mb-4">
               {error}
               <button className="ml-2 underline" onClick={fetchPosts}>
                 Try again
@@ -231,7 +231,7 @@ export default function Posts() {
           )}
 
           {/* Posts */}
-          <section className="w-full mt-16">
+          <section className="w-full mt-20">
             {filteredPosts.length === 0 && !loading ? (
               <div className="bg-white p-5 rounded-lg shadow mb-4 text-center">
                 <p className="text-gray-600">

@@ -58,7 +58,7 @@ export default function App() {
 
       {/* Brand pages / brand dashboard */}
       <Route path='/brand/home' element={<BrandPosts />} />
-      <Route path='/brand/message' element={<BrandsMessagesPage />} />
+      <Route path='/brand/messages' element={<BrandsMessagesPage />} />
       <Route path='/brand/notifications' element={<BrandNotifications />} />
       <Route path='/brand/post' element={<BrandPost />} />
       <Route path='/brand/find-creators' element={<FindInfluencers />} />

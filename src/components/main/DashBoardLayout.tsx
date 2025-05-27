@@ -1,6 +1,6 @@
 "use client";
 
-import type React from "react";
+import React from "react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -33,13 +33,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const dispatch = useDispatch(); // Use the dispatch hook to dispatch actions
   const user = useSelector((state: RootState) => state.user);
 
-  console.log(user);
   // Redirect logic for user not logged in or not a creator
   useEffect(() => {
+    if (user === null) return; // Wait for Redux state to populate
     if (!user) {
-      router("/login"); // Not logged in
+      router("/login");
     } else if (user.type !== "creator") {
-      router("/brand/home"); // Logged in but not a creator
+      router("/brand/home");
     }
   }, [user, router]);
 
@@ -113,31 +113,39 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   {navItems.map((item, index) => {
                     const isActive = location.pathname === item.href;
                     return (
-                      <li key={index}>
-                        <button
-                          onClick={() => router(item.href)}
-                          className={`flex items-center w-full px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors ${
-                            isActive
-                              ? "bg-blue-50 text-purple-600"
-                              : "text-gray-700"
-                          }`}
-                        >
-                          {item.icon}
-                          <span className="ml-3">{item.label}</span>
-                          {isActive && (
-                            <div className="ml-auto w-2 h-2 bg-purple-600 rounded-full"></div>
-                          )}
-                        </button>
-                      </li>
+                      <React.Fragment key={index}>
+                        <li>
+                          <button
+                            onClick={() => router(item.href)}
+                            className={`flex items-center w-full px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors ${
+                              isActive
+                                ? "bg-blue-50 text-purple-600"
+                                : "text-gray-700"
+                            }`}
+                          >
+                            {item.icon}
+                            <span className="ml-3">{item.label}</span>
+                            {isActive && (
+                              <div className="ml-auto w-2 h-2 bg-purple-600 rounded-full"></div>
+                            )}
+                          </button>
+                        </li>
+
+                        {/* Insert "Create Post" button right after Messages */}
+                        {item.label === "Messages" && (
+                          <li>
+                            <button
+                              onClick={() => setShowPopup(true)}
+                              className="flex items-center gap-x-3 w-full px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                            >
+                              <FaRegPlusSquare />
+                              <span>Create Post</span>
+                            </button>
+                          </li>
+                        )}
+                      </React.Fragment>
                     );
                   })}
-                  <button
-                    onClick={() => setShowPopup(true)}
-                    className="flex items-center gap-x-3 w-full px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors "
-                  >
-                    <FaRegPlusSquare />
-                    Create Post
-                  </button>
                 </ul>
               </nav>
               <div className="p-4 border-t">

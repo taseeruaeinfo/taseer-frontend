@@ -1,6 +1,6 @@
 "use client";
 
-import type React from "react";
+import React from "react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -73,7 +73,7 @@ export default function BrandLayout({ children }: DashboardLayoutProps) {
     {
       icon: <MdOutlineMessage className="w-5 h-5" />,
       label: "Messages",
-      href: "/brand/message",
+      href: "/brand/messages",
     },
     {
       icon: <BiUserPin className="w-5 h-5" />,
@@ -131,31 +131,39 @@ export default function BrandLayout({ children }: DashboardLayoutProps) {
                   {navItems.map((item, index) => {
                     const isActive = location.pathname === item.href;
                     return (
-                      <li key={index}>
-                        <button
-                          onClick={() => router(item.href)}
-                          className={`flex items-center w-full px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors ${
-                            isActive
-                              ? "bg-blue-50 text-purple-600"
-                              : "text-gray-700"
-                          }`}
-                        >
-                          {item.icon}
-                          <span className="ml-3">{item.label}</span>
-                          {isActive && (
-                            <div className="ml-auto w-2 h-2 bg-purple-600 rounded-full"></div>
-                          )}
-                        </button>
-                      </li>
+                      <React.Fragment key={index}>
+                        <li>
+                          <button
+                            onClick={() => router(item.href)}
+                            className={`flex items-center w-full px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors ${
+                              isActive
+                                ? "bg-blue-50 text-purple-600"
+                                : "text-gray-700"
+                            }`}
+                          >
+                            {item.icon}
+                            <span className="ml-3">{item.label}</span>
+                            {isActive && (
+                              <div className="ml-auto w-2 h-2 bg-purple-600 rounded-full"></div>
+                            )}
+                          </button>
+                        </li>
+
+                        {/* Insert "Create Post" button right after Messages */}
+                        {item.label === "Messages" && (
+                          <li>
+                            <button
+                              onClick={() => setShowPopup(true)}
+                              className="flex items-center gap-x-3 w-full px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                            >
+                              <FaRegPlusSquare />
+                              <span>Create Post</span>
+                            </button>
+                          </li>
+                        )}
+                      </React.Fragment>
                     );
                   })}
-                  <button
-                    onClick={() => setShowPopup(true)}
-                    className="flex items-center gap-x-3 w-full px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors "
-                  >
-                    <FaRegPlusSquare />
-                    Create Post
-                  </button>
                 </ul>
               </nav>
 
