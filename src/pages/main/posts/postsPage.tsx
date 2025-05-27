@@ -245,7 +245,7 @@ export default function Posts() {
                   <div
                     key={post.id}
                     ref={isLastElement ? lastPostElementRef : null}
-                    className="bg-white p-5 rounded-lg shadow mb-4"
+                    className="bg-white p-5 rounded-2xl shadow mb-4"
                   >
                     <div className="flex items-start">
                       {/* Profile Image */}
@@ -272,7 +272,7 @@ export default function Posts() {
                           >
                             {post.user.username}
                           </h2>
-                          <span className="ml-2 text-xs uppercase bg-purple-500 rounded-full px-2 py-1 text-white">
+                          <span className={` ${post.user.type == "brand" ? "bg-purple-500 text-white"  :"text-purple-500 border-purple-500"} ml-2 border text-xs uppercase  rounded-full px-2 py-1 `}>
                             {post.user.type}
                           </span>
                         </div>

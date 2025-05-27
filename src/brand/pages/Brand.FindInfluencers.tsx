@@ -303,12 +303,12 @@ const FindInfluencers: React.FC = () => {
     <>
       <BrandLayout>
         <div className="min-h-screen bg-gray-50 pt-6 pb-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className=" mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
               <h1 className="text-4xl font-bold text-gray-900 mb-4">
                 Find the Perfect <span className="text-[#6a38ca]">Creator</span> for Your Brand
               </h1>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              <p className="text-lg text-gray-600  mx-auto">
                 Connect with top-tier influencers who can elevate your brand and engage with your target audience across
                 multiple platforms.
               </p>

@@ -52,7 +52,7 @@ export default function BrandNotifications() {
         <>
             <BrandLayout>
 
-                <div className="max-w-3xl mx-auto  px-4">
+                <div className="m mx-auto  px-4">
                     <h1 className="text-3xl font-extrabold text-gray-800 mb-8">Your Notifications</h1>
 
                     {/* Tab Switcher */}

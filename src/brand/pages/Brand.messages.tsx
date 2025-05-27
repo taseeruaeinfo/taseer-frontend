@@ -165,7 +165,7 @@ export default function BrandsMessagesPage() {
         //@ts-expect-error -network
         return response.data.conversations;
       }
-    } catch (error) {
+    } catch (error) { 
       console.error("Error loading conversations:", error);
     }
   };

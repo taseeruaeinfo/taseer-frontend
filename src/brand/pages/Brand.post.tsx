@@ -2067,7 +2067,7 @@ export default function BrandPost() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6  mx-auto">
               <div
                 onClick={() => handleOptionSelect("create")}
-                className="p-8 rounded-xl border-2 border-gray-200  hover:border-[#6a38ca] flex flex-col justify-center h-[400px] cursor-pointer transition-all duration-300"
+                className="p-8 rounded-2xl border-2 border-gray-200  hover:border-[#6a38ca] flex flex-col justify-center h-[400px] cursor-pointer transition-all duration-300"
               >
                 <h2 className="text-2xl font-bold mb-4">Create a Campaign</h2>
                 <p className="text-gray-600">
@@ -2076,7 +2076,7 @@ export default function BrandPost() {
               </div>
               <div
                 onClick={() => handleOptionSelect("explore")}
-                className="p-8 rounded-xl border-2 border-gray-200 hover:border-[#6a38ca] flex flex-col justify-center h-[400px] cursor-pointer transition-all duration-300"
+                className="p-8 rounded-2xl border-2 border-gray-200 hover:border-[#6a38ca] flex flex-col justify-center h-[400px] cursor-pointer transition-all duration-300"
               >
                 <h2 className="text-2xl font-bold mb-4">Explore Creators</h2>
                 <p className="text-gray-600">

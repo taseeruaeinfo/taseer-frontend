@@ -29,7 +29,7 @@ export default function CampaignTabs({
   const tabs = [
     { id: "influencers", label: "Applicants", icon: <Users size={18} /> },
     { id: "selected", label: "Selected Creators", icon: <Users size={18} /> },
-    { id: "progress", label: "Progress", icon: <BarChart2 size={18} /> },
+    // { id: "progress", label: "Progress", icon: <BarChart2 size={18} /> },
     { id: "details", label: "Details", icon: <FileText size={18} /> },
     { id: "settings", label: "Settings", icon: <Settings size={18} /> },
   ]

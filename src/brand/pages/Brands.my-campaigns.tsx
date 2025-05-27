@@ -135,7 +135,7 @@ const MyCampaignsPage: React.FC = () => {
                             </button>
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-8">
                             <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
                                 <div className="flex items-center justify-between flex-wrap gap-4">
                                     <div className="relative w-full md:w-64">
@@ -144,7 +144,7 @@ const MyCampaignsPage: React.FC = () => {
                                         </div>
                                         <input
                                             type="text"
-                                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                             placeholder="Search campaigns..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}

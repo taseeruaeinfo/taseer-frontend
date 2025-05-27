@@ -21,38 +21,6 @@ import { AiFillHeart } from "react-icons/ai"
 const API_BASE_URL = "http://localhost:5000/api"
 
 // Available categories for filtering
-const availableCategories = [
-  "Lifestyle",
-  "Education",
-  "Travel",
-  "Entrepreneur",
-  "Beauty",
-  "Fashion",
-  "Technology",
-  "Fitness",
-  "Health",
-  "Photography",
-  "Food",
-  "Gaming",
-  "Music",
-  "Art",
-  "Parenting",
-  "Finance",
-  "DIY",
-  "Sports",
-  "Comedy",
-  "Movies",
-]
-
-// Available platforms for filtering
-const availablePlatforms = [
-  { name: "Instagram", value: "instagram", icon: <FaInstagram /> },
-  { name: "TikTok", value: "tiktok", icon: <FaTiktok /> },
-  { name: "YouTube", value: "youtube", icon: <FaYoutube /> },
-  { name: "Facebook", value: "facebook", icon: <FaFacebook /> },
-  { name: "LinkedIn", value: "linkedin", icon: <FaLinkedin /> },
-  { name: "Twitter", value: "x", icon: <FaTwitter /> },
-]
 
 // Interface for creator/influencer data
 interface Creator {
@@ -91,7 +59,6 @@ const MyCreators: React.FC = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
   const [creators, setCreators] = useState<Creator[]>([])
-  const [showFilters, setShowFilters] = useState(false)
   const [minFollowers, setMinFollowers] = useState<number>(0)
   const [minEngagement, setMinEngagement] = useState<number>(0)
   const [loading, setLoading] = useState(false)
@@ -283,144 +250,18 @@ const MyCreators: React.FC = () => {
     <>
       <BrandLayout>
         <div className="min-h-screen bg-gray-50 pt-6 pb-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className=" mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
               <h1 className="text-4xl font-bold capitalize text-gray-900 mb-4">
                 Creators those you have <span className="text-[#6a38ca]">Loved </span> to work with .
               </h1>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              <p className="text-lg text-gray-600  mx-auto">
                 Connect with top-tier influencers who can elevate your brand and engage with your target audience across
                 multiple platforms.
               </p>
             </div>
 
-            {/* Search and Filter Section */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
-              <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
-                {/* Search Bar */}
-                <div className="relative flex-grow">
-                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search by name, username, or location..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6a38ca]"
-                  />
-                </div>
-
-                {/* Filter Toggle Button */}
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
-                >
-                  <FaFilter /> {showFilters ? "Hide Filters" : "Show Filters"}
-                </button>
-              </div>
-
-              {/* Expanded Filters */}
-              {showFilters && (
-                <div className="bg-gray-50 rounded-xl p-6 animate-fadeIn">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Categories Filter */}
-                    <div>
-                      <h3 className="font-medium text-gray-700 mb-3">Categories</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {availableCategories.slice(0, 12).map((category) => (
-                          <button
-                            key={category}
-                            onClick={() => handleCategoryToggle(category)}
-                            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                              selectedCategories.includes(category)
-                                ? "bg-[#6a38ca] text-white"
-                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                            }`}
-                          >
-                            {category}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Platforms Filter */}
-                    <div>
-                      <h3 className="font-medium text-gray-700 mb-3">Platforms</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {availablePlatforms.map((platform) => (
-                          <button
-                            key={platform.value}
-                            onClick={() => handlePlatformToggle(platform.value)}
-                            className={`px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors ${
-                              selectedPlatforms.includes(platform.value)
-                                ? "bg-[#6a38ca] text-white"
-                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                            }`}
-                          >
-                            {platform.icon} {platform.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Numeric Filters */}
-                    <div className="grid grid-cols-1 gap-4">
-                      {/* Followers Range */}
-                      <div>
-                        <label className="block font-medium text-gray-700 mb-2">
-                          Minimum Followers:{" "}
-                          {minFollowers > 0
-                            ? minFollowers >= 1000000
-                              ? `${minFollowers / 1000000}M`
-                              : `${minFollowers / 1000}K`
-                            : "Any"}
-                        </label>
-                        <input
-                          type="range"
-                          min="0"
-                          max="1000000"
-                          step="10000"
-                          value={minFollowers}
-                          onChange={(e) => setMinFollowers(Number(e.target.value))}
-                          className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-[#6a38ca]"
-                        />
-                      </div>
-
-                      {/* Engagement Rate */}
-                      <div>
-                        <label className="block font-medium text-gray-700 mb-2">
-                          Minimum Engagement: {minEngagement}%
-                        </label>
-                        <input
-                          type="range"
-                          min="0"
-                          max="10"
-                          step="0.5"
-                          value={minEngagement}
-                          onChange={(e) => setMinEngagement(Number(e.target.value))}
-                          className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-[#6a38ca]"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Reset Filters */}
-                  <div className="mt-6 flex justify-end">
-                    <button
-                      onClick={() => {
-                        setSelectedCategories([])
-                        setSelectedPlatforms([])
-                        setMinFollowers(0)
-                        setMinEngagement(0)
-                        setSearchTerm("")
-                      }}
-                      className="px-4 py-2 text-[#6a38ca] hover:underline font-medium"
-                    >
-                      Reset All Filters
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+          
 
             {/* Results Count */}
             <div className="mb-6 px-2">
