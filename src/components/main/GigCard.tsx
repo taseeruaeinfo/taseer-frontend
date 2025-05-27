@@ -126,7 +126,7 @@ export default function GigCard({ gig, type, onSave, onNotInterested }: GigCardP
         >
             <div className="relative h-40 overflow-hidden">
                 <img
-                    src={gig.image || "/placeholder.svg"}
+                    src={gig.image || gig.user.profilePic}
                     alt={gig.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {

@@ -41,7 +41,6 @@ type Post = {
 // Sample creators data for the sidebar
 
 export default function Posts() {
-
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
@@ -204,16 +203,17 @@ export default function Posts() {
         {/* Main Posts Section */}
         <div className="w-full">
           {/* Search Bar */}
-          <div className="fixed top-5  bg-white/40 w-full max-w-[1100px] flex gap-x-10 mb-6">
-            <AiOutlineSearch className="absolute left-4 top-3 text-gray-500 text-xl" />
-            <input
-              type="text"
-              placeholder="Search posts..."
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full focus:ring focus:ring-purple-300"
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-          
+          <div className="relative ">
+            <div className="absolute   bg-white/40 w-full flex gap-x-10 mb-6">
+              <AiOutlineSearch className="absolute left-4 top-3 text-gray-500 text-xl" />
+              <input
+                type="text"
+                placeholder="Search posts..."
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full focus:ring focus:ring-purple-300"
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </div>
           </div>
 
           {/* Error Message */}
@@ -228,87 +228,88 @@ export default function Posts() {
 
           {/* Posts */}
           <section className="w-full mt-16">
+            {filteredPosts.length === 0 && !loading ? (
+              <div className="bg-white p-5 rounded-lg shadow mb-4 text-center">
+                <p className="text-gray-600">
+                  {searchTerm ? "No posts match your search" : "No posts found"}
+                </p>
+              </div>
+            ) : (
+              filteredPosts.map((post, index) => {
+                const isLastElement = index === filteredPosts.length - 1;
+                return (
+                  <div
+                    key={post.id}
+                    ref={isLastElement ? lastPostElementRef : null}
+                    className="bg-white p-5 rounded-lg shadow mb-4"
+                  >
+                    <div className="flex items-start">
+                      {/* Profile Image */}
+                      <img
+                        src={
+                          post.user.profilePic ||
+                          "https://via.placeholder.com/150"
+                        }
+                        alt={post.user.username}
+                        className="w-12 h-12 rounded-full cursor-pointer"
+                        onClick={() =>
+                          navigate(`/profile/${post.user.username}`)
+                        }
+                      />
 
-          {filteredPosts.length === 0 && !loading ? (
-            <div className="bg-white p-5 rounded-lg shadow mb-4 text-center">
-              <p className="text-gray-600">
-                {searchTerm ? "No posts match your search" : "No posts found"}
-              </p>
-            </div>
-          ) : (
-            filteredPosts.map((post, index) => {
-              const isLastElement = index === filteredPosts.length - 1;
-              return (
-                <div
-                  key={post.id}
-                  ref={isLastElement ? lastPostElementRef : null}
-                  className="bg-white p-5 rounded-lg shadow mb-4"
-                >
-                  <div className="flex items-start">
-                    {/* Profile Image */}
-                    <img
-                      src={
-                        post.user.profilePic ||
-                        "https://via.placeholder.com/150"
-                      }
-                      alt={post.user.username}
-                      className="w-12 h-12 rounded-full cursor-pointer"
-                      onClick={() => navigate(`/profile/${post.user.username}`)}
-                    />
-
-                    {/* Name & Location */}
-                    <div className="ml-3 flex-1">
-                      <div className="flex items-center">
-                        <h2
-                          className="font-bold text-lg cursor-pointer hover:underline"
-                          onClick={() =>
-                            navigate(`/profile/${post.user.username}`)
-                          }
-                        >
-                          {post.user.username}
-                        </h2>
-                        <span className="ml-2 text-xs uppercase bg-purple-500 rounded-full px-2 py-1 text-white">
-                          {post.user.type}
-                        </span>
+                      {/* Name & Location */}
+                      <div className="ml-3 flex-1">
+                        <div className="flex items-center">
+                          <h2
+                            className="font-bold text-lg cursor-pointer hover:underline"
+                            onClick={() =>
+                              navigate(`/profile/${post.user.username}`)
+                            }
+                          >
+                            {post.user.username}
+                          </h2>
+                          <span className="ml-2 text-xs uppercase bg-purple-500 rounded-full px-2 py-1 text-white">
+                            {post.user.type}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          {new Date(post.createdAt).toLocaleDateString()}
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-500">
-                        {new Date(post.createdAt).toLocaleDateString()}
-                      </p>
+
+                      {/* Follow Button */}
+                      <FollowButton
+                        followingId={post.user.id}
+                        disable={
+                          post.user.id == user?.id || post.user.isFollowing
+                        }
+                      />
                     </div>
 
-                    {/* Follow Button */}
-                    <FollowButton
-                      followingId={post.user.id}
-                      disable={
-                        post.user.id == user?.id || post.user.isFollowing
-                      }
-                    />
-                  </div>
+                    {/* Post Content */}
+                    <p className="mt-3 text-gray-700">{post.text}</p>
 
-                  {/* Post Content */}
-                  <p className="mt-3 text-gray-700">{post.text}</p>
-
-                  {/* Actions */}
-                  <div className="grid grid-cols-4 justify-between mt-4 text-gray-600">
-                    <button
-                      onClick={() => handleLike(post.id)}
-                      className="flex items-center gap-1"
-                    >
-                      {post.isLiked ? (
-                        <AiFillHeart className="text-red-500" />
-                      ) : (
-                        <AiOutlineHeart />
-                      )}
-                      <span>{post.likeCount}</span>
-                    </button>
-                    <button
-                      onClick={() => navigate(`/post/${post.id}`)}
-                      className="flex items-center gap-1"
-                    >
-                      <AiOutlineComment />
-                      <span>{post.commentCount}</span>
-                    </button>
-                    {/* <button className="flex items-center gap-1">
+                    {/* Actions */}
+                    <div className="grid grid-cols-4 justify-between mt-4 text-gray-600">
+                      <button
+                        onClick={() => handleLike(post.id)}
+                        className="flex items-center gap-1"
+                      >
+                        {post.isLiked ? (
+                          <AiFillHeart className="text-red-500" />
+                        ) : (
+                          <AiOutlineHeart />
+                        )}
+                        <span>{post.likeCount}</span>
+                      </button>
+                      <button
+                        onClick={() => navigate(`/post/${post.id}`)}
+                        className="flex items-center gap-1"
+                      >
+                        <AiOutlineComment />
+                        <span>{post.commentCount}</span>
+                      </button>
+                      {/* <button className="flex items-center gap-1">
                                             <AiOutlineRetweet />
                                             <span>{post.repostCount}</span>
                                         </button>
@@ -316,13 +317,12 @@ export default function Posts() {
                                             <AiOutlineSend />
                                             <span>Send</span>
                                         </button> */}
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          )}
+                );
+              })
+            )}
           </section>
-
 
           {/* Loading Indicator */}
           {loading && (
@@ -332,7 +332,6 @@ export default function Posts() {
           )}
         </div>
       </div>
-
     </BrandLayout>
   );
 }

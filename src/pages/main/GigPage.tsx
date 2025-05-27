@@ -22,6 +22,10 @@ interface Campaign {
     status: 'active' | 'completed' | 'draft';
     createdAt: string;
     updatedAt: string;
+
+    user:{
+        profilePic:string
+    }
     
     // Basic Information
     content_requirements: string[];
@@ -257,7 +261,7 @@ export default function GigDetails() {
                         <h1 className="text-4xl font-bold text-gray-900 mb-4">{campaign.title}</h1>
                         <div className="relative h-64 md:h-96 overflow-hidden rounded-2xl shadow-xl mb-6">
                             <img 
-                                src={campaign.CampaignImage} 
+                                src={campaign.CampaignImage  || campaign?.user?.profilePic} 
                                 alt={campaign.title} 
                                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" 
                             />

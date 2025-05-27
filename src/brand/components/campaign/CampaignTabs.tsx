@@ -4,7 +4,7 @@ import type React from "react"
 
 // import { useState } from "react"
 import { motion } from "framer-motion"
-import { Users, BarChart2, FileText, Settings } from "lucide-react"
+import { Users, FileText, Settings } from "lucide-react"
 import SelectedCreators from "./SelectedCreators"
 
 interface CampaignTabsProps {

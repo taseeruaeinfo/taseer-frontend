@@ -11,7 +11,7 @@ import {
   FaFacebook,
   FaLinkedin,
   FaTwitter,
-  FaFilter,
+  // FaFilter,
   FaStar,
 } from "react-icons/fa"
 import BrandLayout from "../components/BrandLayout"
@@ -139,15 +139,15 @@ const MyCreators: React.FC = () => {
     }
   }, [currentBrandId, searchTerm, selectedCategories, selectedPlatforms, minFollowers, minEngagement])
 
-  const handleCategoryToggle = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
-    )
-  }
+  // const handleCategoryToggle = (category: string) => {
+  //   setSelectedCategories((prev) =>
+  //     prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
+  //   )
+  // }
 
-  const handlePlatformToggle = (platform: string) => {
-    setSelectedPlatforms((prev) => (prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]))
-  }
+  // const handlePlatformToggle = (platform: string) => {
+  //   setSelectedPlatforms((prev) => (prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]))
+  // }
 
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= pagination.pages) {

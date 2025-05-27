@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { FiSend, FiPaperclip, FiSearch, FiArrowLeft } from "react-icons/fi";
-import { BsEmojiSmile } from "react-icons/bs";
+import { FiSend, FiArrowLeft } from "react-icons/fi";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import clsx from "clsx";
 import axios from "axios";
-import { useOptimizedSocket } from "../../hooks/useSocket";
-import BrandLayout from "../components/BrandLayout";
+import { useSocket } from "../../hooks/useSocket";
 import Cookies from "js-cookie";
+import BrandLayout from "../components/BrandLayout";
 
 interface User {
   id: string;
@@ -27,71 +26,35 @@ interface Message {
   id: string;
   content: string;
   from: "me" | "them";
-  sender: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    username: string;
-    profilePic: string;
-  };
-  receiver: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    username: string;
-    profilePic: string;
-  };
+  sender: any;
+  receiver: any;
   seen: boolean;
   delivered: boolean;
   createdAt: string;
   status: "sending" | "sent" | "delivered" | "seen" | "failed";
 }
 
-const emojiGroups = [
-  {
-    category: "Smileys",
-    emojis: ["😀", "😁", "😂", "🤣", "😊", "😇", "🙂", "😉"],
-  },
-  {
-    category: "Gestures",
-    emojis: ["👍", "👎", "👌", "✌️", "🤞", "👏", "🙌", "🤝"],
-  },
-  {
-    category: "Objects",
-    emojis: ["💻", "📱", "🎥", "📸", "🔍", "📊", "📈", "💡"],
-  },
-];
-
-export default function OptimizedMessagesPage() {
+export default function MessagesPage() {
   const [conversations, setConversations] = useState<User[]>([]);
   const [selectedUserIndex, setSelectedUserIndex] = useState<number | null>(
     null
   );
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState("");
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [filter, setFilter] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSearch, setShowSearch] = useState(false);
-  const [showAttachments, setShowAttachments] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const [newChatUser, setNewChatUser] = useState<User | null>(null);
   const [isNewChat, setIsNewChat] = useState(false);
-  const [fetchingNewUser, setFetchingNewUser] = useState(false);
-  const [connectionRetries, setConnectionRetries] = useState(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>(null);
-  const messageCache = useRef<Map<string, Message[]>>(new Map());
-  const conversationCache = useRef<User[]>([]);
+  const currentConversationRef = useRef<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const token = Cookies.get("jwt");
 
-  // Optimized socket with better connection management
   const {
     socket,
     connectionStatus,
@@ -102,8 +65,7 @@ export default function OptimizedMessagesPage() {
     stopTyping,
     joinConversation,
     leaveConversation,
-    reconnect,
-  } = useOptimizedSocket(token ?? "");
+  } = useSocket(token ?? "");
 
   const selectedUser = useMemo(
     () =>
@@ -113,15 +75,72 @@ export default function OptimizedMessagesPage() {
     [selectedUserIndex, conversations, newChatUser]
   );
 
-  // Optimized scroll to bottom with debouncing
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  // Cached API calls to reduce database queries
+  // Stable function references
+  const loadConversations = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/messages/conversations",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      //@ts-expect-error - network
+      if (response.data.success) {
+        //@ts-expect-error - network
+
+        const conversationsWithOnlineStatus = response.data.conversations.map(
+          (conv: User) => ({
+            ...conv,
+            isOnline: onlineUsers.some((user) => user.userId === conv.id),
+          })
+        );
+
+        setConversations(conversationsWithOnlineStatus);
+      }
+    } catch (error) {
+      console.error("Error loading conversations:", error);
+    }
+  }, [token, onlineUsers]);
+
+  const loadMessages = useCallback(
+    async (partnerId: string) => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/api/messages/conversation/${partnerId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        //@ts-expect-error - network
+
+        if (response.data.success) {
+          //@ts-expect-error - network
+
+          const messagesWithStatus = response.data.messages.map((msg: any) => ({
+            ...msg,
+            status: msg.seen ? "seen" : msg.delivered ? "delivered" : "sent",
+          }));
+
+          setMessages(messagesWithStatus);
+          setTimeout(scrollToBottom, 100);
+
+          if (socket && connectionStatus === "connected") {
+            markConversationSeen(partnerId);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading messages:", error);
+      }
+    },
+    [token, socket, connectionStatus, markConversationSeen, scrollToBottom]
+  );
+
   const loadNewChatUser = useCallback(
     async (userId: string) => {
-      setFetchingNewUser(true);
       try {
         const response = await axios.get(
           `http://localhost:5000/api/messages/user/${userId}`,
@@ -129,14 +148,14 @@ export default function OptimizedMessagesPage() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        //@ts-expect-error - server resposne erroor
+        //@ts-expect-error - network
 
         if (response.data.success) {
-          //@ts-expect-error - server resposne erroor
+          //@ts-expect-error - network
 
           const userData = response.data.user;
           setNewChatUser(userData);
-          //@ts-expect-error - server resposne erroor
+          //@ts-expect-error - network
 
           if (response.data.hasExistingChat) {
             await loadConversations();
@@ -156,138 +175,51 @@ export default function OptimizedMessagesPage() {
         }
       } catch (error) {
         console.error("Error loading new chat user:", error);
-        navigate("/brand/messages", { replace: true });
-      } finally {
-        setFetchingNewUser(false);
+         navigate("/brand/messages", { replace: true });
       }
     },
-    [token, conversations, navigate]
+    [token, conversations, navigate, loadConversations]
   );
 
-  // Optimized conversation loading with caching
-  const loadConversations = useCallback(async () => {
-    try {
-      // Return cached data if available and recent
-      if (conversationCache.current.length > 0) {
-        setConversations(conversationCache.current);
-        return conversationCache.current;
-      }
-
-      const response = await axios.get(
-        "http://localhost:5000/api/messages/conversations",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      //@ts-expect-error - server resposne erroor
-
-      if (response.data.success) {
-        //@ts-expect-error - server resposne erroor
-
-        const conversationsWithOnlineStatus = response.data.conversations.map(
-          (conv: User) => ({
-            ...conv,
-            isOnline: onlineUsers.some((user) => user.userId === conv.id),
-          })
-        );
-
-        setConversations(conversationsWithOnlineStatus);
-        conversationCache.current = conversationsWithOnlineStatus;
-        return conversationsWithOnlineStatus;
-      }
-    } catch (error) {
-      console.error("Error loading conversations:", error);
-    }
-  }, [token, onlineUsers]);
-
-  // Optimized message loading with caching
-  const loadMessages = useCallback(
-    async (partnerId: string) => {
-      try {
-        // Check cache first
-        const cachedMessages = messageCache.current.get(partnerId);
-        if (cachedMessages) {
-          setMessages(cachedMessages);
-          scrollToBottom();
-          return;
-        }
-
-        const response = await axios.get(
-          `http://localhost:5000/api/messages/conversation/${partnerId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        //@ts-expect-error - server resposne erroor
-        if (response.data.success) {
-          //@ts-expect-error - server resposne erroor
-
-          const messagesWithStatus = response.data.messages.map((msg: any) => ({
-            ...msg,
-            status: msg.seen ? "seen" : msg.delivered ? "delivered" : "sent",
-          }));
-
-          setMessages(messagesWithStatus);
-          messageCache.current.set(partnerId, messagesWithStatus);
-          scrollToBottom();
-
-          if (socket) {
-            markConversationSeen(partnerId);
-          }
-        }
-      } catch (error) {
-        console.error("Error loading messages:", error);
-      }
-    },
-    [token, socket, markConversationSeen, scrollToBottom]
-  );
-
-  // Handle URL parameters
+  // Handle URL parameters - only run once when component mounts or URL changes
   useEffect(() => {
     const userId = searchParams.get("id");
-
     if (userId && token) {
       loadNewChatUser(userId);
     } else if (token) {
       loadConversations().then(() => setLoading(false));
     }
-  }, [searchParams, token, loadNewChatUser, loadConversations]);
+  }, [searchParams.get("id"), token]); // Only depend on the actual URL parameter
 
-  // Optimized socket event handlers
+  // Socket event handlers - stable references
   useEffect(() => {
     const handleNewMessage = (event: CustomEvent) => {
       const newMessage = event.detail;
 
-      // Update message cache
-      if (selectedUser) {
-        const cacheKey = selectedUser.id;
-        const cachedMessages = messageCache.current.get(cacheKey) || [];
+      if (
+        selectedUser &&
+        (newMessage.senderId === selectedUser.id ||
+          newMessage.receiverId === selectedUser.id)
+      ) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            ...newMessage,
+            from: newMessage.senderId === selectedUser.id ? "them" : "me",
+            status: "delivered",
+          },
+        ]);
+        setTimeout(scrollToBottom, 100);
 
         if (
-          newMessage.senderId === selectedUser.id ||
-          newMessage.receiverId === selectedUser.id
+          newMessage.senderId === selectedUser.id &&
+          socket &&
+          connectionStatus === "connected"
         ) {
-          const updatedMessages = [
-            ...cachedMessages,
-            {
-              ...newMessage,
-              from: newMessage.senderId === selectedUser.id ? "them" : "me",
-              status: "delivered",
-            },
-          ];
-
-          setMessages(updatedMessages);
-          messageCache.current.set(cacheKey, updatedMessages);
-          scrollToBottom();
-
-          if (newMessage.senderId === selectedUser.id) {
-            markConversationSeen(selectedUser.id);
-          }
+          markConversationSeen(selectedUser.id);
         }
       }
 
-      // Invalidate conversation cache to refresh unread counts
-      conversationCache.current = [];
       loadConversations();
     };
 
@@ -295,27 +227,21 @@ export default function OptimizedMessagesPage() {
       const sentMessage = event.detail;
 
       if (selectedUser && sentMessage.receiverId === selectedUser.id) {
-        const cacheKey = selectedUser.id;
-        const cachedMessages = messageCache.current.get(cacheKey) || [];
-        const updatedMessages = [
-          ...cachedMessages,
+        setMessages((prev) => [
+          ...prev,
           {
             ...sentMessage,
             from: "me",
             status: "sent",
           },
-        ];
-
-        setMessages(updatedMessages);
-        messageCache.current.set(cacheKey, updatedMessages);
-        scrollToBottom();
+        ]);
+        setTimeout(scrollToBottom, 100);
 
         if (isNewChat) {
           setIsNewChat(false);
-          conversationCache.current = []; // Invalidate cache
-          loadConversations().then((convs) => {
-            const newConvIndex = convs.findIndex(
-              (conv: User) => conv.id === selectedUser.id
+          loadConversations().then(() => {
+            const newConvIndex = conversations.findIndex(
+              (conv) => conv.id === selectedUser.id
             );
             if (newConvIndex !== -1) {
               setSelectedUserIndex(newConvIndex);
@@ -324,18 +250,47 @@ export default function OptimizedMessagesPage() {
           });
         }
       }
-
       setSending(false);
     };
 
-    const handleMessageError = (event: CustomEvent) => {
-      console.error("Message error:", event.detail.error);
-      setSending(false);
-
-      // Update message status to failed
+    const handleMessageDelivered = (event: CustomEvent) => {
+      const { messageId } = event.detail;
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.status === "sending" ? { ...msg, status: "failed" } : msg
+          msg.id === messageId
+            ? { ...msg, status: "delivered", delivered: true }
+            : msg
+        )
+      );
+    };
+
+    const handleMessageSeen = (event: CustomEvent) => {
+      const { messageId } = event.detail;
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, status: "seen", seen: true } : msg
+        )
+      );
+    };
+
+    const handleConversationUpdated = (event: CustomEvent) => {
+      const { partnerId, lastMessage, lastMessageTime } = event.detail;
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv.id === partnerId
+            ? { ...conv, lastMessage, lastMessageTime }
+            : conv
+        )
+      );
+    };
+
+    const handleUnreadCountUpdated = (event: CustomEvent) => {
+      const { partnerId, unreadCount } = event.detail;
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv.id === partnerId
+            ? { ...conv, unreadCount, unread: unreadCount > 0 }
+            : conv
         )
       );
     };
@@ -354,8 +309,7 @@ export default function OptimizedMessagesPage() {
       });
     };
 
-    const handleOnlineStatusUpdate = () => {
-      // Update online status in conversations
+    const handleOnlineUsersUpdated = () => {
       setConversations((prev) =>
         prev.map((conv) => ({
           ...conv,
@@ -368,8 +322,17 @@ export default function OptimizedMessagesPage() {
     window.addEventListener("new_message", handleNewMessage as EventListener);
     window.addEventListener("message_sent", handleMessageSent as EventListener);
     window.addEventListener(
-      "message_error",
-      handleMessageError as EventListener
+      "message_delivered",
+      handleMessageDelivered as EventListener
+    );
+    window.addEventListener("message_seen", handleMessageSeen as EventListener);
+    window.addEventListener(
+      "conversation_updated",
+      handleConversationUpdated as EventListener
+    );
+    window.addEventListener(
+      "unread_count_updated",
+      handleUnreadCountUpdated as EventListener
     );
     window.addEventListener("user_typing", handleUserTyping as EventListener);
     window.addEventListener(
@@ -378,7 +341,7 @@ export default function OptimizedMessagesPage() {
     );
     window.addEventListener(
       "online_users_updated",
-      handleOnlineStatusUpdate as EventListener
+      handleOnlineUsersUpdated as EventListener
     );
 
     return () => {
@@ -391,8 +354,20 @@ export default function OptimizedMessagesPage() {
         handleMessageSent as EventListener
       );
       window.removeEventListener(
-        "message_error",
-        handleMessageError as EventListener
+        "message_delivered",
+        handleMessageDelivered as EventListener
+      );
+      window.removeEventListener(
+        "message_seen",
+        handleMessageSeen as EventListener
+      );
+      window.removeEventListener(
+        "conversation_updated",
+        handleConversationUpdated as EventListener
+      );
+      window.removeEventListener(
+        "unread_count_updated",
+        handleUnreadCountUpdated as EventListener
       );
       window.removeEventListener(
         "user_typing",
@@ -404,60 +379,59 @@ export default function OptimizedMessagesPage() {
       );
       window.removeEventListener(
         "online_users_updated",
-        handleOnlineStatusUpdate as EventListener
+        handleOnlineUsersUpdated as EventListener
       );
     };
-  }, [
-    selectedUser,
-    socket,
-    markConversationSeen,
-    isNewChat,
-    onlineUsers,
-    loadConversations,
-    scrollToBottom,
-  ]);
+  }, [selectedUser?.id, socket, connectionStatus, isNewChat, onlineUsers]); // Minimal dependencies
 
-  // Load messages when selected user changes
+  // Handle conversation room management - separate effect with proper cleanup
   useEffect(() => {
-    if (selectedUser && !isNewChat) {
-      loadMessages(selectedUser.id);
-      joinConversation(selectedUser.id);
+    if (
+      selectedUser &&
+      !isNewChat &&
+      socket &&
+      connectionStatus === "connected"
+    ) {
+      // Only join if we're not already in this conversation
+      if (currentConversationRef.current !== selectedUser.id) {
+        // Leave previous conversation if exists
+        if (currentConversationRef.current) {
+          leaveConversation(currentConversationRef.current);
+        }
 
-      return () => {
-        leaveConversation(selectedUser.id);
-      };
+        // Join new conversation
+        joinConversation(selectedUser.id);
+        currentConversationRef.current = selectedUser.id;
+
+        // Load messages for this conversation
+        loadMessages(selectedUser.id);
+      }
     }
-  }, [
-    selectedUser,
-    joinConversation,
-    leaveConversation,
-    isNewChat,
-    loadMessages,
-  ]);
+
+    // Cleanup function
+    return () => {
+      if (
+        currentConversationRef.current &&
+        socket &&
+        connectionStatus === "connected"
+      ) {
+        leaveConversation(currentConversationRef.current);
+        currentConversationRef.current = null;
+      }
+    };
+  }, [selectedUser?.id, isNewChat, socket, connectionStatus]); // Only essential dependencies
 
   // Auto-scroll when messages change
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+    setTimeout(scrollToBottom, 100);
+  }, [messages.length]);
 
   // Set loading to false when data is ready
   useEffect(() => {
     if (conversations.length > 0 || newChatUser || !searchParams.get("id")) {
       setLoading(false);
     }
-  }, [conversations, newChatUser, searchParams]);
-
-  // Handle connection retries
-  useEffect(() => {
-    if (connectionStatus === "disconnected" && connectionRetries < 3) {
-      const timer = setTimeout(() => {
-        setConnectionRetries((prev) => prev + 1);
-        reconnect();
-      }, 2000 * (connectionRetries + 1)); // Exponential backoff
-
-      return () => clearTimeout(timer);
-    }
-  }, [connectionStatus, connectionRetries, reconnect]);
+  }, [conversations.length, newChatUser, searchParams.get("id")]);
 
   const handleSend = useCallback(() => {
     if (
@@ -480,13 +454,7 @@ export default function OptimizedMessagesPage() {
           username: "",
           profilePic: "",
         },
-        receiver: {
-          id: selectedUser.id,
-          firstName: selectedUser.name.split(" ")[0],
-          lastName: selectedUser.name.split(" ")[1] || "",
-          username: selectedUser.username,
-          profilePic: selectedUser.profilePic,
-        },
+        receiver: selectedUser,
         seen: false,
         delivered: false,
         createdAt: new Date().toISOString(),
@@ -494,13 +462,14 @@ export default function OptimizedMessagesPage() {
       };
 
       setMessages((prev) => [...prev, tempMessage]);
-      scrollToBottom();
+      setTimeout(scrollToBottom, 100);
 
       sendMessage(selectedUser.id, message.trim());
       setMessage("");
 
-      // Stop typing
-      stopTyping(selectedUser.id);
+      if (socket && connectionStatus === "connected") {
+        stopTyping(selectedUser.id);
+      }
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
@@ -512,14 +481,19 @@ export default function OptimizedMessagesPage() {
     connectionStatus,
     sendMessage,
     stopTyping,
-    scrollToBottom,
+    socket,
   ]);
 
   const handleInputChange = useCallback(
     (value: string) => {
       setMessage(value);
 
-      if (selectedUser && value.trim() && connectionStatus === "connected") {
+      if (
+        selectedUser &&
+        value.trim() &&
+        socket &&
+        connectionStatus === "connected"
+      ) {
         startTyping(selectedUser.id);
 
         if (typingTimeoutRef.current) {
@@ -529,25 +503,15 @@ export default function OptimizedMessagesPage() {
         typingTimeoutRef.current = setTimeout(() => {
           stopTyping(selectedUser.id);
         }, 2000);
-      } else if (selectedUser) {
+      } else if (selectedUser && socket && connectionStatus === "connected") {
         stopTyping(selectedUser.id);
         if (typingTimeoutRef.current) {
           clearTimeout(typingTimeoutRef.current);
         }
       }
     },
-    [selectedUser, connectionStatus, startTyping, stopTyping]
+    [selectedUser?.id, connectionStatus, startTyping, stopTyping, socket]
   );
-
-  const handleEmojiClick = useCallback((emoji: string) => {
-    setMessage((prev) => prev + emoji);
-    setShowEmojiPicker(false);
-  }, []);
-
-  const handleAttachment = useCallback((type: string) => {
-    console.log(`Attachment of type ${type} selected`);
-    setShowAttachments(false);
-  }, []);
 
   const isUserOnline = useCallback(
     (userId: string) => {
@@ -561,7 +525,7 @@ export default function OptimizedMessagesPage() {
       setSelectedUserIndex(index);
       setIsNewChat(false);
       setNewChatUser(null);
-      navigate("/brand/messages", { replace: true });
+       navigate("/brand/messages", { replace: true });
     },
     [navigate]
   );
@@ -570,54 +534,10 @@ export default function OptimizedMessagesPage() {
     setSelectedUserIndex(null);
     setIsNewChat(false);
     setNewChatUser(null);
-    navigate("/brand/messages", { replace: true });
+     navigate("/brand/messages", { replace: true });
   }, [navigate]);
 
-  const filteredConversations = useMemo(() => {
-    return conversations.filter((user) => {
-      if (filter === "Unread" && !user.unread) return false;
-      if (filter === "Archived" && !user.unread) return false;
-
-      if (
-        searchQuery &&
-        !user.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !user.username.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [conversations, filter, searchQuery]);
-
-  // Connection status indicator
-  const getConnectionStatusColor = () => {
-    switch (connectionStatus) {
-      case "connected":
-        return "bg-green-100 text-green-800";
-      case "connecting":
-        return "bg-yellow-100 text-yellow-800";
-      case "disconnected":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getConnectionStatusText = () => {
-    switch (connectionStatus) {
-      case "connected":
-        return "🟢 Connected";
-      case "connecting":
-        return "🟡 Connecting...";
-      case "disconnected":
-        return "🔴 Disconnected";
-      default:
-        return "⚪ Unknown";
-    }
-  };
-
-  if (loading || fetchingNewUser) {
+  if (loading) {
     return (
       <BrandLayout>
         <div className="flex items-center justify-center h-96">
@@ -627,33 +547,25 @@ export default function OptimizedMessagesPage() {
     );
   }
 
-  if (!conversations.length && !newChatUser) {
-    return (
-      <BrandLayout>
-        <div className="flex items-center justify-center h-96 text-gray-500">
-          <div className="text-center">
-            <h3 className="text-xl font-semibold mb-2">No conversations yet</h3>
-            <p>Start messaging with creators and brands!</p>
-          </div>
-        </div>
-      </BrandLayout>
-    );
-  }
-
   return (
     <BrandLayout>
-      <div className="flex h-[95vh] -m-4 text-gray-800">
-        {/* Enhanced Connection Status */}
+      <div className="flex  h-full bg-white text-gray-800">
+        {/* Connection Status */}
         <div
           className={clsx(
-            "fixed top-4 right-4 z-50 px-3 py-1 rounded-full text-sm font-medium transition-all duration-300",
-            getConnectionStatusColor()
+            "fixed  right-4 z-50 px-3  rounded-full text-sm font-medium",
+            connectionStatus === "connected"
+              ? "bg-green-100 text-green-800"
+              : connectionStatus === "connecting"
+              ? "bg-yellow-100 text-yellow-800"
+              : "bg-red-100 text-red-800"
           )}
         >
-          {getConnectionStatusText()}
-          {connectionStatus === "disconnected" && connectionRetries > 0 && (
-            <span className="ml-2 text-xs">(Retry {connectionRetries}/3)</span>
-          )}
+          {connectionStatus === "connected"
+            ? "🟢 Connected"
+            : connectionStatus === "connecting"
+            ? "🟡 Connecting..."
+            : "🔴 Disconnected"}
         </div>
 
         {/* Sidebar */}
@@ -664,79 +576,34 @@ export default function OptimizedMessagesPage() {
           )}
         >
           <div className="p-4 border-b">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="font-bold text-xl">Messages</h2>
-              <button
-                onClick={() => setShowSearch(!showSearch)}
-                className="text-gray-600 hover:text-gray-800"
-              >
-                <FiSearch size={20} />
-              </button>
-            </div>
-
-            {showSearch && (
-              <input
-                type="text"
-                placeholder="Search conversations..."
-                className="w-full p-2 border rounded-lg mb-2"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            )}
-
-            <div className="flex space-x-2 text-sm">
-              {["All", "Unread", "Archived"].map((option) => (
-                <button
-                  key={option}
-                  onClick={() => setFilter(option)}
-                  className={clsx(
-                    "px-3 py-1 rounded-full",
-                    filter === option
-                      ? "bg-blue-100 text-blue-700 font-medium"
-                      : "hover:bg-gray-100"
-                  )}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
+            <h2 className="font-bold text-xl">Messages</h2>
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {filteredConversations.map((user, index) => (
+            {conversations.map((user, index) => (
               <div
                 key={user.id}
                 onClick={() => handleSelectConversation(index)}
                 className={clsx(
-                  "flex items-center px-4 py-3 cursor-pointer hover:bg-gray-100 relative",
+                  "flex items-center px-4 py-3 cursor-pointer ",
                   selectedUserIndex === index && "bg-gray-200"
                 )}
               >
                 <div className="relative">
                   <img
-                    src={user.profilePic || "/placeholder.svg"}
+                    src={
+                      user.profilePic || "/placeholder.svg?height=40&width=40"
+                    }
                     alt={user.name}
-                    className="w-10 h-10 rounded-full mr-3 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/profile/${user.username}`);
-                    }}
+                    className="w-10 h-10 rounded-full mr-3"
                   />
-                  {user.isOnline && (
+                  {isUserOnline(user.id) && (
                     <div className="absolute bottom-0 right-2 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                   )}
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
-                    <h4
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/profile/${user.username}`);
-                      }}
-                      className="font-medium hover:underline"
-                    >
-                      {user.name}
-                    </h4>
+                    <h4 className="font-medium">{user.name}</h4>
                     {user.unread && (
                       <span className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                         {user.unreadCount || 1}
@@ -754,12 +621,7 @@ export default function OptimizedMessagesPage() {
 
         {/* Chat Box */}
         {selectedUser ? (
-          <div
-            className={clsx(
-              "flex-1 flex flex-col transition-all duration-300",
-              selectedUser ? "w-full md:w-[75%]" : "w-0"
-            )}
-          >
+          <div className="flex-1 flex flex-col">
             {/* Header */}
             <div className="p-4 border-b flex items-center gap-4 bg-white">
               <button
@@ -770,7 +632,10 @@ export default function OptimizedMessagesPage() {
               </button>
               <div className="relative">
                 <img
-                  src={selectedUser.profilePic || "/placeholder.svg"}
+                  src={
+                    selectedUser.profilePic ||
+                    "/placeholder.svg?height=48&width=48"
+                  }
                   className="w-12 h-12 rounded-full"
                   alt={selectedUser.name}
                 />
@@ -853,76 +718,8 @@ export default function OptimizedMessagesPage() {
             </div>
 
             {/* Input Bar */}
-            <div className="p-4 border-t bg-white flex flex-col">
-              {/* Emoji Picker */}
-              {showEmojiPicker && (
-                <div className="bg-white border rounded-lg shadow-lg p-2 mb-2">
-                  <div className="flex flex-wrap gap-2">
-                    {emojiGroups.map((group) => (
-                      <div key={group.category} className="w-full">
-                        <div className="text-xs text-gray-500 mb-1">
-                          {group.category}
-                        </div>
-                        <div className="flex flex-wrap">
-                          {group.emojis.map((emoji) => (
-                            <button
-                              key={emoji}
-                              onClick={() => handleEmojiClick(emoji)}
-                              className="text-xl p-1 hover:bg-gray-100 rounded"
-                            >
-                              {emoji}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Attachment Picker */}
-              {showAttachments && (
-                <div className="bg-white border rounded-lg shadow-lg p-2 mb-2">
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      "Image",
-                      "Video",
-                      "Document",
-                      "Audio",
-                      "Poll",
-                      "Contact",
-                    ].map((type) => (
-                      <button
-                        key={type}
-                        onClick={() => handleAttachment(type)}
-                        className="p-2 hover:bg-gray-100 rounded text-center"
-                      >
-                        <div className="text-sm">{type}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
+            <div className="p-4 border-t bg-white">
               <div className="flex items-center gap-2">
-                <button
-                  className="text-gray-600 text-xl hover:text-blue-500"
-                  onClick={() => {
-                    setShowEmojiPicker(!showEmojiPicker);
-                    setShowAttachments(false);
-                  }}
-                >
-                  <BsEmojiSmile />
-                </button>
-                <button
-                  className="text-gray-600 text-xl hover:text-blue-500"
-                  onClick={() => {
-                    setShowAttachments(!showAttachments);
-                    setShowEmojiPicker(false);
-                  }}
-                >
-                  <FiPaperclip />
-                </button>
                 <input
                   value={message}
                   onChange={(e) => handleInputChange(e.target.value)}
