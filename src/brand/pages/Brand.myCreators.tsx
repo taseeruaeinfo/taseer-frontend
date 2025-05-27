@@ -18,7 +18,7 @@ import BrandLayout from "../components/BrandLayout"
 import { AiFillHeart } from "react-icons/ai"
 
 // API base URL - replace with your actual API URL
-const API_BASE_URL = "http://localhost:5000/api"
+const API_BASE_URL = "https://taseer-b.onrender.com/api"
 
 // Available categories for filtering
 

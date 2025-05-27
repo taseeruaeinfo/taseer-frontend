@@ -104,7 +104,7 @@ const Onboarding = () => {
         data.priceRange = selectedPriceRanges;
 
         // here lets make a fetch request adn c log the reposnse  - localhost:5000/api/auth/singup   in body in aditional to users add type :"creator"
-        fetch("http://localhost:5000/api/auth/signup", {
+        fetch("https://taseer-b.onrender.com/api/auth/signup", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

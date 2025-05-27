@@ -85,7 +85,7 @@ export default function CreatorCampaigns() {
     try {
       setLoading(true)
       const token = Cookies.get("jwt")
-      const response = await axios.get("http://localhost:5000/api/creator/applications", {
+      const response = await axios.get("https://taseer-b.onrender.com/api/creator/applications", {
         headers: { Authorization: `Bearer ${token}` },
       })
       //@ts-expect-error - network error
@@ -102,7 +102,7 @@ export default function CreatorCampaigns() {
     try {
       const token = Cookies.get("jwt")
       await axios.post(
-        `http://localhost:5000/api/creator/applications/${applicationId}/contract/accept`,
+        `https://taseer-b.onrender.com/api/creator/applications/${applicationId}/contract/accept`,
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       )
@@ -118,7 +118,7 @@ export default function CreatorCampaigns() {
     try {
       const token = Cookies.get("jwt")
       await axios.post(
-        `http://localhost:5000/api/creator/applications/${applicationId}/contract/reject`,
+        `https://taseer-b.onrender.com/api/creator/applications/${applicationId}/contract/reject`,
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       )
@@ -141,7 +141,7 @@ export default function CreatorCampaigns() {
                 console.log("wtfasdasd")
 
       const token = Cookies.get("jwt")
-      await axios.post(`http://localhost:5000/api/creator/applications/${applicationId}/info`, creatorInfo, {
+      await axios.post(`https://taseer-b.onrender.com/api/creator/applications/${applicationId}/info`, creatorInfo, {
         headers: { Authorization: `Bearer ${token}` },
       })
                 console.log("done")
@@ -167,7 +167,7 @@ export default function CreatorCampaigns() {
     try {
       const token = Cookies.get("jwt")
       await axios.post(
-        `http://localhost:5000/api/creator/applications/${currentApplication.id}/deliverables/${currentDeliverable.id}/submit-url`,
+        `https://taseer-b.onrender.com/api/creator/applications/${currentApplication.id}/deliverables/${currentDeliverable.id}/submit-url`,
         { url: contentUrl },
         { headers: { Authorization: `Bearer ${token}` } },
       )

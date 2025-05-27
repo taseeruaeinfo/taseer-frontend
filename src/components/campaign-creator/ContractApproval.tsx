@@ -40,7 +40,7 @@ export default function ContractApproval({
       setLoading(true);
       const token = Cookies.get("jwt");
       await axios.post(
-        `http://localhost:5000/api/campaigns/${campaignId}/contracts/${contractId}/approve`,
+        `https://taseer-b.onrender.com/api/campaigns/${campaignId}/contracts/${contractId}/approve`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -59,7 +59,7 @@ export default function ContractApproval({
       setLoading(true);
       const token = Cookies.get("jwt");
       await axios.post(
-        `http://localhost:5000/api/campaigns/${campaignId}/contracts/${contractId}/reject`,
+        `https://taseer-b.onrender.com/api/campaigns/${campaignId}/contracts/${contractId}/reject`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -13,7 +13,7 @@ const FollowButton = ({ followingId, disable }: { followingId: string, disable: 
     const handleFollow = async () => {
         try {
             const token = Cookies.get("jwt")
-            const response = await axios.post(`http://localhost:5000/api/${user?.id}/follow`, {
+            const response = await axios.post(`https://taseer-b.onrender.com/api/${user?.id}/follow`, {
                 followingId,
             }, {
                 headers: {

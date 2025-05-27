@@ -47,6 +47,7 @@ export default function Dashboard() {
   const [myDealsTab, setMyDealsTab] =
     useState<keyof Omit<GigTabs, "Recommended">>("Applied");
 
+    console.log(setMyDealsTab)
   // Transform campaign data to Gig format
   const transformCampaignToGig = useCallback((campaign: any): Gig => {
     return {

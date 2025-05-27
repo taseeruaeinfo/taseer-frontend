@@ -124,7 +124,7 @@ const Onboarding = () => {
     const onBack = () => setStep((prev) => prev - 1);
 
     const onSubmit = (data: OnboardingFormData) => {
-        fetch("http://localhost:5000/api/auth/signup", {
+        fetch("https://taseer-b.onrender.com/api/auth/signup", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

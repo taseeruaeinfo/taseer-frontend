@@ -83,7 +83,7 @@ export default function MessagesPage() {
   const loadConversations = useCallback(async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/messages/conversations",
+        "https://taseer-b.onrender.com/api/messages/conversations",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -110,7 +110,7 @@ export default function MessagesPage() {
     async (partnerId: string) => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/messages/conversation/${partnerId}`,
+          `https://taseer-b.onrender.com/api/messages/conversation/${partnerId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -143,7 +143,7 @@ export default function MessagesPage() {
     async (userId: string) => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/messages/user/${userId}`,
+          `https://taseer-b.onrender.com/api/messages/user/${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

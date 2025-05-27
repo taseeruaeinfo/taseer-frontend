@@ -23,7 +23,7 @@ export default function PostPopup({ onClose }: PostPopupProps) {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/posts/create",
+        "https://taseer-b.onrender.com/api/posts/create",
         { text: content },
         {
           headers: {

@@ -18,7 +18,6 @@ import {
   Trash,
   Camera,
 } from "lucide-react";
-import DashboardLayout from "../../components/main/DashBoardLayout";
 import BrandLayout from "../components/BrandLayout";
 
 interface MenuItem {
@@ -107,11 +106,12 @@ export default function BrandSettings() {
     reason: "Harassment or Bullying",
     description: "",
   });
-
+console.log(reportForm , tutorialForm)
   const [helpForm, setHelpForm] = useState({
     question: "",
     email: "",
   });
+  console.log(helpForm)
 
   const [paymentForm, setPaymentForm] = useState({
     cardNumber: "",
@@ -130,7 +130,7 @@ export default function BrandSettings() {
       setLoading(true);
       const userId = "current-user-id"; // Replace with actual user ID
       const response = await fetch(
-        `http://localhost:5000/api/settings/profile/${userId}`
+        `https://taseer-b.onrender.com/api/settings/profile/${userId}`
       );
 
       if (!response.ok) {
@@ -181,7 +181,7 @@ export default function BrandSettings() {
 
       // Update basic profile
       const profileResponse = await fetch(
-        `http://localhost:5000/api/settings/profile/${userId}`,
+        `https://taseer-b.onrender.com/api/settings/profile/${userId}`,
         {
           method: "PUT",
           headers: {
@@ -203,7 +203,7 @@ export default function BrandSettings() {
 
       // Update brand settings
       const brandResponse = await fetch(
-        `http://localhost:5000/api/settings/brand-settings/${userId}`,
+        `https://taseer-b.onrender.com/api/settings/brand-settings/${userId}`,
         {
           method: "PUT",
           headers: {
@@ -243,7 +243,7 @@ export default function BrandSettings() {
       const userId = brandData?.id || "current-user-id";
 
       const response = await fetch(
-        `http://localhost:5000/api/settings/change-password/${userId}`,
+        `https://taseer-b.onrender.com/api/settings/change-password/${userId}`,
         {
           method: "PUT",
           headers: {
@@ -289,7 +289,7 @@ export default function BrandSettings() {
     }
   };
 
-  const handleFormSubmit = (formType: string, formData: any) => {
+  const handleFormSubmit = (formType: string,) => {
     toast.success(`${formType} submitted successfully!`);
 
     // Reset form based on type
@@ -784,7 +784,7 @@ export default function BrandSettings() {
               </div>
               <div className="flex justify-end mt-4">
                 <button
-                  onClick={() => handleFormSubmit("Sales Request", salesForm)}
+                  onClick={() => handleFormSubmit("Sales Request")}
                   className="bg-violet-600 text-white px-6 py-2 rounded-md hover:bg-violet-700 transition"
                 >
                   Submit Request

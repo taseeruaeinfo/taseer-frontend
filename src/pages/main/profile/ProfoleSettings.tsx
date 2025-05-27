@@ -174,7 +174,7 @@ export default function CreatorSettings() {
       // Replace with actual user ID from your auth system
       const userId = "current-user-id";
       const response = await fetch(
-        `http://localhost:5000/api/settings/profile/${userId}`,
+        `https://taseer-b.onrender.com/api/settings/profile/${userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -240,7 +240,7 @@ export default function CreatorSettings() {
 
       // Update basic profile
       const profileResponse = await fetch(
-        `http://localhost:5000/api/settings/profile/${userId}`,
+        `https://taseer-b.onrender.com/api/settings/profile/${userId}`,
         {
           method: "PUT",
           headers: {
@@ -266,7 +266,7 @@ export default function CreatorSettings() {
 
       // Update creator settings
       const creatorResponse = await fetch(
-        `http://localhost:5000/api/settings/creator-settings/${userId}`,
+        `https://taseer-b.onrender.com/api/settings/creator-settings/${userId}`,
         {
           method: "PUT",
           headers: {
@@ -304,7 +304,7 @@ export default function CreatorSettings() {
       const userId = userData?.id || "current-user-id";
 
       const response = await fetch(
-        `http://localhost:5000/api/settings/social-handles/${userId}`,
+        `https://taseer-b.onrender.com/api/settings/social-handles/${userId}`,
         {
           method: "PUT",
           headers: {
@@ -341,7 +341,7 @@ export default function CreatorSettings() {
       const userId = userData?.id || "current-user-id";
 
       const response = await fetch(
-        `http://localhost:5000/api/settings/shipping-address/${userId}`,
+        `https://taseer-b.onrender.com/api/settings/shipping-address/${userId}`,
         {
           method: "PUT",
           headers: {
@@ -370,7 +370,7 @@ export default function CreatorSettings() {
       const userId = userData?.id || "current-user-id";
 
       const response = await fetch(
-        `http://localhost:5000/api/settings/portfolio/${userId}`,
+        `https://taseer-b.onrender.com/api/settings/portfolio/${userId}`,
         {
           method: "POST",
           headers: {
@@ -401,7 +401,7 @@ export default function CreatorSettings() {
   const removePortfolioItem = async (id: string) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/settings/portfolio/${id}`,
+        `https://taseer-b.onrender.com/api/settings/portfolio/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -439,7 +439,7 @@ export default function CreatorSettings() {
   const generateShareUrl = () => {
     const uniqueId = Math.random().toString(36).substring(2, 10);
     setShareUrl(
-      `https://yourplatform.com/creator/${userData?.username}/${uniqueId}`
+      `https://yourplatform.com/creator/${userData?.firstName}/${uniqueId}`
     );
     setShowShareDialog(true);
   };
@@ -963,7 +963,7 @@ export default function CreatorSettings() {
               <input
                 type="text"
                 placeholder="Username"
-                value={userData?.username || ""}
+                value={userData?.firstName || ""}
                 disabled
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
               />

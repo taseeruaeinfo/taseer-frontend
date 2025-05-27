@@ -1,7 +1,7 @@
 import { toast } from "react-toastify"
 import Cookies from "js-cookie"
 
-const API_BASE_URL = "http://localhost:5000/api"
+const API_BASE_URL = "https://taseer-b.onrender.com/api"
 
 // Helper function to handle API responses
 const handleResponse = async (response: Response) => {

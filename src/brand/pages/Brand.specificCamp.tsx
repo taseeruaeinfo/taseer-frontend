@@ -105,7 +105,7 @@ const CampaignDetailPage: React.FC = () => {
     setLoading(true)
     try {
       const token = Cookies.get("jwt")
-      const response = await axios.get(`http://localhost:5000/api/campaign/${campaignId}`, {
+      const response = await axios.get(`https://taseer-b.onrender.com/api/campaign/${campaignId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       //@ts-expect-error - network error
@@ -177,7 +177,7 @@ const CampaignDetailPage: React.FC = () => {
 
     try {
       const token = Cookies.get("jwt")
-      const response = await axios.put(`http://localhost:5000/api/campaigns/${campaignId}`, updatedData, {
+      const response = await axios.put(`https://taseer-b.onrender.com/api/campaigns/${campaignId}`, updatedData, {
         headers: { Authorization: `Bearer ${token}` },
       })
             //@ts-expect-error - network error
@@ -195,7 +195,7 @@ const CampaignDetailPage: React.FC = () => {
       const token = Cookies.get("jwt")
       const backendStatus = mapToBackendStatus(newStatus)
       await axios.put(
-        `http://localhost:5000/api/campaign-applications/${applicationId}/status`,
+        `https://taseer-b.onrender.com/api/campaign-applications/${applicationId}/status`,
         { status: backendStatus },
         { headers: { Authorization: `Bearer ${token}` } },
       )

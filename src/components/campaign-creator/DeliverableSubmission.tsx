@@ -46,7 +46,7 @@ export default function DeliverableSubmission({
       setLoading(true)
       const token = Cookies.get("jwt")
       await axios.post(
-        `http://localhost:5000/api/campaigns/${campaignId}/deliverables/${deliverableId}/submit`,
+        `https://taseer-b.onrender.com/api/campaigns/${campaignId}/deliverables/${deliverableId}/submit`,
         { url, notes },
         { headers: { Authorization: `Bearer ${token}` } },
       )

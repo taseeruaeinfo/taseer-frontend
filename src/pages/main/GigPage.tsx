@@ -130,7 +130,7 @@ export default function GigDetails() {
             const token = Cookies.get("jwt")
             try {
                 setLoading(true);
-                const response = await axios.get<Campaign>(`http://localhost:5000/api/campaign/${campaignId}`, {
+                const response = await axios.get<Campaign>(`https://taseer-b.onrender.com/api/campaign/${campaignId}`, {
                     headers: {
                         authorization: `Bearer ${token}`,
                     }
@@ -169,7 +169,7 @@ export default function GigDetails() {
         try {
             const token = Cookies.get("jwt")
             setSubmitting(true);
-            await axios.post(`http://localhost:5000/api/campaigns/${campaignId}/apply`, formData, {
+            await axios.post(`https://taseer-b.onrender.com/api/campaigns/${campaignId}/apply`, formData, {
                 headers: {
                     authorization: `Bearer ${token}`,
                 }

@@ -544,7 +544,7 @@ export default function BrandPost() {
       toast.info("Creating campaign...", { autoClose: 2000 });
 
       const res = await axios.post(
-        "http://localhost:5000/api/campaigns",
+        "https://taseer-b.onrender.com/api/campaigns",
         payload,
         {
           headers: {

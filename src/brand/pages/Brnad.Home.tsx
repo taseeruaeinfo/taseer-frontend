@@ -81,7 +81,7 @@ export default function Posts() {
 
     try {
       const token = Cookies.get("jwt");
-      const response = await axios.get("http://localhost:5000/api/posts", {
+      const response = await axios.get("https://taseer-b.onrender.com/api/posts", {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -110,7 +110,7 @@ export default function Posts() {
     try {
       const token = Cookies.get("jwt");
       const response = await axios.get(
-        `http://localhost:5000/api/posts?cursor=${nextCursor}`,
+        `https://taseer-b.onrender.com/api/posts?cursor=${nextCursor}`,
         {
           headers: {
             authorization: `Bearer ${token}`,
@@ -155,7 +155,7 @@ export default function Posts() {
         )
       );
       await axios.post(
-        `http://localhost:5000/api/posts/${postId}/like`,
+        `https://taseer-b.onrender.com/api/posts/${postId}/like`,
         {},
         {
           headers: {
