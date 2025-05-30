@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
+import Cookies from "js-cookie";
 interface UserState {
   id: string;
   firstName: string;
@@ -15,7 +15,10 @@ interface UserState {
   dob: string;
 }
 
-const initialState: UserState | any = null;
+const token = Cookies.get("jwt")
+
+const initialState: UserState | any = !token ? null :null;
+
 
 const userSlice = createSlice({
   name: "user",

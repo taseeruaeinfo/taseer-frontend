@@ -23,6 +23,9 @@ import { MdOutlineMessage, MdPerson } from "react-icons/md";
 import CusotmAdsBar from "./CustomAds";
 import PostPopup from "../../pages/main/posts/PostPage";
 import { FaRegPlusSquare } from "react-icons/fa";
+import { logout } from "../../store/userSlice";
+import Cookies from "js-cookie";
+import { useDispatch } from "react-redux";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -31,6 +34,7 @@ interface DashboardLayoutProps {
 export default function BrandLayout({ children }: DashboardLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
+  const dispatch = useDispatch();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -38,7 +42,15 @@ export default function BrandLayout({ children }: DashboardLayoutProps) {
 
   const router = useNavigate();
   const location = useLocation(); // get current route
+  const handleLogout = () => {
+    // Dispatch the logout action to clear the user state
+    dispatch(logout());
 
+    Cookies.remove("jwt");
+
+    // Redirect to login page after logging out
+    router("/login");
+  };
   const navItems = [
     {
       icon: <AiOutlineHome className="w-5 h-5" />,
@@ -177,7 +189,7 @@ export default function BrandLayout({ children }: DashboardLayoutProps) {
                                 </div> */}
 
                 <button
-                  onClick={() => router("/")}
+                  onClick={handleLogout}
                   className="w-full flex items-center justify-center px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   <AiOutlineLogout className="w-5 h-5 mr-2" />

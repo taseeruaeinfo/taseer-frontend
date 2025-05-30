@@ -1,4 +1,3 @@
-"use client";
 
 import React from "react";
 import { useState, useEffect } from "react";
@@ -18,6 +17,7 @@ import { RootState } from "../../store";
 import { logout } from "../../store/userSlice";
 import CustomAdsBar from "../../brand/components/CustomAds";
 import PostPopup from "../../pages/main/posts/PostPage";
+import Cookies from "js-cookie";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -41,7 +41,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     } else if (user.type !== "creator") {
       router("/brand/home");
     }
-  }, [user, router]);
+  });
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -77,9 +77,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     // Dispatch the logout action to clear the user state
     dispatch(logout());
 
-    // Optionally, clear session data like tokens from localStorage or sessionStorage
-    localStorage.removeItem("token"); // Clear token if stored in localStorage
-    sessionStorage.removeItem("token"); // Clear token if stored in sessionStorage
+    Cookies.remove("jwt");
 
     // Redirect to login page after logging out
     router("/login");

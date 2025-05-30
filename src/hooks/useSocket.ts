@@ -223,7 +223,7 @@ export const useSocket = (token: string | null): UseSocketReturn => {
 
     console.log("🔌 Connecting to socket server...")
 
-    const newSocket = io("http://localhost:5000", {
+    const newSocket = io("https://taseer-b.onrender.com/", {
       auth: { token },
       transports: ["websocket", "polling"],
       timeout: 10000,
