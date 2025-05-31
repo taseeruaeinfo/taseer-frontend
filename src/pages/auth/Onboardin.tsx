@@ -417,8 +417,8 @@ const Onboarding = () => {
                     })}
                     placeholder="First Name"
                     className={`w-full border-2 ${
-                      errors.firstName ? "border-red-500" : "border-purple-500"
-                    } outline-purple-500 rounded-md p-2 mt-1`}
+                      errors.firstName ? "border-red-500" : ""
+                    } placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1`}
                   />
                   {errors.firstName && (
                     <p className="text-red-500 text-sm mt-1">
@@ -435,8 +435,8 @@ const Onboarding = () => {
                     })}
                     placeholder="Last Name"
                     className={`w-full border-2 ${
-                      errors.lastName ? "border-red-500" : "border-purple-500"
-                    } outline-purple-500 rounded-md p-2 mt-1`}
+                      errors.lastName ? "border-red-500" : ""
+                    } placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1`}
                   />
                   {errors.lastName && (
                     <p className="text-red-500 text-sm mt-1">
@@ -458,8 +458,8 @@ const Onboarding = () => {
                     type="email"
                     placeholder="Email"
                     className={`w-full border-2 ${
-                      errors.email ? "border-red-500" : "border-purple-500"
-                    } outline-purple-500 rounded-md p-2 mt-1`}
+                      errors.email ? "border-red-500" : ""
+                    } placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1`}
                   />
                   {errors.email && (
                     <p className="text-red-500 text-sm mt-1">
@@ -481,8 +481,8 @@ const Onboarding = () => {
                     type="password"
                     placeholder="Create Password"
                     className={`w-full border-2 ${
-                      errors.password ? "border-red-500" : "border-purple-500"
-                    } outline-purple-500 rounded-md p-2 mt-1`}
+                      errors.password ? "border-red-500" : ""
+                    } placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1`}
                   />
                   {errors.password && (
                     <p className="text-red-500 text-sm mt-1">
@@ -504,8 +504,8 @@ const Onboarding = () => {
                     className={`w-full border-2 ${
                       errors.confirmPassword
                         ? "border-red-500"
-                        : "border-purple-500"
-                    } outline-purple-500 rounded-md p-2 mt-1`}
+                        : ""
+                    } placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1`}
                   />
                   {errors.confirmPassword && (
                     <p className="text-red-500 text-sm mt-1">
@@ -538,7 +538,7 @@ const Onboarding = () => {
               <div className="space-y-4">
                 <div>
                   <select
-                    className="bg-transparent border-2 mb-1 w-full border-purple-500 outline-purple-500 rounded-md p-2 "
+                    className="bg-transparent border-2 mb-1 w-full  placeholder-gray-500 text-gray-800 rounded-md p-2 "
                     id=""
                     {...register("countryCode")}
                   >
@@ -1200,8 +1200,8 @@ const Onboarding = () => {
                     type="tel"
                     placeholder="Contact Number "
                     className={`w-full border-2 ${
-                      errors.phone ? "border-red-500" : "border-purple-500"
-                    } outline-purple-500 rounded-md p-2 mt-1`}
+                      errors.phone ? "border-red-500" : ""
+                    } placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1`}
                   />
                   {errors.phone && (
                     <p className="text-red-500 text-sm mt-1">
@@ -1219,8 +1219,8 @@ const Onboarding = () => {
                     className={`w-full border-2 ${
                       errors.nationality
                         ? "border-red-500"
-                        : "border-purple-500"
-                    } outline-purple-500 rounded-md p-2 mt-1`}
+                        : ""
+                    } placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1`}
                   >
                     <option value="">Select your nationality</option>
                     {countries.map((country) => (
@@ -1242,8 +1242,8 @@ const Onboarding = () => {
                     {...register("city", { required: "City is required" })}
                     placeholder="What city are you based in?"
                     className={`w-full border-2 ${
-                      errors.city ? "border-red-500" : "border-purple-500"
-                    } outline-purple-500 rounded-md p-2 mt-1`}
+                      errors.city ? "border-red-500" : ""
+                    } placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1`}
                   />
                   {errors.city && (
                     <p className="text-red-500 text-sm mt-1">
@@ -1260,8 +1260,8 @@ const Onboarding = () => {
                     })}
                     type="date"
                     className={`w-full border-2 ${
-                      errors.dob ? "border-red-500" : "border-purple-500"
-                    } outline-purple-500 rounded-md p-2 mt-1`}
+                      errors.dob ? "border-red-500" : ""
+                    } placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1`}
                   />
                   {errors.dob && (
                     <p className="text-red-500 text-sm mt-1">
@@ -1300,37 +1300,37 @@ const Onboarding = () => {
                 <input
                   {...register("instagram")}
                   placeholder="Instagram URL"
-                  className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                  className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2"
                 />
                 <input
                   {...register("tiktok")}
                   placeholder="TikTok URL "
-                  className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                  className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2"
                 />
                 <input
                   {...register("youtube")}
                   placeholder="YouTube URL "
-                  className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                  className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2"
                 />
                 <input
                   {...register("facebook")}
                   placeholder="Facebook URL "
-                  className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                  className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2"
                 />
                 <input
                   {...register("twitter")}
                   placeholder="X (Twitter) URL "
-                  className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                  className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2"
                 />
                 <input
                   {...register("linkedin")}
                   placeholder="LinkedIn URL "
-                  className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                  className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2"
                 />
                 <input
                   {...register("otherSocial")}
                   placeholder="Other Platform URL "
-                  className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                  className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2"
                 />
               </div>
               <div className="flex justify-between gap-4">
@@ -1436,7 +1436,7 @@ const Onboarding = () => {
                   <label className="font-medium text-gray-700">Platform</label>
                   <select
                     {...register("platform")}
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2 mt-1"
+                    className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1"
                   >
                     <option value="">Select your main platform</option>
                     <option value="instagram">Instagram</option>
@@ -1452,31 +1452,31 @@ const Onboarding = () => {
                 <input
                   {...register("reachLast30Days")}
                   placeholder="Reach in last 30 days"
-                  className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                  className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2"
                 />
 
                 <input
                   {...register("currentFollowers")}
                   placeholder="Current Follower Count"
-                  className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                  className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2"
                 />
 
                 <input
                   {...register("postsLast30Days")}
                   placeholder="How many posts have you shared in the last 30 days?"
-                  className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                  className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2"
                 />
 
                 <input
                   {...register("averageEngagementRate")}
                   placeholder="What is your average engagement rate over the past 30 days?"
-                  className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                  className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2"
                 />
 
                 <input
                   {...register("majorityViewersCountry")}
                   placeholder="Majority viewers are from which country"
-                  className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                  className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2"
                 />
 
                 <div className="space-y-2">
@@ -1525,7 +1525,7 @@ const Onboarding = () => {
                     {selectedContentTypes.includes("Other") && (
                       <input
                         placeholder="Please specify"
-                        className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2 mt-2"
+                        className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2 mt-2"
                       />
                     )}
                   </div>
@@ -1731,7 +1731,7 @@ const Onboarding = () => {
                   </label>
                   <textarea
                     {...register("brandsWorkedWith")}
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2 min-h-24"
+                    className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2 min-h-24"
                     placeholder="List brands you've collaborated with"
                   />
                 </div>
@@ -1745,7 +1745,7 @@ const Onboarding = () => {
                   </label>
                   <textarea
                     {...register("portfolioLinks")}
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2 min-h-24"
+                    className="w-full border-2  placeholder-gray-500 text-gray-800 rounded-md p-2 min-h-24"
                     placeholder="Paste links to your best work"
                   />
                 </div>

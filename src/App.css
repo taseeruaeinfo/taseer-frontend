@@ -7,3 +7,11 @@
 .text-pink {
   color: #ffa5cc;
 }
+
+
+
+@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap');
+* {
+  font-family: "Abril Fatface", serif;
+  font-style: normal;
+}

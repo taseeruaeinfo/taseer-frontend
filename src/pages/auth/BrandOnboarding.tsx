@@ -164,23 +164,23 @@ const onSubmit = (data: OnboardingFormData) => {
           onClose: () => (window.location.href = "/login"),
         });
       } else if (result?.message === "Internal server error") {
-        toast.error("🔥 Internal server error from server side - Contact dev");
+        toast.error(" Internal server error from server side - Contact dev");
       } else if (result?.message === "User already exists.") {
-        toast.info("ℹ️ Please login with your previous credentials.");
+        toast.info("ℹ Please login with your previous credentials.");
         setTimeout(() => {
           window.location.href = "/login";
         }, 3000);
       } else if (result?.status === 400) {
-        toast.warn("⚠️ You already have an account, so please login.");
+        toast.warn(" You already have an account, so please login.");
       } else if (result?.message === "Missing required fields.") {
-        toast.warn("⚠️ Please fill all the required fields.");
+        toast.warn("Please fill all the required fields.");
       } else {
-        toast.warn("⚠️ Please fill again properly.");
+        toast.warn(" Please fill again properly.");
       }
     })
     .catch((error) => {
       console.error("Error:", error);
-      toast.error("❌ An error occurred. Please try again.");
+      toast.error(" An error occurred. Please try again.");
     });
 };
 
@@ -239,7 +239,7 @@ const onSubmit = (data: OnboardingFormData) => {
           {/* Step 1: Basic Info */}
           {step === 1 && (
             <div className="space-y-5">
-              <h2 className="text-2xl font-bold text-gray-800 text-center">
+              <h2 className="text-3xl abril-fatface font-bold text-gray-800 text-center">
                 Basic Information
               </h2>
               <div className="space-y-4">
@@ -248,8 +248,8 @@ const onSubmit = (data: OnboardingFormData) => {
                     {...register("companyName", {
                       required: "Company name is required",
                     })}
-                    placeholder="Company Name *"
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    placeholder="Company Name "
+                    className="w-full border-2 b outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   />
                   {errors.companyName && (
                     <p className="text-red-500 text-sm mt-1">
@@ -266,7 +266,7 @@ const onSubmit = (data: OnboardingFormData) => {
                     })}
                     type="email"
                     placeholder="Email "
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   />
                   {errors.email && (
                     <p className="text-red-500 text-sm mt-1">
@@ -279,8 +279,8 @@ const onSubmit = (data: OnboardingFormData) => {
                     {...register("nationality", {
                       required: "Nationality is required",
                     })}
-                    placeholder="Nationality *"
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    placeholder="Nationality "
+                    className="w-full border-2  outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   />
                   {errors.nationality && (
                     <p className="text-red-500 text-sm mt-1">
@@ -291,11 +291,11 @@ const onSubmit = (data: OnboardingFormData) => {
 
                 <div className="grid">
                   <select
-                    className="bg-transparent border-2 mb-1 border-purple-500 outline-purple-500 rounded-md p-2 "
+                    className="bg-transparent   border-2 mb-1 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2 "
                     id=""
                     {...register("countryCode")}
                   >
-                    <option data-countryCode="nan" value="nan">
+                    <option data-countryCode="nan" className="text-gray-400" value="nan">
                       Select Country Code{" "}
                     </option>
                     <option data-countryCode="DZ" value="213">
@@ -949,10 +949,11 @@ const onSubmit = (data: OnboardingFormData) => {
 
                   <input
                     {...register("phone", {
+                      
                       required: "Contact number is required",
                     })}
-                    placeholder="Contact Number (with country code) *"
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    placeholder="Contact Number  "
+                    className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   />
                   {errors.phone && (
                     <p className="text-red-500 text-sm mt-1">
@@ -964,26 +965,11 @@ const onSubmit = (data: OnboardingFormData) => {
                 <div>
                   <input
                     {...register("website")}
-                    placeholder="Website (optional)"
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    placeholder="Website "
+                    className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   />
                 </div>
-                <div>
-                  <input
-                    {...register("dob", {
-                      required: "Date of birth is required",
-                    })}
-                    type="date"
-                    className={`w-full border-2 ${
-                      errors.dob ? "border-red-500" : "border-purple-500"
-                    } outline-purple-500 rounded-md p-2 mt-1`}
-                  />
-                  {errors.dob && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.dob.message}
-                    </p>
-                  )}
-                </div>
+               
                 <div>
                   <input
                     {...register("password", {
@@ -994,8 +980,8 @@ const onSubmit = (data: OnboardingFormData) => {
                       },
                     })}
                     type="password"
-                    placeholder="Create Password *"
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    placeholder="Create Password "
+                    className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   />
                   {errors.password && (
                     <p className="text-red-500 text-sm mt-1">
@@ -1011,8 +997,8 @@ const onSubmit = (data: OnboardingFormData) => {
                       validate: validatePasswordMatch,
                     })}
                     type="password"
-                    placeholder="Re-enter Password *"
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    placeholder="Re-enter Password "
+                    className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   />
                   {errors.confirmPassword && (
                     <p className="text-red-500 text-sm mt-1">
@@ -1088,7 +1074,7 @@ const onSubmit = (data: OnboardingFormData) => {
                     {...register("industry", {
                       required: "Please select your industry",
                     })}
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   >
                     <option value="">Select Your Industry</option>
                     <option value="fashion">Fashion & Apparel</option>
@@ -1118,8 +1104,8 @@ const onSubmit = (data: OnboardingFormData) => {
                             ? "Please specify your industry"
                             : false,
                       })}
-                      placeholder="Please specify your industry *"
-                      className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                      placeholder="Please specify your industry "
+                      className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                     />
                     {errors.otherIndustry && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1134,15 +1120,15 @@ const onSubmit = (data: OnboardingFormData) => {
                     {...register("yearOfIncorporation")}
                     placeholder="Year of Incorporation (optional)"
                     type="number"
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   />
                 </div>
 
                 <div>
                   <input
                     {...register("city", { required: "City is required" })}
-                    placeholder="City *"
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    placeholder="City "
+                    className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   />
                   {errors.city && (
                     <p className="text-red-500 text-sm mt-1">
@@ -1182,8 +1168,8 @@ const onSubmit = (data: OnboardingFormData) => {
                     {...register("representativeName", {
                       required: "Representative name is required",
                     })}
-                    placeholder="Name of Representative *"
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    placeholder="Name of Representative "
+                    className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   />
                   {errors.representativeName && (
                     <p className="text-red-500 text-sm mt-1">
@@ -1197,8 +1183,8 @@ const onSubmit = (data: OnboardingFormData) => {
                     {...register("representativeDesignation", {
                       required: "Representative Designation is required",
                     })}
-                    placeholder="Representative Designation *"
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    placeholder="Representative Designation "
+                    className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   />
                   {errors.representativeDesignation && (
                     <p className="text-red-500 text-sm mt-1">
@@ -1212,7 +1198,7 @@ const onSubmit = (data: OnboardingFormData) => {
                     {...register("representativeDepartment", {
                       required: "Department is required",
                     })}
-                    className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                    className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   >
                     <option value="">Select Department</option>
                     <option value="marketing">Marketing</option>
@@ -1246,8 +1232,8 @@ const onSubmit = (data: OnboardingFormData) => {
                             ? "Please specify your department"
                             : false,
                       })}
-                      placeholder="Please specify your department *"
-                      className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                      placeholder="Please specify your department "
+                      className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                     />
                     {errors.otherDepartment && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1262,7 +1248,7 @@ const onSubmit = (data: OnboardingFormData) => {
                     {...register("sameAsCompanyEmail")}
                     type="checkbox"
                     id="sameAsCompanyEmail"
-                    className="mr-2 h-4 w-4 accent-purple-600"
+                    className="mr-2 h-3 w-3 accent-purple-600"
                   />
                   <label htmlFor="sameAsCompanyEmail" className="text-gray-700">
                     Same as company email
@@ -1275,7 +1261,7 @@ const onSubmit = (data: OnboardingFormData) => {
                       {...register("representativeEmail")}
                       type="email"
                       placeholder="Email (optional)"
-                      className="w-full border-2 border-purple-500 outline-purple-500 rounded-md p-2"
+                      className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                     />
                   </div>
                 )}
@@ -1284,7 +1270,7 @@ const onSubmit = (data: OnboardingFormData) => {
                   <input
                     {...register("representativePhone")}
                     placeholder="Contact Number (optional)"
-                    className="w-fit border-2 border-purple-500 w-full outline-purple-500 rounded-md p-2"
+                    className="w-full border-2  text-gray-500 outline-purple-400 rounded-md p-2"
                   />
                 </div>
               </div>

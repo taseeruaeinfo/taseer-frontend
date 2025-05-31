@@ -153,8 +153,8 @@ const Login: React.FC = () => {
         theme="light"
       />
       <Navbar />
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white shadow-lg shadow-purple-500 rounded-xl border-2 border-purple-500 p-8 max-w-md w-full text-center">
+      <div className="min-h-screen flex items-center justify-center ">
+        <div className="bg-white shadow-lg shadow-purple-300 rounded-xl border-2 border-purple-300 p-8 max-w-md w-full text-center">
           {/* Logo */}
           <div className="flex items-center justify-center mb-4">
             <img src="/logo.svg" alt="logo" />
@@ -163,17 +163,17 @@ const Login: React.FC = () => {
           {step === "credentials" ? (
             <>
               {/* Title */}
-              <h2 className="text-2xl font-bold text-gray-900">
-                Creators Log in
+              <h2 className="text-3xl font-bold text-gray-900">
+                 Log in
               </h2>
-              <p className="text-gray-600 mt-1 mb-4">Welcome back, friend</p>
+              <p className="text-gray-500 mt-1 mb-4">Welcome back, friend</p>
 
               {/* Email Input */}
               <div className="text-left mb-4">
-                <label className="block text-gray-700 font-semibold mb-1">
+                <label className="block text-gray-700 text-lg font-semibold mb-1">
                   Email
                 </label>
-                <div className="flex items-center border rounded-lg p-3 bg-gray-100">
+                <div className="flex items-center border rounded-lg p-3 bg-transparent outline-purple-100">
                   <FaRegEnvelope className="text-gray-500 mr-2" />
                   <input
                     value={email}
@@ -187,17 +187,17 @@ const Login: React.FC = () => {
 
               {/* Password Input */}
               <div className="text-left mb-6">
-                <label className="block text-gray-700 font-semibold mb-1">
+                <label className="block text-gray-700 text-lg font-semibold mb-1">
                   Password
                 </label>
-                <div className="flex items-center border rounded-lg p-3 bg-gray-100">
+                <div className="flex items-center border rounded-lg p-3 bg-transparent outline-purple-300">
                   <FaLock className="text-gray-500 mr-2" />
                   <input
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     type="password"
                     placeholder="Enter your password"
-                    className="bg-transparent outline-none w-full text-gray-700"
+                    className="bg-transparent outline-none w-full text-gray-500"
                     onKeyPress={(e) =>
                       e.key === "Enter" && handleCredentialsSubmit()
                     }
@@ -278,12 +278,12 @@ const Login: React.FC = () => {
           <p className="text-xs text-gray-500 mt-6">
             By continuing, you acknowledge that you have read and agree to our{" "}
             <span className="text-purple-600 cursor-pointer hover:underline">
-              Creator Terms and Conditions of Service
+              Terms and Conditions of Service
             </span>
           </p>
 
           {/* Signup & Links */}
-          <p className="mt-4 text-sm text-gray-700">
+          <p className="mt-4 text-sm text-gray-500">
             Don't have an account?{" "}
             <span className="text-purple-600 cursor-pointer hover:underline">
               Sign up
