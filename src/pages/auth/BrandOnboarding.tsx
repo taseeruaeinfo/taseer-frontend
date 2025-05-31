@@ -63,7 +63,7 @@ interface OnboardingFormData {
 }
 
 const Onboarding = () => {
-  const [step, setStep] = useState(6);
+  const [step, setStep] = useState(1);
   const {
     register,
     handleSubmit,
