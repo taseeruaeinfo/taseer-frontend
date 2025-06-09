@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,9 +32,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const dispatch = useDispatch(); // Use the dispatch hook to dispatch actions
   const user = useSelector((state: RootState) => state.user);
 
+  const token = Cookies.get("jwt");
+  useEffect(() => {
+    console.log(token)
+    if (!token) {
+      dispatch(logout());
+    }
+  });
   // Redirect logic for user not logged in or not a creator
   useEffect(() => {
-    if (user === null) return; // Wait for Redux state to populate
     if (!user) {
       router("/login");
     } else if (user.type !== "creator") {

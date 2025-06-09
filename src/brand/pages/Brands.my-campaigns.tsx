@@ -45,7 +45,7 @@ const MyCampaignsPage: React.FC = () => {
         setIsLoading(true);
         const token = Cookies.get('jwt');
         try {
-            const response = await axios.get('https://taseer-b.onrender.com/api/campaigns/brand/all', {
+            const response = await axios.get('https://api.taseer.app/api/campaigns/brand/all', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

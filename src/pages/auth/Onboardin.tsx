@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaArrowRight, FaArrowLeft } from "react-icons/fa";
@@ -6,6 +8,10 @@ import Button from "../../components/ui/Button";
 import Footer from "../../components/Fotter";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import OtpVerificationModal from "../../components/otpModal";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../../store/userSlice";
+import Cookies from "js-cookie";
 
 // Define types for form data
 type FormData = {
@@ -71,6 +77,14 @@ const Onboarding = () => {
   // For tracking selected price ranges
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([]);
 
+  // OTP Modal states
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [signupUserId, setSignupUserId] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const dispatch = useDispatch();
+
+ 
+
   const password = watch("password");
 
   const validateAndProceed = async () => {
@@ -108,26 +122,22 @@ const Onboarding = () => {
     data.priceRange = selectedPriceRanges;
 
     try {
-      const response = await fetch("https://taseer-b.onrender.com/api/auth/signup", {
+      const response = await fetch("https://api.taseer.app/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...data, type: "creator" }),
+        body: JSON.stringify({ ...data, type: "creator", step: "signup" }),
       });
 
       const result = await response.json();
       console.log(result);
 
-      if (result?.message === "User created successfully.") {
-        toast.success(
-          "✅ Account created successfully. Please login with your credentials.",
-          {
-            position: "top-right",
-            autoClose: 3000,
-            onClose: () => (window.location.href = "/login"),
-          }
-        );
+      if (result?.success && result?.nextStep === "verify-otp") {
+        setSignupUserId(result.userId);
+        setSignupEmail(data.email);
+        setShowOtpModal(true);
+        toast.success("Account created! Please verify your email.");
       } else if (result?.message === "Internal server error") {
         toast.error("🔥 Internal server error from server side - Contact dev");
       } else if (result?.message === "User already exists.") {
@@ -146,6 +156,21 @@ const Onboarding = () => {
       console.error("Error:", error);
       toast.error(" An error occurred. Please try again.");
     }
+  };
+
+  const handleOtpSuccess = (token: string, user: any) => {
+    Cookies.set("jwt", token, { expires: 14 });
+    dispatch(loginSuccess(user));
+
+    toast.success("Welcome! Redirecting to your dashboard...");
+
+    setTimeout(() => {
+      if (user.type === "brand") {
+        window.location.href = "/brand/home";
+      } else {
+        window.location.href = "/home";
+      }
+    }, 1000);
   };
 
   const handleContentTypeChange = (type: string) => {
@@ -178,203 +203,6 @@ const Onboarding = () => {
     </label>
   );
 
-  // List of countries for nationality dropdown
-  const countries = [
-    "Afghanistan",
-    "Albania",
-    "Algeria",
-    "Andorra",
-    "Angola",
-    "Antigua and Barbuda",
-    "Argentina",
-    "Armenia",
-    "Australia",
-    "Austria",
-    "Azerbaijan",
-    "Bahamas",
-    "Bahrain",
-    "Bangladesh",
-    "Barbados",
-    "Belarus",
-    "Belgium",
-    "Belize",
-    "Benin",
-    "Bhutan",
-    "Bolivia",
-    "Bosnia and Herzegovina",
-    "Botswana",
-    "Brazil",
-    "Brunei",
-    "Bulgaria",
-    "Burkina Faso",
-    "Burundi",
-    "Côte d'Ivoire",
-    "Cabo Verde",
-    "Cambodia",
-    "Cameroon",
-    "Canada",
-    "Central African Republic",
-    "Chad",
-    "Chile",
-    "China",
-    "Colombia",
-    "Comoros",
-    "Congo",
-    "Costa Rica",
-    "Croatia",
-    "Cuba",
-    "Cyprus",
-    "Czechia",
-    "Denmark",
-    "Djibouti",
-    "Dominica",
-    "Dominican Republic",
-    "Ecuador",
-    "Egypt",
-    "El Salvador",
-    "Equatorial Guinea",
-    "Eritrea",
-    "Estonia",
-    "Eswatini",
-    "Ethiopia",
-    "Fiji",
-    "Finland",
-    "France",
-    "Gabon",
-    "Gambia",
-    "Georgia",
-    "Germany",
-    "Ghana",
-    "Greece",
-    "Grenada",
-    "Guatemala",
-    "Guinea",
-    "Guinea-Bissau",
-    "Guyana",
-    "Haiti",
-    "Holy See",
-    "Honduras",
-    "Hungary",
-    "Iceland",
-    "India",
-    "Indonesia",
-    "Iran",
-    "Iraq",
-    "Ireland",
-    "Israel",
-    "Italy",
-    "Jamaica",
-    "Japan",
-    "Jordan",
-    "Kazakhstan",
-    "Kenya",
-    "Kiribati",
-    "Kuwait",
-    "Kyrgyzstan",
-    "Laos",
-    "Latvia",
-    "Lebanon",
-    "Lesotho",
-    "Liberia",
-    "Libya",
-    "Liechtenstein",
-    "Lithuania",
-    "Luxembourg",
-    "Madagascar",
-    "Malawi",
-    "Malaysia",
-    "Maldives",
-    "Mali",
-    "Malta",
-    "Marshall Islands",
-    "Mauritania",
-    "Mauritius",
-    "Mexico",
-    "Micronesia",
-    "Moldova",
-    "Monaco",
-    "Mongolia",
-    "Montenegro",
-    "Morocco",
-    "Mozambique",
-    "Myanmar",
-    "Namibia",
-    "Nauru",
-    "Nepal",
-    "Netherlands",
-    "New Zealand",
-    "Nicaragua",
-    "Niger",
-    "Nigeria",
-    "North Korea",
-    "North Macedonia",
-    "Norway",
-    "Oman",
-    "Pakistan",
-    "Palau",
-    "Palestine",
-    "Panama",
-    "Papua New Guinea",
-    "Paraguay",
-    "Peru",
-    "Philippines",
-    "Poland",
-    "Portugal",
-    "Qatar",
-    "Romania",
-    "Russia",
-    "Rwanda",
-    "Saint Kitts and Nevis",
-    "Saint Lucia",
-    "Saint Vincent and the Grenadines",
-    "Samoa",
-    "San Marino",
-    "Sao Tome and Principe",
-    "Saudi Arabia",
-    "Senegal",
-    "Serbia",
-    "Seychelles",
-    "Sierra Leone",
-    "Singapore",
-    "Slovakia",
-    "Slovenia",
-    "Solomon Islands",
-    "Somalia",
-    "South Africa",
-    "South Korea",
-    "South Sudan",
-    "Spain",
-    "Sri Lanka",
-    "Sudan",
-    "Suriname",
-    "Sweden",
-    "Switzerland",
-    "Syria",
-    "Tajikistan",
-    "Tanzania",
-    "Thailand",
-    "Timor-Leste",
-    "Togo",
-    "Tonga",
-    "Trinidad and Tobago",
-    "Tunisia",
-    "Turkey",
-    "Turkmenistan",
-    "Tuvalu",
-    "Uganda",
-    "Ukraine",
-    "United Arab Emirates",
-    "United Kingdom",
-    "United States",
-    "Uruguay",
-    "Uzbekistan",
-    "Vanuatu",
-    "Venezuela",
-    "Vietnam",
-    "Yemen",
-    "Zambia",
-    "Zimbabwe",
-  ];
 
   return (
     <>
@@ -502,9 +330,7 @@ const Onboarding = () => {
                     type="password"
                     placeholder="Re-enter Password"
                     className={`w-full border-2 ${
-                      errors.confirmPassword
-                        ? "border-red-500"
-                        : ""
+                      errors.confirmPassword ? "border-red-500" : ""
                     } placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1`}
                   />
                   {errors.confirmPassword && (
@@ -1212,23 +1038,17 @@ const Onboarding = () => {
 
                 <div>
                   <RequiredLabel text="Nationality" />
-                  <select
+                  <input
                     {...register("nationality", {
                       required: "Nationality is required",
                     })}
+                    placeholder="Enter your nationality "
                     className={`w-full border-2 ${
-                      errors.nationality
-                        ? "border-red-500"
-                        : ""
+                      errors.nationality ? "border-red-500" : ""
                     } placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1`}
                   >
-                    <option value="">Select your nationality</option>
-                    {countries.map((country) => (
-                      <option key={country} value={country}>
-                        {country}
-                      </option>
-                    ))}
-                  </select>
+                   
+                  </input>
                   {errors.nationality && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.nationality.message}
@@ -1239,12 +1059,14 @@ const Onboarding = () => {
                 <div>
                   <RequiredLabel text="What city are you based in?" />
                   <input
+                  placeholder="Enter the city you are based in "
                     {...register("city", { required: "City is required" })}
-                    placeholder="What city are you based in?"
                     className={`w-full border-2 ${
                       errors.city ? "border-red-500" : ""
                     } placeholder-gray-500 text-gray-800 rounded-md p-2 mt-1`}
-                  />
+                  >
+                    
+                  </input>
                   {errors.city && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.city.message}
@@ -1639,9 +1461,6 @@ const Onboarding = () => {
                     <div key={range} className="flex items-center">
                       <input
                         type="checkbox"
-                        {...register("collaborationPreference", {
-                          required: "Please select collaboration type",
-                        })}
                         id={`price-${range}`}
                         className="mr-2"
                         checked={selectedPriceRanges.includes(range)}
@@ -1765,6 +1584,14 @@ const Onboarding = () => {
             </div>
           )}
         </form>
+
+        <OtpVerificationModal
+          isOpen={showOtpModal}
+          onClose={() => setShowOtpModal(false)}
+          userId={signupUserId}
+          email={signupEmail}
+          onSuccess={handleOtpSuccess}
+        />
       </div>
       <Footer />
     </>

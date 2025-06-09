@@ -85,7 +85,7 @@ export default function Posts() {
 
     try {
       const token = Cookies.get("jwt");
-      const response = await axios.get("https://taseer-b.onrender.com/api/posts", {
+      const response = await axios.get("https://api.taseer.app/api/posts", {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -114,7 +114,7 @@ export default function Posts() {
     try {
       const token = Cookies.get("jwt");
       const response = await axios.get(
-        `https://taseer-b.onrender.com/api/posts?cursor=${nextCursor}`,
+        `https://api.taseer.app/api/posts?cursor=${nextCursor}`,
         {
           headers: {
             authorization: `Bearer ${token}`,
@@ -159,7 +159,7 @@ export default function Posts() {
         )
       );
       await axios.post(
-        `https://taseer-b.onrender.com/api/posts/${postId}/like`,
+        `https://api.taseer.app/api/posts/${postId}/like`,
         {},
         {
           headers: {
@@ -266,13 +266,20 @@ export default function Posts() {
                         <div className="flex items-center">
                           <h2
                             className="font-bold text-lg cursor-pointer hover:underline"
-                            onClick={() =>
-                              navigate(`/profile/${post.user.username}`)
-                            }
+                            onClick={() => {
+                              console.log(post.user.id);
+                              navigate(`/messages?id=${post.user.id}`);
+                            }}
                           >
                             {post.user.username}
                           </h2>
-                          <span className={` ${post.user.type == "brand" ? "bg-purple-500 text-white"  :"text-purple-500 border-purple-500"} ml-2 border text-xs uppercase  rounded-full px-2 py-1 `}>
+                          <span
+                            className={` ${
+                              post.user.type == "brand"
+                                ? "bg-purple-500 text-white"
+                                : "text-purple-500 border-purple-500"
+                            } ml-2 border text-xs uppercase  rounded-full px-2 py-1 `}
+                          >
                             {post.user.type}
                           </span>
                         </div>

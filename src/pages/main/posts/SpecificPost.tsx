@@ -10,7 +10,7 @@ import Button from "../../../components/ui/Button";
 import Cookies from "js-cookie";
 
 // Replace these with real API responses
-const API_URL = "https://taseer-b.onrender.com/api/posts"; // Your backend API URL
+const API_URL = "https://api.taseer.app/api/posts"; // Your backend API URL
 
 export default function PostDetails() {
     const navigate = useNavigate();

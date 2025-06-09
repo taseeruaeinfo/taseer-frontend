@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -25,7 +25,8 @@ import PostPopup from "../../pages/main/posts/PostPage";
 import { FaRegPlusSquare } from "react-icons/fa";
 import { logout } from "../../store/userSlice";
 import Cookies from "js-cookie";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../store";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -36,12 +37,28 @@ export default function BrandLayout({ children }: DashboardLayoutProps) {
   const [showPopup, setShowPopup] = useState(false);
   const dispatch = useDispatch();
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  const user = useSelector((state: RootState) => state.user);
 
   const router = useNavigate();
   const location = useLocation(); // get current route
+
+  const token = Cookies.get("jwt");
+
+
+  useEffect(() => {
+    if (!token) {
+      dispatch(logout());
+    }
+  });
+
+  useEffect(() => {
+    if (!user) {
+      router("/login");
+    } else if (user.type == "creator") {
+      router("/home");
+    }
+  });
+
   const handleLogout = () => {
     // Dispatch the logout action to clear the user state
     dispatch(logout());
@@ -51,6 +68,11 @@ export default function BrandLayout({ children }: DashboardLayoutProps) {
     // Redirect to login page after logging out
     router("/login");
   };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   const navItems = [
     {
       icon: <AiOutlineHome className="w-5 h-5" />,

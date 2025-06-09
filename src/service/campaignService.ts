@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 // Base API configuration
 const api = axios.create({
-  baseURL: "https://taseer-b.onrender.com/api", // Adjust based on your API base URL
+  baseURL: "https://api.taseer.app/api", // Adjust based on your API base URL
   headers: {
     "Content-Type": "application/json",
   },

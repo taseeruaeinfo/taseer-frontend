@@ -1,134 +1,150 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { motion } from "framer-motion"
-import { Check, X, Clock, ExternalLink, ChevronDown, ChevronUp, AlertCircle, Send } from "lucide-react"
-import axios from "axios"
-import { toast } from "react-toastify"
-import Cookies from "js-cookie"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  Check,
+  X,
+  Clock,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+  Send,
+} from "lucide-react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 interface Campaign {
-  id: string
-  title: string
-  description: string
-  budget: string
-  duration: string
-  platform: string
-  status: string
-  CampaignImage: string
+  id: string;
+  title: string;
+  description: string;
+  budget: string;
+  duration: string;
+  platform: string;
+  status: string;
+  CampaignImage: string;
 }
 
 interface Application {
-  id: string
-  campaignId: string
-  status: string
-  createdAt: string
-  campaign: Campaign
-  contract?: Contract
-  deliverables?: Deliverable[]
-  questions?: Questions
+  id: string;
+  campaignId: string;
+  status: string;
+  createdAt: string;
+  campaign: Campaign;
+  contract?: Contract;
+  deliverables?: Deliverable[];
+  questions?: Questions;
 }
 
 interface Contract {
-  id: number
-  title: string
-  description: string
-  compensation: string
-  deliverables: string
-  timeline: string
-  terms: string
-  status: string
+  id: number;
+  title: string;
+  description: string;
+  compensation: string;
+  deliverables: string;
+  timeline: string;
+  terms: string;
+  status: string;
 }
 
 interface Deliverable {
-  id: number
-  platform: string
-  contentType: string
-  notes: string
-  status: string
-  creatorUrl: string | null
-  brandUrl: string | null
-  url: string | null
-  approvalDate: string | null
-  postDate: string | null
+  id: number;
+  platform: string;
+  contentType: string;
+  notes: string;
+  status: string;
+  creatorUrl: string | null;
+  brandUrl: string | null;
+  url: string | null;
+  approvalDate: string | null;
+  postDate: string | null;
 }
 
 interface Questions {
-  id: number
-  needEmail: boolean
-  needPhone: boolean
-  needShippingAddress: boolean
+  id: number;
+  needEmail: boolean;
+  needPhone: boolean;
+  needShippingAddress: boolean;
 }
 
 export default function CreatorCampaigns() {
-  const navigate = useNavigate()
-  const [applications, setApplications] = useState<Application[]>([])
-  const [loading, setLoading] = useState(true)
-  const [expandedApplication, setExpandedApplication] = useState<string | null>(null)
-  const [showInfoModal, setShowInfoModal] = useState(false)
-  const [showUrlModal, setShowUrlModal] = useState(false)
-  const [currentApplication, setCurrentApplication] = useState<Application | null>(null)
-  const [currentDeliverable, setCurrentDeliverable] = useState<Deliverable | null>(null)
+  const navigate = useNavigate();
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedApplication, setExpandedApplication] = useState<string | null>(
+    null
+  );
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [showUrlModal, setShowUrlModal] = useState(false);
+  const [currentApplication, setCurrentApplication] =
+    useState<Application | null>(null);
+  const [currentDeliverable, setCurrentDeliverable] =
+    useState<Deliverable | null>(null);
   const [creatorInfo, setCreatorInfo] = useState({
     email: "",
     phone: "",
     shippingAddress: "",
-  })
-  const [contentUrl, setContentUrl] = useState("")
+  });
+  const [contentUrl, setContentUrl] = useState("");
 
   useEffect(() => {
-    fetchApplications()
-  }, [])
+    fetchApplications();
+  }, []);
 
   const fetchApplications = async () => {
     try {
-      setLoading(true)
-      const token = Cookies.get("jwt")
-      const response = await axios.get("https://taseer-b.onrender.com/api/creator/applications", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      setLoading(true);
+      const token = Cookies.get("jwt");
+      const response = await axios.get(
+        "https://api.taseer.app/api/creator/applications",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       //@ts-expect-error - network error
-      setApplications(response.data)
+      setApplications(response.data);
     } catch (error) {
-      console.error("Error fetching applications:", error)
-      toast.error("Failed to load your applications")
+      console.error("Error fetching applications:", error);
+      toast.error("Failed to load your applications");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleAcceptContract = async (applicationId: string) => {
     try {
-      const token = Cookies.get("jwt")
+      const token = Cookies.get("jwt");
       await axios.post(
-        `https://taseer-b.onrender.com/api/creator/applications/${applicationId}/contract/accept`,
+        `https://api.taseer.app/api/creator/applications/${applicationId}/contract/accept`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      toast.success("Contract accepted successfully")
-      fetchApplications()
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Contract accepted successfully");
+      fetchApplications();
     } catch (error) {
-      console.error("Error accepting contract:", error)
-      toast.error("Failed to accept contract")
+      console.error("Error accepting contract:", error);
+      toast.error("Failed to accept contract");
     }
-  }
+  };
 
   const handleRejectContract = async (applicationId: string) => {
     try {
-      const token = Cookies.get("jwt")
+      const token = Cookies.get("jwt");
       await axios.post(
-        `https://taseer-b.onrender.com/api/creator/applications/${applicationId}/contract/reject`,
+        `https://api.taseer.app/api/creator/applications/${applicationId}/contract/reject`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      toast.success("Contract rejected")
-      fetchApplications()
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Contract rejected");
+      fetchApplications();
     } catch (error) {
-      console.error("Error rejecting contract:", error)
-      toast.error("Failed to reject contract")
+      console.error("Error rejecting contract:", error);
+      toast.error("Failed to reject contract");
     }
-  }
+  };
 
   const handleSubmitInfo = async (applicationId: string) => {
     // if (!creatorInfo.email && !creatorInfo.phone && !creatorInfo.shippingAddress) {
@@ -138,93 +154,99 @@ export default function CreatorCampaigns() {
     // }
 
     try {
-                console.log("wtfasdasd")
+      console.log("wtfasdasd");
 
-      const token = Cookies.get("jwt")
-      await axios.post(`https://taseer-b.onrender.com/api/creator/applications/${applicationId}/info`, creatorInfo, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-                console.log("done")
+      const token = Cookies.get("jwt");
+      await axios.post(
+        `https://api.taseer.app/api/creator/applications/${applicationId}/info`,
+        creatorInfo,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log("done");
 
-      toast.success("Information submitted successfully")
-      setShowInfoModal(false)
-      setCreatorInfo({ email: "", phone: "", shippingAddress: "" })
-      fetchApplications()
+      toast.success("Information submitted successfully");
+      setShowInfoModal(false);
+      setCreatorInfo({ email: "", phone: "", shippingAddress: "" });
+      fetchApplications();
     } catch (error) {
-      console.error("Error submitting information:", error)
-      toast.error("Failed to submit information")
+      console.error("Error submitting information:", error);
+      toast.error("Failed to submit information");
     }
-          console.log("wtfasdasd")
-
-  }
+    console.log("wtfasdasd");
+  };
 
   const handleSubmitContentUrl = async () => {
     if (!currentApplication || !currentDeliverable || !contentUrl) {
-      toast.error("Please enter a valid content URL")
-      return
+      toast.error("Please enter a valid content URL");
+      return;
     }
 
     try {
-      const token = Cookies.get("jwt")
+      const token = Cookies.get("jwt");
       await axios.post(
-        `https://taseer-b.onrender.com/api/creator/applications/${currentApplication.id}/deliverables/${currentDeliverable.id}/submit-url`,
+        `https://api.taseer.app/api/creator/applications/${currentApplication.id}/deliverables/${currentDeliverable.id}/submit-url`,
         { url: contentUrl },
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      toast.success("Content URL submitted successfully")
-      setShowUrlModal(false)
-      setContentUrl("")
-      fetchApplications()
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Content URL submitted successfully");
+      setShowUrlModal(false);
+      setContentUrl("");
+      fetchApplications();
     } catch (error) {
-      console.error("Error submitting content URL:", error)
-      toast.error("Failed to submit content URL")
+      console.error("Error submitting content URL:", error);
+      toast.error("Failed to submit content URL");
     }
-  }
+  };
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case "accepted":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "rejected":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       case "pending":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "completed":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const getDeliverableStatusColor = (status: string) => {
     switch (status) {
       case "awaiting_creator_content":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       case "creator_content_submitted":
-        return "bg-purple-100 text-purple-800"
+        return "bg-purple-100 text-purple-800";
       case "awaiting_brand_url":
-        return "bg-orange-100 text-orange-800"
+        return "bg-orange-100 text-orange-800";
       case "brand_url_submitted":
-        return "bg-indigo-100 text-indigo-800"
+        return "bg-indigo-100 text-indigo-800";
       case "content_approved":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "live":
-        return "bg-emerald-100 text-emerald-800"
+        return "bg-emerald-100 text-emerald-800";
       case "analytics_submitted":
-        return "bg-purple-100 text-purple-800"
+        return "bg-purple-100 text-purple-800";
       case "payment_pending":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "completed":
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
       case "cancelled":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const getApplicationStatusIndicator = (application: Application) => {
-    if (application.questions) {
+    if (application.questions &&
+                        (application.questions.needEmail ||
+                          application.questions.needPhone ||
+                          application.questions.needShippingAddress)) {
       return (
         <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
           <p className="text-sm text-amber-800 flex items-center">
@@ -232,7 +254,7 @@ export default function CreatorCampaigns() {
             Information requested by brand. Please provide the required details.
           </p>
         </div>
-      )
+      );
     }
 
     if (application.contract && application.contract.status === "pending") {
@@ -243,10 +265,15 @@ export default function CreatorCampaigns() {
             Contract received. Please review and respond.
           </p>
         </div>
-      )
+      );
     }
 
-    if (application.deliverables && application.deliverables.some((d) => d.status === "awaiting_creator_content")) {
+    if (
+      application.deliverables &&
+      application.deliverables.some(
+        (d) => d.status === "awaiting_creator_content"
+      )
+    ) {
       return (
         <div className="mt-2 p-3 bg-purple-50 border border-purple-200 rounded-md">
           <p className="text-sm text-purple-800 flex items-center">
@@ -254,25 +281,29 @@ export default function CreatorCampaigns() {
             Deliverables assigned. Ready to create content.
           </p>
         </div>
-      )
+      );
     }
 
-    return null
-  }
+    return null;
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
       </div>
-    )
+    );
   }
 
   return (
     <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">My Campaign Applications</h1>
-        <p className="mt-1 text-sm text-gray-500">Manage your campaign applications and deliverables</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          My Campaign Applications
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Manage your campaign applications and deliverables
+        </p>
       </div>
 
       <div className="space-y-6">
@@ -281,8 +312,12 @@ export default function CreatorCampaigns() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
               <X size={24} className="text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900">No applications yet</h3>
-            <p className="mt-2 text-gray-500">Start applying to campaigns to see them here.</p>
+            <h3 className="text-lg font-medium text-gray-900">
+              No applications yet
+            </h3>
+            <p className="mt-2 text-gray-500">
+              Start applying to campaigns to see them here.
+            </p>
             <button
               onClick={() => navigate("/deals")}
               className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700"
@@ -301,19 +336,30 @@ export default function CreatorCampaigns() {
             >
               <div
                 className="p-5 cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => setExpandedApplication(expandedApplication === application.id ? null : application.id)}
+                onClick={() =>
+                  setExpandedApplication(
+                    expandedApplication === application.id
+                      ? null
+                      : application.id
+                  )
+                }
               >
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-12 w-12 rounded-lg overflow-hidden bg-gray-200">
                       <img
-                        src={application.campaign.CampaignImage || "/placeholder.svg"}
+                        src={
+                          application.campaign.CampaignImage ||
+                          "/placeholder.svg"
+                        }
                         alt={application.campaign.title}
                         className="h-full w-full object-cover"
                       />
                     </div>
                     <div className="ml-4">
-                      <h3 className="text-lg font-medium text-gray-900">{application.campaign.title}</h3>
+                      <h3 className="text-lg font-medium text-gray-900">
+                        {application.campaign.title}
+                      </h3>
                       <div className="flex items-center mt-1 space-x-3 text-sm text-gray-500">
                         <span>{application.campaign.platform}</span>
                         <span>•</span>
@@ -324,13 +370,20 @@ export default function CreatorCampaigns() {
                   <div className="flex items-center gap-2">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(
-                        application.status,
+                        application.status
                       )}`}
                     >
-                      {application.status === "accepted" && <Check size={12} className="mr-1" />}
-                      {application.status === "rejected" && <X size={12} className="mr-1" />}
-                      {application.status === "pending" && <Clock size={12} className="mr-1" />}
-                      {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+                      {application.status === "accepted" && (
+                        <Check size={12} className="mr-1" />
+                      )}
+                      {application.status === "rejected" && (
+                        <X size={12} className="mr-1" />
+                      )}
+                      {application.status === "pending" && (
+                        <Clock size={12} className="mr-1" />
+                      )}
+                      {application.status.charAt(0).toUpperCase() +
+                        application.status.slice(1)}
                     </span>
                     {expandedApplication === application.id ? (
                       <ChevronUp size={20} className="text-gray-400" />
@@ -347,83 +400,126 @@ export default function CreatorCampaigns() {
                 <div className="border-t border-gray-200 p-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-3">Campaign Details</h4>
+                      <h4 className="font-medium text-gray-900 mb-3">
+                        Campaign Details
+                      </h4>
                       <div className="bg-gray-50 rounded-md p-4">
-                        <p className="text-sm text-gray-600">{application.campaign.description}</p>
+                        <p className="text-sm text-gray-600">
+                          {application.campaign.description}
+                        </p>
                         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                           <div>
-                            <span className="font-medium">Duration:</span> {application.campaign.duration}
+                            <span className="font-medium">Duration:</span>{" "}
+                            {application.campaign.duration}
                           </div>
                           <div>
-                            <span className="font-medium">Budget:</span> {application.campaign.budget}
+                            <span className="font-medium">Budget:</span>{" "}
+                            {application.campaign.budget}
                           </div>
                         </div>
                       </div>
 
-                      {application.questions && (
-                        <div className="mt-6">
-                          <h4 className="font-medium text-gray-900 mb-3">Information Requested</h4>
-                          <div className="space-y-2">
-                            {application.questions.needEmail && (
-                              <div className="flex items-center">
-                                <AlertCircle size={14} className="text-amber-500 mr-2" />
-                                <span className="text-sm text-gray-700">Email Address Required</span>
-                              </div>
-                            )}
-                            {application.questions.needPhone && (
-                              <div className="flex items-center">
-                                <AlertCircle size={14} className="text-amber-500 mr-2" />
-                                <span className="text-sm text-gray-700">Phone Number Required</span>
-                              </div>
-                            )}
-                            {application.questions.needShippingAddress && (
-                              <div className="flex items-center">
-                                <AlertCircle size={14} className="text-amber-500 mr-2" />
-                                <span className="text-sm text-gray-700">Shipping Address Required</span>
-                              </div>
-                            )}
-                            <button
-                              onClick={() => {
-                                setCurrentApplication(application)
-                                setShowInfoModal(true)
-                              }}
-                              className="mt-2 inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                            >
-                              Provide Information
-                            </button>
+                      {application.questions &&
+                        (application.questions.needEmail ||
+                          application.questions.needPhone ||
+                          application.questions.needShippingAddress) && (
+                          <div className="mt-6">
+                            <h4 className="font-medium text-gray-900 mb-3">
+                              Information Requested
+                            </h4>
+                            <div className="space-y-2">
+                              {application.questions.needEmail && (
+                                <div className="flex items-center">
+                                  <AlertCircle
+                                    size={14}
+                                    className="text-amber-500 mr-2"
+                                  />
+                                  <span className="text-sm text-gray-700">
+                                    Email Address Required
+                                  </span>
+                                </div>
+                              )}
+                              {application.questions.needPhone && (
+                                <div className="flex items-center">
+                                  <AlertCircle
+                                    size={14}
+                                    className="text-amber-500 mr-2"
+                                  />
+                                  <span className="text-sm text-gray-700">
+                                    Phone Number Required
+                                  </span>
+                                </div>
+                              )}
+                              {application.questions.needShippingAddress && (
+                                <div className="flex items-center">
+                                  <AlertCircle
+                                    size={14}
+                                    className="text-amber-500 mr-2"
+                                  />
+                                  <span className="text-sm text-gray-700">
+                                    Shipping Address Required
+                                  </span>
+                                </div>
+                              )}
+                              <button
+                                onClick={() => {
+                                  setCurrentApplication(application);
+                                  setShowInfoModal(true);
+                                }}
+                                className="mt-2 inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                              >
+                                Provide Information
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
 
                     <div>
                       {application.contract && (
                         <div className="mb-6">
-                          <h4 className="font-medium text-gray-900 mb-3">Contract Details</h4>
+                          <h4 className="font-medium text-gray-900 mb-3">
+                            Contract Details
+                          </h4>
                           <div className="bg-gray-50 rounded-md p-4">
-                            <h5 className="font-medium text-gray-800">{application.contract.title}</h5>
-                            <p className="mt-2 text-sm text-gray-600">{application.contract.description}</p>
+                            <h5 className="font-medium text-gray-800">
+                              {application.contract.title}
+                            </h5>
+                            <p className="mt-2 text-sm text-gray-600">
+                              {application.contract.description}
+                            </p>
                             <div className="mt-4 space-y-2 text-sm">
                               <p>
-                                <span className="font-medium">Compensation:</span> {application.contract.compensation}
+                                <span className="font-medium">
+                                  Compensation:
+                                </span>{" "}
+                                {application.contract.compensation}
                               </p>
                               <p>
-                                <span className="font-medium">Timeline:</span> {application.contract.timeline}
+                                <span className="font-medium">Timeline:</span>{" "}
+                                {application.contract.timeline}
                               </p>
                               <p>
-                                <span className="font-medium">Deliverables:</span> {application.contract.deliverables}
+                                <span className="font-medium">
+                                  Deliverables:
+                                </span>{" "}
+                                {application.contract.deliverables}
                               </p>
                             </div>
                             {application.contract.status === "pending" && (
                               <div className="mt-4 flex gap-2">
                                 <button
-                                  onClick={() => handleAcceptContract(application.id)}
+                                  onClick={() =>
+                                    handleAcceptContract(application.id)
+                                  }
                                   className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
                                 >
                                   <Check size={14} className="mr-1" /> Accept
                                 </button>
                                 <button
-                                  onClick={() => handleRejectContract(application.id)}
+                                  onClick={() =>
+                                    handleRejectContract(application.id)
+                                  }
                                   className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                                 >
                                   <X size={14} className="mr-1" /> Reject
@@ -434,7 +530,8 @@ export default function CreatorCampaigns() {
                               <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
                                 <p className="text-sm text-green-800 flex items-center">
                                   <Check size={14} className="mr-1" />
-                                  Contract accepted. Waiting for deliverables assignment.
+                                  Contract accepted. Waiting for deliverables
+                                  assignment.
                                 </p>
                               </div>
                             )}
@@ -450,115 +547,143 @@ export default function CreatorCampaigns() {
                         </div>
                       )}
 
-                      {application.deliverables && application.deliverables.length > 0 && (
-                        <div>
-                          <h4 className="font-medium text-gray-900 mb-3">Deliverables</h4>
-                          <div className="space-y-4">
-                            {application.deliverables.map((deliverable) => (
-                              <div key={deliverable.id} className="bg-gray-50 rounded-md p-4 border border-gray-200">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <p className="font-medium text-gray-800">
-                                      {deliverable.contentType} on {deliverable.platform}
-                                    </p>
-                                    <p className="mt-1 text-sm text-gray-500">{deliverable.notes}</p>
-                                  </div>
-                                  <span
-                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDeliverableStatusColor(
-                                      deliverable.status,
-                                    )}`}
-                                  >
-                                    {deliverable.status
-                                      .split("_")
-                                      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                                      .join(" ")}
-                                  </span>
-                                </div>
-
-                                {/* URLs Display */}
-                                <div className="mt-2 space-y-1">
-                                  {deliverable.creatorUrl && (
+                      {application.deliverables &&
+                        application.deliverables.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-gray-900 mb-3">
+                              Deliverables
+                            </h4>
+                            <div className="space-y-4">
+                              {application.deliverables.map((deliverable) => (
+                                <div
+                                  key={deliverable.id}
+                                  className="bg-gray-50 rounded-md p-4 border border-gray-200"
+                                >
+                                  <div className="flex justify-between items-start">
                                     <div>
-                                      <a
-                                        href={deliverable.creatorUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-                                      >
-                                        <ExternalLink size={14} className="mr-1" /> My Content URL
-                                      </a>
+                                      <p className="font-medium text-gray-800">
+                                        {deliverable.contentType} on{" "}
+                                        {deliverable.platform}
+                                      </p>
+                                      <p className="mt-1 text-sm text-gray-500">
+                                        {deliverable.notes}
+                                      </p>
                                     </div>
-                                  )}
-                                  {deliverable.brandUrl && (
-                                    <div>
-                                      <a
-                                        href={deliverable.brandUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center text-sm text-purple-600 hover:text-purple-800"
-                                      >
-                                        <ExternalLink size={14} className="mr-1" /> Brand URL
-                                      </a>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Action Buttons */}
-                                <div className="mt-3">
-                                  {deliverable.status === "awaiting_creator_content" && (
-                                    <button
-                                      onClick={() => {
-                                        setCurrentApplication(application)
-                                        setCurrentDeliverable(deliverable)
-                                        setShowUrlModal(true)
-                                      }}
-                                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                                    <span
+                                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDeliverableStatusColor(
+                                        deliverable.status
+                                      )}`}
                                     >
-                                      <Send size={14} className="mr-1" /> Submit Content URL
-                                    </button>
-                                  )}
+                                      {deliverable.status
+                                        .split("_")
+                                        .map(
+                                          (word) =>
+                                            word.charAt(0).toUpperCase() +
+                                            word.slice(1)
+                                        )
+                                        .join(" ")}
+                                    </span>
+                                  </div>
 
-                                  {deliverable.status === "creator_content_submitted" && (
-                                    <div className="p-3 bg-purple-50 border border-purple-200 rounded-md">
-                                      <p className="text-sm text-purple-800 flex items-center">
-                                        <Clock size={14} className="mr-1" />
-                                        Content URL submitted. Waiting for brand to submit their URL.
-                                      </p>
-                                    </div>
-                                  )}
+                                  {/* URLs Display */}
+                                  <div className="mt-2 space-y-1">
+                                    {deliverable.creatorUrl && (
+                                      <div>
+                                        <a
+                                          href={deliverable.creatorUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+                                        >
+                                          <ExternalLink
+                                            size={14}
+                                            className="mr-1"
+                                          />{" "}
+                                          My Content URL
+                                        </a>
+                                      </div>
+                                    )}
+                                    {deliverable.brandUrl && (
+                                      <div>
+                                        <a
+                                          href={deliverable.brandUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center text-sm text-purple-600 hover:text-purple-800"
+                                        >
+                                          <ExternalLink
+                                            size={14}
+                                            className="mr-1"
+                                          />{" "}
+                                          Brand URL
+                                        </a>
+                                      </div>
+                                    )}
+                                  </div>
 
-                                  {deliverable.status === "brand_url_submitted" && (
-                                    <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-md">
-                                      <p className="text-sm text-indigo-800 flex items-center">
-                                        <Clock size={14} className="mr-1" />
-                                        Both URLs submitted. Waiting for brand approval.
-                                      </p>
-                                    </div>
-                                  )}
+                                  {/* Action Buttons */}
+                                  <div className="mt-3">
+                                    {deliverable.status ===
+                                      "awaiting_creator_content" && (
+                                      <button
+                                        onClick={() => {
+                                          setCurrentApplication(application);
+                                          setCurrentDeliverable(deliverable);
+                                          setShowUrlModal(true);
+                                        }}
+                                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                                      >
+                                        <Send size={14} className="mr-1" />{" "}
+                                        Submit Content URL
+                                      </button>
+                                    )}
 
-                                  {deliverable.status === "content_approved" && (
-                                    <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-                                      <p className="text-sm text-green-800 flex items-center">
-                                        <Check size={14} className="mr-1" />
-                                        Content approved! You can now post it.
-                                      </p>
-                                    </div>
-                                  )}
+                                    {deliverable.status ===
+                                      "creator_content_submitted" && (
+                                      <div className="p-3 bg-purple-50 border border-purple-200 rounded-md">
+                                        <p className="text-sm text-purple-800 flex items-center">
+                                          <Clock size={14} className="mr-1" />
+                                          Content URL submitted. Waiting for
+                                          brand to submit their URL.
+                                        </p>
+                                      </div>
+                                    )}
 
-                                  {deliverable.status === "live" && (
-                                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-md">
-                                      <p className="text-sm text-emerald-800 flex items-center">
-                                        <Check size={14} className="mr-1" />
-                                        Content is live! Great work!
-                                      </p>
-                                    </div>
-                                  )}
+                                    {deliverable.status ===
+                                      "brand_url_submitted" && (
+                                      <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-md">
+                                        <p className="text-sm text-indigo-800 flex items-center">
+                                          <Clock size={14} className="mr-1" />
+                                          Both URLs submitted. Waiting for brand
+                                          approval.
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    {deliverable.status ===
+                                      "content_approved" && (
+                                      <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                                        <p className="text-sm text-green-800 flex items-center">
+                                          <Check size={14} className="mr-1" />
+                                          Content approved! You can now post it.
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    {deliverable.status === "live" && (
+                                      <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-md">
+                                        <p className="text-sm text-emerald-800 flex items-center">
+                                          <Check size={14} className="mr-1" />
+                                          Content is live! Great work!
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
                   </div>
                 </div>
@@ -572,11 +697,16 @@ export default function CreatorCampaigns() {
       {showInfoModal && currentApplication && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Provide Required Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Provide Required Information
+            </h3>
             <div className="space-y-4">
               {currentApplication.questions?.needEmail && (
                 <div>
-                  <label htmlFor="creator-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="creator-email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Email Address
                   </label>
                   <input
@@ -595,7 +725,10 @@ export default function CreatorCampaigns() {
               )}
               {currentApplication.questions?.needPhone && (
                 <div>
-                  <label htmlFor="creator-phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="creator-phone"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Phone Number
                   </label>
                   <input
@@ -614,7 +747,10 @@ export default function CreatorCampaigns() {
               )}
               {currentApplication.questions?.needShippingAddress && (
                 <div>
-                  <label htmlFor="creator-address" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="creator-address"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Shipping Address
                   </label>
                   <textarea
@@ -655,12 +791,14 @@ export default function CreatorCampaigns() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Submit Content URL for {currentDeliverable.contentType} on {currentDeliverable.platform}
+              Submit Content URL for {currentDeliverable.contentType} on{" "}
+              {currentDeliverable.platform}
             </h3>
 
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-2">
-                Please provide the URL where you've posted or will post the content:
+                Please provide the URL where you've posted or will post the
+                content:
               </p>
               <input
                 type="url"
@@ -689,5 +827,5 @@ export default function CreatorCampaigns() {
         </div>
       )}
     </div>
-  )
+  );
 }

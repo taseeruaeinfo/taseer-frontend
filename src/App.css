@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap');
 .bg {
   background-color: #6a38ca;
 }
@@ -10,7 +11,6 @@
 
 
 
-@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap');
 * {
   font-family: "Abril Fatface", serif;
   font-style: normal;

@@ -47,7 +47,7 @@ const OtpModal: React.FC<OtpModalProps> = ({ isOpen, onClose, userEmail }) => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://taseer-b.onrender.com/api/otp/send",
+        "https://api.taseer.app/api/otp/send",
         { email },
         getAuthHeaders()
       );
@@ -74,7 +74,7 @@ const OtpModal: React.FC<OtpModalProps> = ({ isOpen, onClose, userEmail }) => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://taseer-b.onrender.com/api/otp/verify",
+        "https://api.taseer.app/api/otp/verify",
         { otp },
         getAuthHeaders()
       );

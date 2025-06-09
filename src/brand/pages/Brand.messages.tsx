@@ -32,6 +32,7 @@ interface Message {
   delivered: boolean;
   createdAt: string;
   status: "sending" | "sent" | "delivered" | "seen" | "failed";
+  tempId?: string;
 }
 
 export default function MessagesPage() {
@@ -79,26 +80,23 @@ export default function MessagesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  // Stable function references
   const loadConversations = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://taseer-b.onrender.com/api/messages/conversations",
+        "https://api.taseer.app/api/messages/conversations",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      //@ts-expect-error - network
+      //@ts-expect-error - nwk
       if (response.data.success) {
-        //@ts-expect-error - network
-
+              //@ts-expect-error - nwk
         const conversationsWithOnlineStatus = response.data.conversations.map(
           (conv: User) => ({
             ...conv,
             isOnline: onlineUsers.some((user) => user.userId === conv.id),
           })
         );
-
         setConversations(conversationsWithOnlineStatus);
       }
     } catch (error) {
@@ -110,16 +108,14 @@ export default function MessagesPage() {
     async (partnerId: string) => {
       try {
         const response = await axios.get(
-          `https://taseer-b.onrender.com/api/messages/conversation/${partnerId}`,
+          `https://api.taseer.app/api/messages/conversation/${partnerId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        //@ts-expect-error - network
-
+//@ts-expect-error - nwk
         if (response.data.success) {
-          //@ts-expect-error - network
-
+          //@ts-expect-error - nwk
           const messagesWithStatus = response.data.messages.map((msg: any) => ({
             ...msg,
             status: msg.seen ? "seen" : msg.delivered ? "delivered" : "sent",
@@ -143,20 +139,17 @@ export default function MessagesPage() {
     async (userId: string) => {
       try {
         const response = await axios.get(
-          `https://taseer-b.onrender.com/api/messages/user/${userId}`,
+          `https://api.taseer.app/api/messages/user/${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        //@ts-expect-error - network
-
+        //@ts-expect-error - nwk
         if (response.data.success) {
-          //@ts-expect-error - network
-
+          //@ts-expect-error - nwk
           const userData = response.data.user;
           setNewChatUser(userData);
-          //@ts-expect-error - network
-
+//@ts-expect-error - nwk
           if (response.data.hasExistingChat) {
             await loadConversations();
             const existingConvIndex = conversations.findIndex(
@@ -175,13 +168,12 @@ export default function MessagesPage() {
         }
       } catch (error) {
         console.error("Error loading new chat user:", error);
-         navigate("/brand/messages", { replace: true });
+        navigate("/brand/messages", { replace: true });
       }
     },
     [token, conversations, navigate, loadConversations]
   );
 
-  // Handle URL parameters - only run once when component mounts or URL changes
   useEffect(() => {
     const userId = searchParams.get("id");
     if (userId && token) {
@@ -189,15 +181,15 @@ export default function MessagesPage() {
     } else if (token) {
       loadConversations().then(() => setLoading(false));
     }
-  }, [searchParams.get("id"), token]); // Only depend on the actual URL parameter
+  }, [searchParams.get("id"), token, loadNewChatUser]);
 
-  // Socket event handlers - stable references
+  // Socket event handlers
   useEffect(() => {
     const handleNewMessage = (event: CustomEvent) => {
       const newMessage = event.detail;
 
       if (
-        selectedUser &&
+        selectedUser?.id &&
         (newMessage.senderId === selectedUser.id ||
           newMessage.receiverId === selectedUser.id)
       ) {
@@ -219,38 +211,58 @@ export default function MessagesPage() {
           markConversationSeen(selectedUser.id);
         }
       }
-
       loadConversations();
     };
 
     const handleMessageSent = (event: CustomEvent) => {
-      const sentMessage = event.detail;
+      const { message: sentMessage, tempId } = event.detail;
 
-      if (selectedUser && sentMessage.receiverId === selectedUser.id) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            ...sentMessage,
-            from: "me",
-            status: "sent",
-          },
-        ]);
-        setTimeout(scrollToBottom, 100);
+      console.log("📨 Handling message_sent:", {
+        messageId: sentMessage.id,
+        tempId,
+      });
 
-        if (isNewChat) {
-          setIsNewChat(false);
-          loadConversations().then(() => {
-            const newConvIndex = conversations.findIndex(
-              (conv) => conv.id === selectedUser.id
-            );
-            if (newConvIndex !== -1) {
-              setSelectedUserIndex(newConvIndex);
-              setNewChatUser(null);
-            }
-          });
+      setMessages((prev) => {
+        if (tempId) {
+          // Update the temporary message
+          return prev.map((msg) =>
+            msg.tempId === tempId
+              ? {
+                  ...sentMessage,
+                  from: "me" as const,
+                  status: "sent" as const,
+                  tempId: undefined,
+                }
+              : msg
+          );
+        } else {
+          // Fallback: add as new message
+          return [
+            ...prev,
+            {
+              ...sentMessage,
+              from: "me" as const,
+              status: "sent" as const,
+            },
+          ];
         }
-      }
+      });
+
+      setTimeout(scrollToBottom, 100);
       setSending(false);
+
+      if (isNewChat && selectedUser) {
+        setIsNewChat(false);
+        loadConversations().then(() => {
+          const newConvIndex = conversations.findIndex(
+            (conv) => conv.id === selectedUser.id
+          );
+          if (newConvIndex !== -1) {
+            setSelectedUserIndex(newConvIndex);
+            setNewChatUser(null);
+          }
+        });
+      }
     };
 
     const handleMessageDelivered = (event: CustomEvent) => {
@@ -271,6 +283,27 @@ export default function MessagesPage() {
           msg.id === messageId ? { ...msg, status: "seen", seen: true } : msg
         )
       );
+    };
+
+    const handleMessageError = (event: CustomEvent) => {
+      const { error, tempId } = event.detail;
+      console.error("Message error:", error);
+
+      if (tempId) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.tempId === tempId ? { ...msg, status: "failed" } : msg
+          )
+        );
+      } else {
+        // Mark all sending messages as failed
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.status === "sending" ? { ...msg, status: "failed" } : msg
+          )
+        );
+      }
+      setSending(false);
     };
 
     const handleConversationUpdated = (event: CustomEvent) => {
@@ -327,6 +360,10 @@ export default function MessagesPage() {
     );
     window.addEventListener("message_seen", handleMessageSeen as EventListener);
     window.addEventListener(
+      "message_error",
+      handleMessageError as EventListener
+    );
+    window.addEventListener(
       "conversation_updated",
       handleConversationUpdated as EventListener
     );
@@ -362,6 +399,10 @@ export default function MessagesPage() {
         handleMessageSeen as EventListener
       );
       window.removeEventListener(
+        "message_error",
+        handleMessageError as EventListener
+      );
+      window.removeEventListener(
         "conversation_updated",
         handleConversationUpdated as EventListener
       );
@@ -382,9 +423,8 @@ export default function MessagesPage() {
         handleOnlineUsersUpdated as EventListener
       );
     };
-  }, [selectedUser?.id, socket, connectionStatus, isNewChat, onlineUsers]); // Minimal dependencies
+  }, [selectedUser?.id, socket, connectionStatus, isNewChat, onlineUsers]);
 
-  // Handle conversation room management - separate effect with proper cleanup
   useEffect(() => {
     if (
       selectedUser &&
@@ -392,23 +432,16 @@ export default function MessagesPage() {
       socket &&
       connectionStatus === "connected"
     ) {
-      // Only join if we're not already in this conversation
       if (currentConversationRef.current !== selectedUser.id) {
-        // Leave previous conversation if exists
         if (currentConversationRef.current) {
           leaveConversation(currentConversationRef.current);
         }
-
-        // Join new conversation
         joinConversation(selectedUser.id);
         currentConversationRef.current = selectedUser.id;
-
-        // Load messages for this conversation
         loadMessages(selectedUser.id);
       }
     }
 
-    // Cleanup function
     return () => {
       if (
         currentConversationRef.current &&
@@ -419,14 +452,12 @@ export default function MessagesPage() {
         currentConversationRef.current = null;
       }
     };
-  }, [selectedUser?.id, isNewChat, socket, connectionStatus]); // Only essential dependencies
+  }, [selectedUser?.id, isNewChat, socket, connectionStatus]);
 
-  // Auto-scroll when messages change
   useEffect(() => {
     setTimeout(scrollToBottom, 100);
   }, [messages.length]);
 
-  // Set loading to false when data is ready
   useEffect(() => {
     if (conversations.length > 0 || newChatUser || !searchParams.get("id")) {
       setLoading(false);
@@ -442,9 +473,12 @@ export default function MessagesPage() {
     ) {
       setSending(true);
 
-      // Optimistic update
+      // Get tempId from sendMessage
+      const tempId = sendMessage(selectedUser.id, message.trim());
+
+      // Create optimistic message with tempId
       const tempMessage: Message = {
-        id: `temp-${Date.now()}`,
+        id: tempId,
         content: message.trim(),
         from: "me",
         sender: {
@@ -459,12 +493,24 @@ export default function MessagesPage() {
         delivered: false,
         createdAt: new Date().toISOString(),
         status: "sending",
+        tempId: tempId,
       };
 
       setMessages((prev) => [...prev, tempMessage]);
       setTimeout(scrollToBottom, 100);
 
-      sendMessage(selectedUser.id, message.trim());
+      // Timeout fallback for failed messages
+      setTimeout(() => {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.tempId === tempId && msg.status === "sending"
+              ? { ...msg, status: "failed" }
+              : msg
+          )
+        );
+        if (sending) setSending(false);
+      }, 10000);
+
       setMessage("");
 
       if (socket && connectionStatus === "connected") {
@@ -525,7 +571,7 @@ export default function MessagesPage() {
       setSelectedUserIndex(index);
       setIsNewChat(false);
       setNewChatUser(null);
-       navigate("/brand/messages", { replace: true });
+      navigate("/brand/messages", { replace: true });
     },
     [navigate]
   );
@@ -534,7 +580,7 @@ export default function MessagesPage() {
     setSelectedUserIndex(null);
     setIsNewChat(false);
     setNewChatUser(null);
-     navigate("/brand/messages", { replace: true });
+    navigate("/brand/messages", { replace: true });
   }, [navigate]);
 
   if (loading) {
@@ -549,11 +595,11 @@ export default function MessagesPage() {
 
   return (
     <BrandLayout>
-      <div className="flex  h-full bg-white text-gray-800">
+      <div className="flex h-[95vh] text-gray-800">
         {/* Connection Status */}
         <div
           className={clsx(
-            "fixed  right-4 z-50 px-3  rounded-full text-sm font-medium",
+            "fixed top-4 right-4 z-50 px-3 py-1 rounded-full text-sm font-medium",
             connectionStatus === "connected"
               ? "bg-green-100 text-green-800"
               : connectionStatus === "connecting"
@@ -585,7 +631,7 @@ export default function MessagesPage() {
                 key={user.id}
                 onClick={() => handleSelectConversation(index)}
                 className={clsx(
-                  "flex items-center px-4 py-3 cursor-pointer ",
+                  "flex items-center px-4 py-3 cursor-pointer hover:bg-gray-100",
                   selectedUserIndex === index && "bg-gray-200"
                 )}
               >
@@ -671,7 +717,7 @@ export default function MessagesPage() {
               ) : (
                 messages.map((msg, i) => (
                   <div
-                    key={msg.id || i}
+                    key={msg.tempId || msg.id || i}
                     className={clsx(
                       "max-w-[75%] p-3 rounded-lg relative",
                       msg.from === "me"

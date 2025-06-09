@@ -33,7 +33,7 @@ const Login: React.FC = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://taseer-b.onrender.com/api/auth/login",
+        "https://api.taseer.app/api/auth/login",
         {
           email,
           password,
@@ -66,7 +66,7 @@ const Login: React.FC = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://taseer-b.onrender.com/api/auth/login",
+        "https://api.taseer.app/api/auth/login",
         {
           step: "otp",
           otp,
@@ -115,7 +115,7 @@ const Login: React.FC = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://taseer-b.onrender.com/api/auth/login",
+        "https://api.taseer.app/api/auth/login",
         {
           email,
           password,
@@ -163,9 +163,7 @@ const Login: React.FC = () => {
           {step === "credentials" ? (
             <>
               {/* Title */}
-              <h2 className="text-3xl font-bold text-gray-900">
-                 Log in
-              </h2>
+              <h2 className="text-3xl font-bold text-gray-900">Log in</h2>
               <p className="text-gray-500 mt-1 mb-4">Welcome back, friend</p>
 
               {/* Email Input */}
@@ -203,6 +201,17 @@ const Login: React.FC = () => {
                     }
                   />
                 </div>
+              </div>
+
+              {/* Add this after the Password Input and before the Login Button */}
+              <div className="text-right mb-4">
+                <button
+                  type="button"
+                  onClick={() => router("/forgot-password")}
+                  className="text-purple-600 hover:text-purple-700 text-sm font-medium"
+                >
+                  Forgot Password?
+                </button>
               </div>
 
               {/* Login Button */}

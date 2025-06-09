@@ -1,12 +1,17 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaArrowRight } from "react-icons/fa";
 import { FiCheckCircle } from "react-icons/fi";
 import Button from "../../components/ui/Button";
 import Footer from "../../components/Fotter";
-import { ToastContainer , toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import OtpVerificationModal from "../../components/otpModal";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../../store/userSlice";
+import Cookies from "js-cookie";
 
 interface OnboardingFormData {
   // Step 1: Basic Info
@@ -81,6 +86,11 @@ const Onboarding = () => {
   const industry = watch("industry");
   const department = watch("representativeDepartment");
 
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [signupUserId, setSignupUserId] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const dispatch = useDispatch();
+
   useEffect(() => {
     if (sameAsCompanyEmail) {
       setValue("representativeEmail", companyEmail);
@@ -145,45 +155,58 @@ const Onboarding = () => {
 
   const onBack = () => setStep((prev) => prev - 1);
 
-const onSubmit = (data: OnboardingFormData) => {
-  fetch("https://taseer-b.onrender.com/api/auth/signup", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ ...data, type: "brand" }),
-  })
-    .then((response) => response.json())
-    .then((result) => {
-      console.log(result); // Log the result to check its structure
-
-      if (result?.message === "User created successfully.") {
-        toast.success("✅ Account created successfully. Please login with your credentials.", {
-          position: "top-right",
-          autoClose: 3000,
-          onClose: () => (window.location.href = "/login"),
-        });
-      } else if (result?.message === "Internal server error") {
-        toast.error(" Internal server error from server side - Contact dev");
-      } else if (result?.message === "User already exists.") {
-        toast.info("ℹ Please login with your previous credentials.");
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 3000);
-      } else if (result?.status === 400) {
-        toast.warn(" You already have an account, so please login.");
-      } else if (result?.message === "Missing required fields.") {
-        toast.warn("Please fill all the required fields.");
-      } else {
-        toast.warn(" Please fill again properly.");
-      }
+  const onSubmit = (data: OnboardingFormData) => {
+    fetch("https://api.taseer.app/api/auth/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ...data, type: "brand", step: "signup" }),
     })
-    .catch((error) => {
-      console.error("Error:", error);
-      toast.error(" An error occurred. Please try again.");
-    });
-};
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
 
+        if (result?.success && result?.nextStep === "verify-otp") {
+          setSignupUserId(result.userId);
+          setSignupEmail(data.email);
+          setShowOtpModal(true);
+          toast.success("Account created! Please verify your email.");
+        } else if (result?.message === "Internal server error") {
+          toast.error("Internal server error from server side - Contact dev");
+        } else if (result?.message === "User already exists.") {
+          toast.info("Please login with your previous credentials.");
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 3000);
+        } else if (result?.status === 400) {
+          toast.warn("You already have an account, so please login.");
+        } else if (result?.message === "Missing required fields.") {
+          toast.warn("Please fill all the required fields.");
+        } else {
+          toast.warn("Please fill again properly.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        toast.error("An error occurred. Please try again.");
+      });
+  };
+
+  const handleOtpSuccess = (token: string, user: any) => {
+    Cookies.set("jwt", token, { expires: 14 });
+    dispatch(loginSuccess(user));
+
+    toast.success("Welcome! Redirecting to your dashboard...");
+
+    setTimeout(() => {
+      if (user.type === "brand") {
+        window.location.href = "/brand/home";
+      } else {
+        window.location.href = "/home";
+      }
+    }, 1000);
+  };
 
   // Check if email is a company domain (not gmail, yahoo, etc.)
   const validateCompanyEmail = (email: string) => {
@@ -207,10 +230,9 @@ const onSubmit = (data: OnboardingFormData) => {
 
   return (
     <>
-    <ToastContainer />
+      <ToastContainer />
 
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4 py-8">
-        
         {/* Logo & Step Tracker */}
         <div className="w-full max-w-md text-center">
           <img src="/logo.svg" alt="Logo" className="w-24 mx-auto mb-4" />
@@ -276,12 +298,12 @@ const onSubmit = (data: OnboardingFormData) => {
                 </div>
                 <div>
                   <input
+                    placeholder="Enter your nationality"
                     {...register("nationality", {
                       required: "Nationality is required",
                     })}
-                    placeholder="Nationality "
-                    className="w-full border-2  outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
-                  />
+                    className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
+                  ></input>
                   {errors.nationality && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.nationality.message}
@@ -295,7 +317,11 @@ const onSubmit = (data: OnboardingFormData) => {
                     id=""
                     {...register("countryCode")}
                   >
-                    <option data-countryCode="nan" className="text-gray-400" value="nan">
+                    <option
+                      data-countryCode="nan"
+                      className="text-gray-400"
+                      value="nan"
+                    >
                       Select Country Code{" "}
                     </option>
                     <option data-countryCode="DZ" value="213">
@@ -949,7 +975,6 @@ const onSubmit = (data: OnboardingFormData) => {
 
                   <input
                     {...register("phone", {
-                      
                       required: "Contact number is required",
                     })}
                     placeholder="Contact Number  "
@@ -969,7 +994,7 @@ const onSubmit = (data: OnboardingFormData) => {
                     className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
                   />
                 </div>
-               
+
                 <div>
                   <input
                     {...register("password", {
@@ -1126,10 +1151,14 @@ const onSubmit = (data: OnboardingFormData) => {
 
                 <div>
                   <input
+                  placeholder="Enter the city you are based in "
                     {...register("city", { required: "City is required" })}
-                    placeholder="City "
                     className="w-full border-2 outline-purple-400 placeholder-gray-500 text-gray-500 rounded-md p-2"
-                  />
+                    
+                 
+                  >
+                  
+                  </input>
                   {errors.city && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.city.message}
@@ -1626,6 +1655,13 @@ const onSubmit = (data: OnboardingFormData) => {
           )}
         </form>
       </div>
+      <OtpVerificationModal
+        isOpen={showOtpModal}
+        onClose={() => setShowOtpModal(false)}
+        userId={signupUserId}
+        email={signupEmail}
+        onSuccess={handleOtpSuccess}
+      />
       <Footer />
     </>
   );

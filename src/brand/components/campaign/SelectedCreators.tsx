@@ -105,7 +105,7 @@ export default function SelectedCreators({
       setLoading(true);
       const token = Cookies.get("jwt");
       const response = await axios.get(
-        `https://taseer-b.onrender.com/api/campaigns/${campaignId}/selected-creators`,
+        `https://api.taseer.app/api/campaigns/${campaignId}/selected-creators`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -170,7 +170,7 @@ export default function SelectedCreators({
     try {
       const token = Cookies.get("jwt");
       await axios.post(
-        `https://taseer-b.onrender.com/api/campaigns/${campaignId}/creators/${currentCreator.applicationId}/questions`,
+        `https://api.taseer.app/api/campaigns/${campaignId}/creators/${currentCreator.applicationId}/questions`,
         { questions },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -190,7 +190,7 @@ export default function SelectedCreators({
     try {
       const token = Cookies.get("jwt");
       await axios.post(
-        `https://taseer-b.onrender.com/api/campaigns/${campaignId}/creators/${currentCreator.applicationId}/contract`,
+        `https://api.taseer.app/api/campaigns/${campaignId}/creators/${currentCreator.applicationId}/contract`,
         contractDetails,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -217,7 +217,7 @@ export default function SelectedCreators({
     try {
       const token = Cookies.get("jwt");
       await axios.post(
-        `https://taseer-b.onrender.com/api/campaigns/${campaignId}/creators/${currentCreator.applicationId}/deliverables`,
+        `https://api.taseer.app/api/campaigns/${campaignId}/creators/${currentCreator.applicationId}/deliverables`,
         newDeliverable,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -240,7 +240,7 @@ export default function SelectedCreators({
     try {
       const token = Cookies.get("jwt");
       await axios.put(
-        `https://taseer-b.onrender.com/api/campaigns/${campaignId}/creators/${currentCreator.applicationId}/deliverables/${currentDeliverable.id}/brand-url`,
+        `https://api.taseer.app/api/campaigns/${campaignId}/creators/${currentCreator.applicationId}/deliverables/${currentDeliverable.id}/brand-url`,
         { brandUrl },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -263,7 +263,7 @@ export default function SelectedCreators({
     try {
       const token = Cookies.get("jwt");
       await axios.put(
-        `https://taseer-b.onrender.com/api/campaigns/${campaignId}/creators/${creatorId}/deliverables/${deliverableId}`,
+        `https://api.taseer.app/api/campaigns/${campaignId}/creators/${creatorId}/deliverables/${deliverableId}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -280,7 +280,7 @@ export default function SelectedCreators({
     try {
       const token = Cookies.get("jwt");
       await axios.put(
-        `https://taseer-b.onrender.com/api/campaigns/${campaignId}/creators/${creatorId}/deliverables/${deliverableId}/approve`,
+        `https://api.taseer.app/api/campaigns/${campaignId}/creators/${creatorId}/deliverables/${deliverableId}/approve`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

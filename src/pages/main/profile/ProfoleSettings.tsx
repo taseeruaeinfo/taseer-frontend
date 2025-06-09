@@ -21,9 +21,12 @@ import {
   Camera,
   X,
   Copy,
-  Briefcase,
+  Loader,
 } from "lucide-react";
 import DashboardLayout from "../../../components/main/DashBoardLayout";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store";
+import axios from "axios";
 
 interface MenuItem {
   key: string;
@@ -33,8 +36,8 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { key: "profile", label: "Profile", icon: <User /> },
-  { key: "portfolio", label: "My Portfolio", icon: <FolderOpen /> },
-  { key: "my work", label: "My Work", icon: <Briefcase /> },
+  // { key: "portfolio", label: "My Portfolio", icon: <FolderOpen /> },
+  // { key: "my work", label: "My Work", icon: <Briefcase /> },
   { key: "social", label: "Social Networks", icon: <Globe /> },
   { key: "specialties", label: "Specialties", icon: <Plus /> },
   { key: "shipping", label: "Shipping Address", icon: <MapPin /> },
@@ -65,7 +68,9 @@ interface UserData {
     location?: string;
     skills?: string;
     specialties: string[];
+
     contentTypes: any;
+
     collaborationPreferences: any;
     notificationPreferences: any;
     privacySettings: any;
@@ -80,6 +85,8 @@ interface UserData {
   };
   portfolioItems?: PortfolioItem[];
 }
+
+const API_BASE_URL = "https://api.taseer.app/api";
 
 export default function CreatorSettings() {
   const token = Cookies.get("jwt");
@@ -97,6 +104,8 @@ export default function CreatorSettings() {
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [specialties, setSpecialties] = useState<string[]>([]);
   const [newSpecialty, setNewSpecialty] = useState<string>("");
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const user = useSelector((state: RootState) => state.user);
 
   // Form states
   const [profileForm, setProfileForm] = useState({
@@ -133,6 +142,12 @@ export default function CreatorSettings() {
     deliveryNotes: "",
   });
 
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
   // Switch states for content types and collaboration preferences
   const [contentTypes, setContentTypes] = useState({
     video: true,
@@ -163,262 +178,351 @@ export default function CreatorSettings() {
     marketingNotifications: false,
   });
 
-  // Fetch user data on component mount
   useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setLoading(true);
+        const userId = user.id;
+
+        const response = await axios.get(
+          `${API_BASE_URL}/settings/profile/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const data = response.data;
+        //@ts-expect-error-asd
+        setUserData(data);
+        setProfileForm({
+          //@ts-expect-error-asd
+          firstName: data.firstName || "",
+          //@ts-expect-error-asd
+          lastName: data.lastName || "",
+          //@ts-expect-error-asd
+          fullName: data.fullName || `${data.firstName} ${data.lastName}`,
+          //@ts-expect-error-asd
+          email: data.email || "",
+          //@ts-expect-error-asd
+          phone: data.phone || "",
+          //@ts-expect-error-asd
+          city: data.city || "",
+
+          //@ts-expect-error-asd
+          website: data.website || "",
+          //@ts-expect-error-asd
+          bio: data.creatorSettings?.bio || "",
+          //@ts-expect-error-asd
+          location: data.creatorSettings?.location || "",
+          //@ts-expect-error-asd
+          skills: data.creatorSettings?.skills || "",
+        });
+
+        setSocialForm({
+          //@ts-expect-error-asd
+          instagram: data.socialHandles?.instagram || "",
+          //@ts-expect-error-asd
+          youtube: data.socialHandles?.youtube || "",
+          //@ts-expect-error-asd
+          twitter: data.socialHandles?.x || "",
+          //@ts-expect-error-asd
+          linkedin: data.socialHandles?.linkedin || "",
+          //@ts-expect-error-asd
+          github: data.socialHandles?.github || "",
+          //@ts-expect-error-asd
+          website: data.socialHandles?.website || "",
+        });
+
+        //@ts-expect-error-asd
+        setPortfolioItems(data.portfolioItems || []);
+        //@ts-expect-error-asd
+        setSpecialties(data.creatorSettings?.specialties || []);
+        setProfilePicture(
+          //@ts-expect-error-asd
+          data.profilePic || "/placeholder.svg?height=150&width=150"
+        );
+        //@ts-expect-error-asd
+        if (data.creatorSettings) {
+          //@ts-expect-error-asd
+          setContentTypes(data.creatorSettings.contentTypes || []);
+          setCollaborationPrefs(
+            //@ts-expect-error-asd
+            data.creatorSettings.collaborationPreferences || []
+          );
+          //@ts-expect-error-asd
+          setPrivacySettings(data.creatorSettings.privacySettings || {});
+          setNotificationSettings(
+            //@ts-expect-error-asd
+            data.creatorSettings.notificationPreferences || {}
+          );
+        }
+        //@ts-expect-error-asd
+        if (data.addressLine1) {
+          setShippingForm({
+            //@ts-expect-error-asd
+            fullName: data.fullName || "",
+            //@ts-expect-error-asd
+            phone: data.phone || "",
+            //@ts-expect-error-asd
+            addressLine1: data.addressLine1 || "",
+            //@ts-expect-error-asd
+            addressLine2: data.addressLine2 || "",
+            //@ts-expect-error-asd
+            city: data.city || "",
+            //@ts-expect-error-asd
+            state: data.state || "",
+            //@ts-expect-error-asd
+            postalCode: data.postalCode || "",
+            //@ts-expect-error-asd
+            country: data.country || "",
+            //@ts-expect-error-asd
+            deliveryNotes: data.deliveryNotes || "",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        toast.error("Failed to load user data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchUserData();
-  }, []);
-
-  const fetchUserData = async () => {
-    try {
-      setLoading(true);
-      // Replace with actual user ID from your auth system
-      const userId = "current-user-id";
-      const response = await fetch(
-        `https://taseer-b.onrender.com/api/settings/profile/${userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch user data");
-      }
-
-      const data = await response.json();
-      setUserData(data);
-
-      // Populate form states
-      setProfileForm({
-        firstName: data.firstName || "",
-        lastName: data.lastName || "",
-        fullName: data.fullName || "",
-        email: data.email || "",
-        phone: data.phone || "",
-        city: data.city || "",
-        website: data.website || "",
-        bio: data.creatorSettings?.bio || "",
-        location: data.creatorSettings?.location || "",
-        skills: data.creatorSettings?.skills || "",
-      });
-
-      setSocialForm({
-        instagram: data.socialHandles?.instagram || "",
-        youtube: data.socialHandles?.youtube || "",
-        twitter: data.socialHandles?.x || "",
-        linkedin: data.socialHandles?.linkedin || "",
-        github: data.socialHandles?.github || "",
-        website: data.socialHandles?.website || "",
-      });
-
-      setPortfolioItems(data.portfolioItems || []);
-      setSpecialties(data.creatorSettings?.specialties || []);
-      setProfilePicture(data.profilePic);
-
-      // Set other states from user data
-      if (data.creatorSettings) {
-        setContentTypes(data.creatorSettings.contentTypes || contentTypes);
-        setCollaborationPrefs(
-          data.creatorSettings.collaborationPreferences || collaborationPrefs
-        );
-        setPrivacySettings(
-          data.creatorSettings.privacySettings || privacySettings
-        );
-        setNotificationSettings(
-          data.creatorSettings.notificationPreferences || notificationSettings
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      toast.error("Failed to load user data");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [user.id, token]); // 🔥 keep dependencies minimal
 
   const handleProfileUpdate = async () => {
     try {
-      setLoading(true);
-      const userId = userData?.id || "current-user-id";
+      setSubmitting(true);
+      const userId = userData?.id || user.id;
 
       // Update basic profile
-      const profileResponse = await fetch(
-        `https://taseer-b.onrender.com/api/settings/profile/${userId}`,
+      await axios.put(
+        `${API_BASE_URL}/settings/profile/${userId}`,
         {
-          method: "PUT",
+          firstName: profileForm.firstName,
+          lastName: profileForm.lastName,
+          fullName: profileForm.fullName,
+          email: profileForm.email,
+          phone: profileForm.phone,
+          city: profileForm.city,
+          website: profileForm.website,
+          profilePic: profilePicture,
+        },
+        {
           headers: {
             "Content-Type": "application/json",
-            authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            firstName: profileForm.firstName,
-            lastName: profileForm.lastName,
-            fullName: profileForm.fullName,
-            email: profileForm.email,
-            phone: profileForm.phone,
-            city: profileForm.city,
-            website: profileForm.website,
-            profilePic: profilePicture,
-          }),
         }
       );
-
-      if (!profileResponse.ok) {
-        throw new Error("Failed to update profile");
-      }
 
       // Update creator settings
-      const creatorResponse = await fetch(
-        `https://taseer-b.onrender.com/api/settings/creator-settings/${userId}`,
+      await axios.put(
+        `${API_BASE_URL}/settings/creator-settings/${userId}`,
         {
-          method: "PUT",
+          bio: profileForm.bio,
+          location: profileForm.location,
+          skills: profileForm.skills,
+          specialties,
+          contentTypes,
+          collaborationPreferences: collaborationPrefs,
+          notificationPreferences: notificationSettings,
+          privacySettings,
+        },
+        {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            bio: profileForm.bio,
-            location: profileForm.location,
-            skills: profileForm.skills,
-            specialties,
-            contentTypes,
-            collaborationPreferences: collaborationPrefs,
-            notificationPreferences: notificationSettings,
-            privacySettings,
-          }),
         }
       );
-
-      if (!creatorResponse.ok) {
-        throw new Error("Failed to update creator settings");
-      }
 
       toast.success("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const handleSocialUpdate = async () => {
     try {
-      setLoading(true);
-      const userId = userData?.id || "current-user-id";
+      setSubmitting(true);
+      const userId = userData?.id || user.id;
 
-      const response = await fetch(
-        `https://taseer-b.onrender.com/api/settings/social-handles/${userId}`,
+      await axios.put(
+        `${API_BASE_URL}/settings/social-handles/${userId}`,
         {
-          method: "PUT",
+          instagram: socialForm.instagram,
+          youtube: socialForm.youtube,
+          x: socialForm.twitter,
+          linkedin: socialForm.linkedin,
+          github: socialForm.github,
+          website: socialForm.website,
+        },
+        {
           headers: {
             "Content-Type": "application/json",
-            authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            instagram: socialForm.instagram,
-            youtube: socialForm.youtube,
-            x: socialForm.twitter,
-            linkedin: socialForm.linkedin,
-            github: socialForm.github,
-            website: socialForm.website,
-          }),
         }
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to update social handles");
-      }
 
       toast.success("Social handles updated successfully!");
     } catch (error) {
       console.error("Error updating social handles:", error);
       toast.error("Failed to update social handles");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const handleShippingUpdate = async () => {
     try {
-      setLoading(true);
-      const userId = userData?.id || "current-user-id";
+      setSubmitting(true);
+      const userId = userData?.id || user.id;
 
-      const response = await fetch(
-        `https://taseer-b.onrender.com/api/settings/shipping-address/${userId}`,
+      await axios.put(
+        `${API_BASE_URL}/settings/shipping-address/${userId}`,
+        shippingForm,
         {
-          method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(shippingForm),
         }
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to update shipping address");
-      }
 
       toast.success("Shipping address updated successfully!");
     } catch (error) {
       console.error("Error updating shipping address:", error);
       toast.error("Failed to update shipping address");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
+    }
+  };
+
+  const handlePasswordUpdate = async () => {
+    try {
+      if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+        toast.error("New passwords do not match");
+        return;
+      }
+
+      setSubmitting(true);
+      const userId = userData?.id || user.id;
+
+      await axios.put(
+        `${API_BASE_URL}/settings/change-password/${userId}`,
+        {
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("Password updated successfully!");
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      console.error("Error updating password:", error);
+      toast.error("Check current passwordd");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const addPortfolioItem = async () => {
     try {
-      const userId = userData?.id || "current-user-id";
+      setSubmitting(true);
+      const userId = userData?.id || user.id;
 
-      const response = await fetch(
-        `https://taseer-b.onrender.com/api/settings/portfolio/${userId}`,
+      const response = await axios.post(
+        `${API_BASE_URL}/settings/portfolio/${userId}`,
         {
-          method: "POST",
+          name: "New Project",
+          description: "Project description",
+          url: "https://example.com",
+        },
+        {
           headers: {
             "Content-Type": "application/json",
-            authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            name: "New Project",
-            description: "Project description",
-            url: "https://example.com",
-          }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to add portfolio item");
-      }
+      //@ts-expect-error - nwk
 
-      const data = await response.json();
-      setPortfolioItems([...portfolioItems, data.item]);
+      setPortfolioItems([...portfolioItems, response.data.item]);
       toast.success("Portfolio item added successfully!");
     } catch (error) {
       console.error("Error adding portfolio item:", error);
       toast.error("Failed to add portfolio item");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const removePortfolioItem = async (id: string) => {
     try {
-      const response = await fetch(
-        `https://taseer-b.onrender.com/api/settings/portfolio/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      setSubmitting(true);
 
-      if (!response.ok) {
-        throw new Error("Failed to delete portfolio item");
-      }
+      await axios.delete(`${API_BASE_URL}/settings/portfolio/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       setPortfolioItems(portfolioItems.filter((item) => item.id !== id));
       toast.success("Portfolio item deleted successfully!");
     } catch (error) {
       console.error("Error deleting portfolio item:", error);
       toast.error("Failed to delete portfolio item");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const updatePortfolioItem = async (
+    id: string,
+    data: Partial<PortfolioItem>
+  ) => {
+    try {
+      setSubmitting(true);
+
+      const response = await axios.put(
+        `${API_BASE_URL}/settings/portfolio/${id}`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setPortfolioItems(
+        portfolioItems.map((item) =>
+          //@ts-expect-error - nwk
+          item.id === id ? response.data.item : item
+        )
+      );
+      toast.success("Portfolio item updated successfully!");
+    } catch (error) {
+      console.error("Error updating portfolio item:", error);
+      toast.error("Failed to update portfolio item");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -439,7 +543,7 @@ export default function CreatorSettings() {
   const generateShareUrl = () => {
     const uniqueId = Math.random().toString(36).substring(2, 10);
     setShareUrl(
-      `https://yourplatform.com/creator/${userData?.firstName}/${uniqueId}`
+      `https://taseer.app/creator/${userData?.firstName}/${uniqueId}`
     );
     setShowShareDialog(true);
   };
@@ -462,6 +566,61 @@ export default function CreatorSettings() {
         }
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDeactivateAccount = async () => {
+    try {
+      setSubmitting(true);
+      const userId = userData?.id || user.id;
+
+      await axios.put(
+        `${API_BASE_URL}/settings/deactivate/${userId}`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("Account deactivated successfully");
+      setShowDeactivateDialog(false);
+      // Redirect to logout or home page
+      setTimeout(() => {
+        window.location.href = "/logout";
+      }, 2000);
+    } catch (error) {
+      console.error("Error deactivating account:", error);
+      toast.error("Failed to deactivate account");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      setSubmitting(true);
+      const userId = userData?.id || user.id;
+
+      await axios.delete(`${API_BASE_URL}/settings/delete/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      toast.success("Account deleted successfully");
+      setShowDeleteDialog(false);
+      // Redirect to logout page
+      setTimeout(() => {
+        window.location.href = "/logout";
+      }, 2000);
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast.error("Failed to delete account");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -513,6 +672,76 @@ export default function CreatorSettings() {
                 </div>
 
                 <div className="grid gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="First Name"
+                      value={profileForm.firstName}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          firstName: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Last Name"
+                      value={profileForm.lastName}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          lastName: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    />
+                  </div>
+
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={profileForm.email}
+                    onChange={(e) =>
+                      setProfileForm({ ...profileForm, email: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+
+                  <input
+                    type="tel"
+                    placeholder="Phone"
+                    value={profileForm.phone}
+                    onChange={(e) =>
+                      setProfileForm({ ...profileForm, phone: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="City"
+                    value={profileForm.city}
+                    onChange={(e) =>
+                      setProfileForm({ ...profileForm, city: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+
+                  <input
+                    type="url"
+                    placeholder="Website"
+                    value={profileForm.website}
+                    onChange={(e) =>
+                      setProfileForm({
+                        ...profileForm,
+                        website: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+
                   <textarea
                     placeholder="Bio"
                     value={profileForm.bio}
@@ -548,10 +777,17 @@ export default function CreatorSettings() {
 
                 <button
                   onClick={handleProfileUpdate}
-                  disabled={loading}
-                  className="bg-violet-600 text-white px-6 py-2 rounded-md hover:bg-violet-700 transition disabled:opacity-50"
+                  disabled={submitting}
+                  className="bg-violet-600 text-white px-6 py-2 rounded-md hover:bg-violet-700 transition disabled:opacity-50 flex items-center gap-2"
                 >
-                  {loading ? "Saving..." : "Save Changes"}
+                  {submitting ? (
+                    <>
+                      <Loader size={16} className="animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </button>
               </div>
             </div>
@@ -571,14 +807,26 @@ export default function CreatorSettings() {
               </h2>
               <button
                 onClick={addPortfolioItem}
-                className="flex items-center gap-2 px-4 py-2 border border-violet-300 text-violet-600 rounded-md hover:bg-violet-50 transition"
+                disabled={submitting}
+                className="flex items-center gap-2 px-4 py-2 border border-violet-300 text-violet-600 rounded-md hover:bg-violet-50 transition disabled:opacity-50"
               >
-                <Plus size={16} />
+                {submitting ? (
+                  <Loader size={16} className="animate-spin" />
+                ) : (
+                  <Plus size={16} />
+                )}
                 Add Project
               </button>
             </div>
 
             <div className="space-y-4">
+              {portfolioItems.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <FolderOpen className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                  <p>No portfolio items yet. Add your first project!</p>
+                </div>
+              )}
+
               {portfolioItems.map((item) => (
                 <motion.div
                   key={item.id}
@@ -588,22 +836,44 @@ export default function CreatorSettings() {
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{item.name}</h3>
-                      <p className="text-gray-600 mb-2">{item.description}</p>
-                      <a
-                        href={item.url}
-                        className="text-violet-600 hover:underline"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Visit Project
-                      </a>
+                      <input
+                        type="text"
+                        value={item.name}
+                        onChange={(e) =>
+                          updatePortfolioItem(item.id, { name: e.target.value })
+                        }
+                        className="font-semibold text-lg bg-transparent border-b border-transparent hover:border-violet-300 focus:border-violet-500 focus:outline-none w-full mb-2"
+                      />
+                      <textarea
+                        value={item.description || ""}
+                        onChange={(e) =>
+                          updatePortfolioItem(item.id, {
+                            description: e.target.value,
+                          })
+                        }
+                        placeholder="Add a description"
+                        className="text-gray-600 mb-2 bg-transparent border border-transparent hover:border-violet-300 focus:border-violet-500 focus:outline-none w-full rounded p-1"
+                      />
+                      <input
+                        type="url"
+                        value={item.url || ""}
+                        onChange={(e) =>
+                          updatePortfolioItem(item.id, { url: e.target.value })
+                        }
+                        placeholder="https://example.com"
+                        className="text-violet-600 hover:underline bg-transparent border-b border-transparent hover:border-violet-300 focus:border-violet-500 focus:outline-none w-full"
+                      />
                     </div>
                     <button
                       onClick={() => removePortfolioItem(item.id)}
-                      className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded transition"
+                      disabled={submitting}
+                      className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded transition disabled:opacity-50"
                     >
-                      <Trash size={16} />
+                      {submitting ? (
+                        <Loader size={16} className="animate-spin" />
+                      ) : (
+                        <Trash size={16} />
+                      )}
                     </button>
                   </div>
                 </motion.div>
@@ -623,67 +893,195 @@ export default function CreatorSettings() {
               Social Links
             </h2>
             <div className="space-y-4">
-              <input
-                type="url"
-                placeholder="Instagram URL"
-                value={socialForm.instagram}
-                onChange={(e) =>
-                  setSocialForm({ ...socialForm, instagram: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
-              />
-              <input
-                type="url"
-                placeholder="YouTube URL"
-                value={socialForm.youtube}
-                onChange={(e) =>
-                  setSocialForm({ ...socialForm, youtube: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
-              />
-              <input
-                type="url"
-                placeholder="Twitter URL"
-                value={socialForm.twitter}
-                onChange={(e) =>
-                  setSocialForm({ ...socialForm, twitter: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
-              />
-              <input
-                type="url"
-                placeholder="LinkedIn URL"
-                value={socialForm.linkedin}
-                onChange={(e) =>
-                  setSocialForm({ ...socialForm, linkedin: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
-              />
-              <input
-                type="url"
-                placeholder="GitHub URL"
-                value={socialForm.github}
-                onChange={(e) =>
-                  setSocialForm({ ...socialForm, github: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
-              />
-              <input
-                type="url"
-                placeholder="Website URL"
-                value={socialForm.website}
-                onChange={(e) =>
-                  setSocialForm({ ...socialForm, website: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
-              />
+              <div className="flex items-center gap-3">
+                <div className="bg-pink-500 text-white p-2 rounded-md">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect
+                      x="2"
+                      y="2"
+                      width="20"
+                      height="20"
+                      rx="5"
+                      ry="5"
+                    ></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                  </svg>
+                </div>
+                <input
+                  type="url"
+                  placeholder="Instagram URL"
+                  value={socialForm.instagram}
+                  onChange={(e) =>
+                    setSocialForm({ ...socialForm, instagram: e.target.value })
+                  }
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="bg-red-500 text-white p-2 rounded-md">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+                    <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+                  </svg>
+                </div>
+                <input
+                  type="url"
+                  placeholder="YouTube URL"
+                  value={socialForm.youtube}
+                  onChange={(e) =>
+                    setSocialForm({ ...socialForm, youtube: e.target.value })
+                  }
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="bg-black text-white p-2 rounded-md">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+                  </svg>
+                </div>
+                <input
+                  type="url"
+                  placeholder="Twitter URL"
+                  value={socialForm.twitter}
+                  onChange={(e) =>
+                    setSocialForm({ ...socialForm, twitter: e.target.value })
+                  }
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-600 text-white p-2 rounded-md">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                    <rect x="2" y="9" width="4" height="12"></rect>
+                    <circle cx="4" cy="4" r="2"></circle>
+                  </svg>
+                </div>
+                <input
+                  type="url"
+                  placeholder="LinkedIn URL"
+                  value={socialForm.linkedin}
+                  onChange={(e) =>
+                    setSocialForm({ ...socialForm, linkedin: e.target.value })
+                  }
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="bg-gray-800 text-white p-2 rounded-md">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                  </svg>
+                </div>
+                <input
+                  type="url"
+                  placeholder="GitHub URL"
+                  value={socialForm.github}
+                  onChange={(e) =>
+                    setSocialForm({ ...socialForm, github: e.target.value })
+                  }
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="bg-violet-600 text-white p-2 rounded-md">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                  </svg>
+                </div>
+                <input
+                  type="url"
+                  placeholder="Website URL"
+                  value={socialForm.website}
+                  onChange={(e) =>
+                    setSocialForm({ ...socialForm, website: e.target.value })
+                  }
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
 
               <button
                 onClick={handleSocialUpdate}
-                disabled={loading}
-                className="bg-violet-600 text-white px-6 py-2 rounded-md hover:bg-violet-700 transition disabled:opacity-50"
+                disabled={submitting}
+                className="bg-violet-600 text-white px-6 py-2 rounded-md hover:bg-violet-700 transition disabled:opacity-50 flex items-center gap-2"
               >
-                {loading ? "Saving..." : "Save Social Links"}
+                {submitting ? (
+                  <>
+                    <Loader size={16} className="animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  "Save Social Links"
+                )}
               </button>
             </div>
           </motion.div>
@@ -703,6 +1101,12 @@ export default function CreatorSettings() {
             <div>
               <h3 className="text-lg font-medium mb-2">Your Specialties</h3>
               <div className="flex flex-wrap gap-2 mb-4">
+                {specialties.length === 0 && (
+                  <p className="text-gray-500 text-sm italic">
+                    No specialties added yet
+                  </p>
+                )}
+
                 {specialties.map((specialty, index) => (
                   <span
                     key={index}
@@ -786,10 +1190,17 @@ export default function CreatorSettings() {
 
             <button
               onClick={handleProfileUpdate}
-              disabled={loading}
-              className="bg-violet-600 text-white px-6 py-2 rounded-md hover:bg-violet-700 transition disabled:opacity-50"
+              disabled={submitting}
+              className="bg-violet-600 text-white px-6 py-2 rounded-md hover:bg-violet-700 transition disabled:opacity-50 flex items-center gap-2"
             >
-              {loading ? "Saving..." : "Save Preferences"}
+              {submitting ? (
+                <>
+                  <Loader size={16} className="animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                "Save Preferences"
+              )}
             </button>
           </motion.div>
         );
@@ -870,7 +1281,7 @@ export default function CreatorSettings() {
                   addressLine2: e.target.value,
                 })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+              className="w-full px-3 py-2  border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -930,10 +1341,17 @@ export default function CreatorSettings() {
 
             <button
               onClick={handleShippingUpdate}
-              disabled={loading}
-              className="bg-violet-600 text-white px-6 py-2 rounded-md hover:bg-violet-700 transition disabled:opacity-50"
+              disabled={submitting}
+              className="bg-violet-600 text-white px-6 py-2 rounded-md hover:bg-violet-700 transition disabled:opacity-50 flex items-center gap-2"
             >
-              {loading ? "Saving..." : "Save Address"}
+              {submitting ? (
+                <>
+                  <Loader size={16} className="animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                "Save Address"
+              )}
             </button>
           </motion.div>
         );
@@ -1021,21 +1439,60 @@ export default function CreatorSettings() {
             </h2>
 
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 border border-gray-200 rounded-md">
-                <div>
-                  <p className="font-medium">Password</p>
-                  <p className="text-sm text-gray-500">
-                    Last changed 30 days ago
-                  </p>
+              <div className="p-4 border border-gray-200 rounded-md">
+                <h3 className="text-lg font-medium mb-4">Change Password</h3>
+                <div className="space-y-3">
+                  <input
+                    type="password"
+                    placeholder="Current Password"
+                    value={passwordForm.currentPassword}
+                    onChange={(e) =>
+                      setPasswordForm({
+                        ...passwordForm,
+                        currentPassword: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+                  <input
+                    type="password"
+                    placeholder="New Password"
+                    value={passwordForm.newPassword}
+                    onChange={(e) =>
+                      setPasswordForm({
+                        ...passwordForm,
+                        newPassword: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Confirm New Password"
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) =>
+                      setPasswordForm({
+                        ...passwordForm,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+                  <button
+                    onClick={handlePasswordUpdate}
+                    disabled={submitting}
+                    className="bg-violet-600 text-white px-4 py-2 rounded-md hover:bg-violet-700 transition disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader size={16} className="animate-spin" />
+                        <span>Updating...</span>
+                      </>
+                    ) : (
+                      "Update Password"
+                    )}
+                  </button>
                 </div>
-                <button
-                  onClick={() =>
-                    toast.info("Change password feature coming soon")
-                  }
-                  className="px-4 py-2 border border-violet-300 text-violet-600 rounded-md hover:bg-violet-50 transition"
-                >
-                  Change
-                </button>
               </div>
 
               <div className="flex justify-between items-center p-4 border border-gray-200 rounded-md">
@@ -1106,10 +1563,17 @@ export default function CreatorSettings() {
 
             <button
               onClick={handleProfileUpdate}
-              disabled={loading}
-              className="bg-violet-600 text-white px-6 py-2 rounded-md hover:bg-violet-700 transition disabled:opacity-50"
+              disabled={submitting}
+              className="bg-violet-600 text-white px-6 py-2 rounded-md hover:bg-violet-700 transition disabled:opacity-50 flex items-center gap-2"
             >
-              {loading ? "Saving..." : "Save Security Settings"}
+              {submitting ? (
+                <>
+                  <Loader size={16} className="animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                "Save Security Settings"
+              )}
             </button>
           </motion.div>
         );
@@ -1231,12 +1695,7 @@ export default function CreatorSettings() {
         {/* Delete Account Modal */}
         <AnimatePresence>
           {showDeleteDialog && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 overflow-y-auto"
-            >
+            <motion.div className="fixed inset-0 z-50 overflow-y-auto">
               <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                 <div
                   className="fixed inset-0 transition-opacity"
@@ -1245,12 +1704,7 @@ export default function CreatorSettings() {
                   <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
                 </div>
 
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.95, opacity: 0 }}
-                  className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
-                >
+                <motion.div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                   <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                       Delete Your Account
@@ -1260,22 +1714,23 @@ export default function CreatorSettings() {
                       permanently removed.
                     </p>
                     <p className="font-medium mb-2">
-                      Please type "DELETE" to confirm:
+                      Are you sure you want to delete your account?
                     </p>
-                    <input
-                      type="text"
-                      placeholder="Type DELETE here"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                    />
                   </div>
                   <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
                     <button
-                      onClick={() =>
-                        toast.error("Account deletion is disabled in demo mode")
-                      }
-                      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
+                      onClick={handleDeleteAccount}
+                      disabled={submitting}
+                      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition disabled:opacity-50 flex items-center gap-2"
                     >
-                      Permanently Delete Account
+                      {submitting ? (
+                        <>
+                          <Loader size={16} className="animate-spin" />
+                          <span>Deleting...</span>
+                        </>
+                      ) : (
+                        "Permanently Delete Account"
+                      )}
                     </button>
                     <button
                       onClick={() => setShowDeleteDialog(false)}
@@ -1293,12 +1748,7 @@ export default function CreatorSettings() {
         {/* Deactivate Account Modal */}
         <AnimatePresence>
           {showDeactivateDialog && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 overflow-y-auto"
-            >
+            <motion.div className="fixed inset-0 z-50 overflow-y-auto">
               <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                 <div
                   className="fixed inset-0 transition-opacity"
@@ -1307,12 +1757,7 @@ export default function CreatorSettings() {
                   <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
                 </div>
 
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.95, opacity: 0 }}
-                  className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
-                >
+                <motion.div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                   <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                       Deactivate Your Account
@@ -1330,14 +1775,18 @@ export default function CreatorSettings() {
                   </div>
                   <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
                     <button
-                      onClick={() =>
-                        toast.warning(
-                          "Account deactivation is disabled in demo mode"
-                        )
-                      }
-                      className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition"
+                      onClick={handleDeactivateAccount}
+                      disabled={submitting}
+                      className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition disabled:opacity-50 flex items-center gap-2"
                     >
-                      Deactivate Account
+                      {submitting ? (
+                        <>
+                          <Loader size={16} className="animate-spin" />
+                          <span>Deactivating...</span>
+                        </>
+                      ) : (
+                        "Deactivate Account"
+                      )}
                     </button>
                     <button
                       onClick={() => setShowDeactivateDialog(false)}

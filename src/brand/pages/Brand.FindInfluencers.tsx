@@ -18,7 +18,7 @@ import BrandLayout from "../components/BrandLayout"
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai"
 
 // API base URL - replace with your actual API URL
-const API_BASE_URL = "https://taseer-b.onrender.com/api"
+const API_BASE_URL = "https://api.taseer.app/api"
 
 // Available categories for filtering
 const availableCategories = [
@@ -244,8 +244,8 @@ const FindInfluencers: React.FC = () => {
     navigate(`/profile/${username}`)
   }
 
-  const handleMessage = (username: string) => {
-    navigate(`/brand/message?username=${username}`)
+  const handleMessage = (id: string) => {
+    navigate(`/brand/messages?id=${id}`)
   }
 
   const getPlatformIcon = (platform: string) => {
@@ -581,7 +581,7 @@ const FindInfluencers: React.FC = () => {
                             Visit Profile
                           </button>
                           <button
-                            onClick={() => handleMessage(creator.username)}
+                            onClick={() => handleMessage(creator.id)}
                             className="px-4 py-3 bg-[#6a38ca] hover:bg-[#5c2eb8] text-white font-medium rounded-xl transition-colors"
                           >
                             Message

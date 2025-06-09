@@ -81,7 +81,7 @@ export default function Posts() {
 
     try {
       const token = Cookies.get("jwt");
-      const response = await axios.get("https://taseer-b.onrender.com/api/posts", {
+      const response = await axios.get("https://api.taseer.app/api/posts", {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -110,7 +110,7 @@ export default function Posts() {
     try {
       const token = Cookies.get("jwt");
       const response = await axios.get(
-        `https://taseer-b.onrender.com/api/posts?cursor=${nextCursor}`,
+        `https://api.taseer.app/api/posts?cursor=${nextCursor}`,
         {
           headers: {
             authorization: `Bearer ${token}`,
@@ -155,7 +155,7 @@ export default function Posts() {
         )
       );
       await axios.post(
-        `https://taseer-b.onrender.com/api/posts/${postId}/like`,
+        `https://api.taseer.app/api/posts/${postId}/like`,
         {},
         {
           headers: {
@@ -263,7 +263,7 @@ export default function Posts() {
                           <h2
                             className="font-bold text-lg cursor-pointer hover:underline"
                             onClick={() =>
-                              navigate(`/profile/${post.user.username}`)
+                              navigate(`/brand/messages?id=${post.user.id}`)
                             }
                           >
                             {post.user.username}
