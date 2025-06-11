@@ -1,4 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap');
+
+@font-face {
+  font-family: 'ArialNova';
+  src: url('/ArialNova.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .bg {
   background-color: #6a38ca;
 }
@@ -11,7 +19,6 @@
 
 
 
-* {
-  font-family: "Abril Fatface", serif;
-  font-style: normal;
+body {
+  font-family: 'ArialNova', sans-serif;
 }

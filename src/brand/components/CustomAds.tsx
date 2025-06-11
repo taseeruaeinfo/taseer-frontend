@@ -5,7 +5,7 @@ export default function CustomAdsBar({
   textOne = "Jyo Culture - Marketing Campaign with Neeta",
   // videoTwoSrc = "/ad2.mp4",
   // textTwo = "Roriko x Ta’seer - Barter collaboration with Sanskriti Chauhan",
-  textStyles = "bg-white text-black shadow-md",
+  textStyles = " text-black shadow-md",
 }) {
   const boxVariants = {
     initial: { opacity: 0, y: 30 },
@@ -17,7 +17,7 @@ export default function CustomAdsBar({
     <div className=" w-[25vw] mr-3   overflow-y-hidden flex flex-col items-center gap-6 p-4">
       {/* Video 1 */}
       <motion.div
-        className="w-full h-full overflow-hidden mt-10   border border-gray-300 rounded-xl shadow-g "
+        className="w-full h-full overflow-hidden mt-10   border rounded-xl shadow-g "
         initial="initial"
         animate="animate"
         whileHover="hover"
@@ -32,9 +32,9 @@ export default function CustomAdsBar({
           className="w-full  h-[90%] object-cover"
         />
         {/* Text 1 */}
-        <div className={`p-4  h-full ] text-center  ${textStyles}`}>
+        <div className={`p-4  h-full text-center  text-[1.5vh] ${textStyles}`}>
           {textOne}
-          <div className="text-sm cursor-pointer text-purple-600">
+          <div className=" cursor-pointer text-purple-600">
             Check out once {"-->"}{" "}
           </div>
         </div>

@@ -14,7 +14,6 @@ import {
   FaTiktok,
   FaYoutube,
 } from "react-icons/fa";
-import { CiSearch } from "react-icons/ci";
 import { BsFillPersonFill } from "react-icons/bs";
 import { IoPricetagsSharp } from "react-icons/io5";
 import { useSelector } from "react-redux";
@@ -161,14 +160,14 @@ export default function Navbar() {
               Pricing
             </motion.a>
 
-            <motion.a
+            {/* <motion.a
               href="/influencers"
               className="flex items-center gap-2 hover:text-gray-900 transition"
               whileHover={{ scale: 1.05 }}
             >
-              <CiSearch className="text-lg" />
+              <CiSearch clas`sName="text-lg" />
               Find Creators
-            </motion.a>
+            </motion.a> */}
             <motion.a
               href="/contact"
               className="flex items-center gap-2 hover:text-gray-900 transition"
@@ -264,13 +263,13 @@ export default function Navbar() {
                                 </AnimatePresence> */}
               </div>
 
-              <a
+              {/* <a
                 href="#"
                 className="text-lg flex items-center gap-2 hover:text-gray-900"
               >
                 <CiSearch />
                 Find Creators
-              </a>
+              </a> */}
               <a
                 href="/contact"
                 className="text-lg flex items-center gap-2 hover:text-gray-900"
