@@ -352,8 +352,8 @@ const CampaignDetailPage: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div className="flex items-center">
+                <div  className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <a href={`/profile/${influencer.id}`} className="flex items-center">
                     <div className="flex-shrink-0 h-12 w-12 rounded-full overflow-hidden bg-gray-200">
                       <img
                         src={influencer.avatar || "/placeholder.svg"}
@@ -363,7 +363,7 @@ const CampaignDetailPage: React.FC = () => {
                     </div>
                     <div className="ml-4">
                       <div className="flex items-center">
-                        <h3 className="text-lg font-medium text-gray-900">{influencer.name}</h3>
+                        <h3  className="text-lg font-medium text-gray-900">{influencer.name}</h3>
                         <span className="ml-2 text-sm text-gray-500">{influencer.handle}</span>
                         {influencer.fit >= 90 && (
                           <span className="ml-2 flex items-center text-amber-500">
@@ -389,7 +389,7 @@ const CampaignDetailPage: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </a>
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                       <span

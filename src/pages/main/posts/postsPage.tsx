@@ -29,6 +29,8 @@ type Post = {
     id: string;
     username: string;
     profilePic: string;
+    firstName:string , 
+    lastName:string , 
     type: string;
     isFollowing: boolean;
   };
@@ -271,7 +273,8 @@ export default function Posts() {
                               navigate(`/messages?id=${post.user.id}`);
                             }}
                           >
-                            {post.user.username}
+                            {post.user.firstName} &nbsp;
+                            {post.user.lastName}
                           </h2>
                           <span
                             className={` ${
@@ -298,7 +301,12 @@ export default function Posts() {
                     </div>
 
                     {/* Post Content */}
-                    <p className="mt-3 text-gray-700">{post.text}</p>
+                    <p
+                      className="mt-3 text-gray-700"
+                      dangerouslySetInnerHTML={{
+                        __html: post.text.replace(/\n/g, "<br />"),
+                      }}
+                    />
 
                     {/* Actions */}
                     <div className="grid grid-cols-4 justify-between mt-4 text-gray-600">

@@ -184,7 +184,7 @@ const Onboarding = () => {
         } else if (result?.message === "Missing required fields.") {
           toast.warn("Please fill all the required fields.");
         } else {
-          toast.warn("Please fill again properly.");
+          toast.warn("The Phone Number is already exist.");
         }
       })
       .catch((error) => {

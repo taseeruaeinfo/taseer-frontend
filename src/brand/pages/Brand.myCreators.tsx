@@ -12,7 +12,6 @@ import {
   FaLinkedin,
   FaTwitter,
   // FaFilter,
-  FaStar,
 } from "react-icons/fa"
 import BrandLayout from "../components/BrandLayout"
 import { AiFillHeart } from "react-icons/ai"
@@ -187,12 +186,12 @@ const MyCreators: React.FC = () => {
     }
   }
 
-  const handleVisitProfile = (username: string) => {
-    navigate(`/profile/${username}`)
+  const handleVisitProfile = (id: string) => {
+    navigate(`/profile/${id}`)
   }
 
-  const handleMessage = (username: string) => {
-    navigate(`/brand/message?username=${username}`)
+  const handleMessage = (id: string) => {
+    navigate(`/brand/messages?id=${id}`)
   }
 
   const getPlatformIcon = (platform: string) => {
@@ -376,8 +375,7 @@ const MyCreators: React.FC = () => {
                           <div className="bg-gray-50 p-3 rounded-lg text-center">
                             <p className="text-sm text-gray-500">Rating</p>
                             <p className="font-bold text-[#6a38ca] flex items-center justify-center">
-                              4.5 <FaStar className="ml-1 text-yellow-500" size={14} />
-                            </p>
+N/A                            </p>
                           </div>
                         </div>
 
@@ -392,13 +390,13 @@ const MyCreators: React.FC = () => {
                         {/* Action buttons */}
                         <div className="grid grid-cols-2 gap-3">
                           <button
-                            onClick={() => handleVisitProfile(creator.username)}
+                            onClick={() => handleVisitProfile(creator.id)}
                             className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition-colors"
                           >
                             Visit Profile
                           </button>
                           <button
-                            onClick={() => handleMessage(creator.username)}
+                            onClick={() => handleMessage(creator.id)}
                             className="px-4 py-3 bg-[#6a38ca] hover:bg-[#5c2eb8] text-white font-medium rounded-xl transition-colors"
                           >
                             Message

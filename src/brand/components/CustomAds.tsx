@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export default function CustomAdsBar({
   videoOneSrc = "/ad1.mp4",
-  textOne = "Jyo Culture - Marketing Campaign with Neeta",
+  textOne = "Follow Us on Instagram",
   // videoTwoSrc = "/ad2.mp4",
   // textTwo = "Roriko x Ta’seer - Barter collaboration with Sanskriti Chauhan",
   textStyles = " text-black shadow-md",
@@ -34,13 +34,18 @@ export default function CustomAdsBar({
         {/* Text 1 */}
         <div className={`p-4  h-full text-center  text-[1.5vh] ${textStyles}`}>
           {textOne}
-          <div className=" cursor-pointer text-purple-600">
-            Check out once {"-->"}{" "}
+          <div>
+            <a
+              href={
+                "https://www.instagram.com/reel/DDhrfd6Tpqw/?igsh=MTQ0djd3ZDlzNnQ5eQ=="
+              }
+              className=" cursor-pointer text-purple-600"
+            >
+              Check out once {"-->"}{" "}
+            </a>
           </div>
         </div>
       </motion.div>
-
-      
 
       {/* Text 2 */}
     </div>

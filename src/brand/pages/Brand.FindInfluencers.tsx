@@ -5,14 +5,8 @@ import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
   FaSearch,
-  FaInstagram,
-  FaTiktok,
-  FaYoutube,
-  FaFacebook,
-  FaLinkedin,
-  FaTwitter,
+
   FaFilter,
-  FaStar,
 } from "react-icons/fa"
 import BrandLayout from "../components/BrandLayout"
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai"
@@ -44,15 +38,7 @@ const availableCategories = [
   "Movies",
 ]
 
-// Available platforms for filtering
-const availablePlatforms = [
-  { name: "Instagram", value: "instagram", icon: <FaInstagram /> },
-  { name: "TikTok", value: "tiktok", icon: <FaTiktok /> },
-  { name: "YouTube", value: "youtube", icon: <FaYoutube /> },
-  { name: "Facebook", value: "facebook", icon: <FaFacebook /> },
-  { name: "LinkedIn", value: "linkedin", icon: <FaLinkedin /> },
-  { name: "Twitter", value: "x", icon: <FaTwitter /> },
-]
+
 
 // Interface for creator/influencer data
 interface Creator {
@@ -203,9 +189,9 @@ const FindInfluencers: React.FC = () => {
     )
   }
 
-  const handlePlatformToggle = (platform: string) => {
-    setSelectedPlatforms((prev) => (prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]))
-  }
+  // const handlePlatformToggle = (platform: string) => {
+  //   setSelectedPlatforms((prev) => (prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]))
+  // }
 
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= pagination.pages) {
@@ -240,32 +226,15 @@ const FindInfluencers: React.FC = () => {
     }
   }
 
-  const handleVisitProfile = (username: string) => {
-    navigate(`/profile/${username}`)
+  const handleVisitProfile = (id: string) => {
+    navigate(`/profile/${id}`)
   }
 
   const handleMessage = (id: string) => {
     navigate(`/brand/messages?id=${id}`)
   }
 
-  const getPlatformIcon = (platform: string) => {
-    switch (platform) {
-      case "instagram":
-        return <FaInstagram />
-      case "tiktok":
-        return <FaTiktok />
-      case "youtube":
-        return <FaYoutube />
-      case "facebook":
-        return <FaFacebook />
-      case "linkedin":
-        return <FaLinkedin />
-      case "x":
-        return <FaTwitter />
-      default:
-        return null
-    }
-  }
+
 
   // Helper function to get platform follower counts
   const getFollowerCounts = (creator: Creator) => {
@@ -275,7 +244,7 @@ const FindInfluencers: React.FC = () => {
       .filter(([_, value]) => value) // Only include platforms with values
       .map(([platform, _]) => ({
         platform,
-        count: "100K", // This would come from your actual data
+        count: "N/A",
       }))
   }
 
@@ -287,7 +256,7 @@ const FindInfluencers: React.FC = () => {
       return Array.isArray(creator.creatorMeta.typeOfContent)
         ? creator.creatorMeta.typeOfContent
         : JSON.parse(creator.creatorMeta.typeOfContent.toString())
-    } catch (e) {
+    } catch  {
       return []
     }
   }
@@ -362,25 +331,7 @@ const FindInfluencers: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Platforms Filter */}
-                    <div>
-                      <h3 className="font-medium text-gray-700 mb-3">Platforms</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {availablePlatforms.map((platform) => (
-                          <button
-                            key={platform.value}
-                            onClick={() => handlePlatformToggle(platform.value)}
-                            className={`px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors ${
-                              selectedPlatforms.includes(platform.value)
-                                ? "bg-[#6a38ca] text-white"
-                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                            }`}
-                          >
-                            {platform.icon} {platform.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                   
 
                     {/* Numeric Filters */}
                     <div className="grid grid-cols-1 gap-4">
@@ -541,7 +492,6 @@ const FindInfluencers: React.FC = () => {
                                 key={platform}
                                 className="flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1"
                               >
-                                {getPlatformIcon(platform)}
                                 <span className="text-sm font-medium">{count}</span>
                               </div>
                             ))}
@@ -559,8 +509,7 @@ const FindInfluencers: React.FC = () => {
                           <div className="bg-gray-50 p-3 rounded-lg text-center">
                             <p className="text-sm text-gray-500">Rating</p>
                             <p className="font-bold text-[#6a38ca] flex items-center justify-center">
-                              4.5 <FaStar className="ml-1 text-yellow-500" size={14} />
-                            </p>
+N/A                            </p>
                           </div>
                         </div>
 
@@ -575,7 +524,7 @@ const FindInfluencers: React.FC = () => {
                         {/* Action buttons */}
                         <div className="grid grid-cols-2 gap-3">
                           <button
-                            onClick={() => handleVisitProfile(creator.username)}
+                            onClick={() => handleVisitProfile(creator.id)}
                             className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition-colors"
                           >
                             Visit Profile

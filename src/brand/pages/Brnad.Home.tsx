@@ -27,6 +27,8 @@ type Post = {
     id: string;
     username: string;
     profilePic: string;
+    lastName:string , 
+    firstName:string , 
     type: string;
     isFollowing: boolean;
   };
@@ -263,10 +265,10 @@ export default function Posts() {
                           <h2
                             className="font-bold text-lg cursor-pointer hover:underline"
                             onClick={() =>
-                              navigate(`/brand/messages?id=${post.user.id}`)
+                              navigate(`/profile/${post.user.id}`)
                             }
                           >
-                            {post.user.username}
+                            {post.user.firstName} &nbsp; {post.user.lastName}
                           </h2>
                           <span className="ml-2 text-xs uppercase bg-purple-500 rounded-full px-2 py-1 text-white">
                             {post.user.type}
@@ -287,8 +289,12 @@ export default function Posts() {
                     </div>
 
                     {/* Post Content */}
-                    <p className="mt-3 text-gray-700">{post.text}</p>
-
+                    <p
+                      className="mt-3 text-gray-700"
+                      dangerouslySetInnerHTML={{
+                        __html: post.text.replace(/\n/g, "<br />"),
+                      }}
+                    />
                     {/* Actions */}
                     <div className="grid grid-cols-4 justify-between mt-4 text-gray-600">
                       <button
@@ -303,7 +309,7 @@ export default function Posts() {
                         <span>{post.likeCount}</span>
                       </button>
                       <button
-                        onClick={() => navigate(`/post/${post.id}`)}
+                        onClick={() => navigate(`/brand/post/${post.id}`)}
                         className="flex items-center gap-1"
                       >
                         <AiOutlineComment />

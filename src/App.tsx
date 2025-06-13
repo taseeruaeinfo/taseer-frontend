@@ -30,6 +30,7 @@ import BrandAnalytics from "./brand/pages/Brand,Analytics";
 import PricingPage from "./pages/pricingPage";
 import CreatorCampaigns from "./pages/main/CreatorCampaign";
 import ForgotPassword from "./pages/auth/Forgot-password";
+import BrandPostDetails from "./brand/pages/Brand.specificPost";
 export default function App() {
   return (
     <Routes>
@@ -43,7 +44,6 @@ export default function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/signup/onboarding" element={<Onboarding />} />
       <Route path="/signup/onboarding/brand" element={<BrandOnboarding />} />
-
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* main - dashboard */}
@@ -63,6 +63,7 @@ export default function App() {
       <Route path="/brand/messages" element={<BrandsMessagesPage />} />
       <Route path="/brand/notifications" element={<BrandNotifications />} />
       <Route path="/brand/post" element={<BrandPost />} />
+      <Route path="/brand/post/:id" element={<BrandPostDetails />} />
       <Route path="/brand/find-creators" element={<FindInfluencers />} />
       <Route path="/brand/my-creators" element={<MyCreators />} />
       <Route path="/brand/analytics" element={<BrandAnalytics />} />
