@@ -4,7 +4,6 @@ import { FaInstagram, FaFacebook, FaStar, FaEnvelope } from "react-icons/fa";
 // import { toast } from "react-toastify";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import BrandLayout from "../../../brand/components/BrandLayout";
 import DashboardLayout from "../../../components/main/DashBoardLayout";
 
 // Type definitions
