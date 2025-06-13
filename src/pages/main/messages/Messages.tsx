@@ -728,7 +728,9 @@ export default function MessagesPage() {
                         : "bg-gray-100 text-left mr-auto"
                     )}
                   >
-                    <div>{msg.content}</div>
+                    <div className="break-words whitespace-pre-wrap">
+                      {msg.content}
+                    </div>
                     {msg.from === "me" && (
                       <div className="text-xs text-gray-500 mt-1 flex items-center justify-end gap-1">
                         {msg.status === "sending" && <span>⏳</span>}

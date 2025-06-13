@@ -270,7 +270,7 @@ export default function Posts() {
                             className="font-bold text-lg cursor-pointer hover:underline"
                             onClick={() => {
                               console.log(post.user.id);
-                              navigate(`/messages?id=${post.user.id}`);
+                              navigate(`/c/profile/${post.user.id}`);
                             }}
                           >
                             {post.user.firstName} &nbsp;

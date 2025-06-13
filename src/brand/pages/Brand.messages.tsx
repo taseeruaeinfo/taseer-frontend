@@ -90,7 +90,7 @@ export default function MessagesPage() {
       );
       //@ts-expect-error - nwk
       if (response.data.success) {
-              //@ts-expect-error - nwk
+        //@ts-expect-error - nwk
         const conversationsWithOnlineStatus = response.data.conversations.map(
           (conv: User) => ({
             ...conv,
@@ -113,7 +113,7 @@ export default function MessagesPage() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-//@ts-expect-error - nwk
+        //@ts-expect-error - nwk
         if (response.data.success) {
           //@ts-expect-error - nwk
           const messagesWithStatus = response.data.messages.map((msg: any) => ({
@@ -149,7 +149,7 @@ export default function MessagesPage() {
           //@ts-expect-error - nwk
           const userData = response.data.user;
           setNewChatUser(userData);
-//@ts-expect-error - nwk
+          //@ts-expect-error - nwk
           if (response.data.hasExistingChat) {
             await loadConversations();
             const existingConvIndex = conversations.findIndex(
@@ -628,39 +628,41 @@ export default function MessagesPage() {
           <div className="flex-1 overflow-y-auto">
             {conversations.map((user, index) => (
               <div
-                key={user.id}
-                onClick={() => handleSelectConversation(index)}
-                className={clsx(
-                  "flex items-center px-4 py-3 cursor-pointer hover:bg-gray-100",
-                  selectedUserIndex === index && "bg-gray-200"
-                )}
-              >
-                <div className="relative">
-                  <img
-                    src={
-                      user.profilePic || "/placeholder.svg?height=40&width=40"
-                    }
-                    alt={user.name}
-                    className="w-10 h-10 rounded-full mr-3"
-                  />
-                  {isUserOnline(user.id) && (
-                    <div className="absolute bottom-0 right-2 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-medium">{user.name}</h4>
-                    {user.unread && (
-                      <span className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {user.unreadCount || 1}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-500 truncate">
-                    {user.lastMessage || "No messages yet"}
-                  </p>
-                </div>
-              </div>
+                             key={user.id}
+                             onClick={() => handleSelectConversation(index)}
+                             className={clsx(
+                               "flex items-center px-4 py-3 cursor-pointer hover:bg-gray-100",
+                               selectedUserIndex === index && "bg-gray-200"
+                             )}
+                           >
+                             <div className="relative">
+                               <img
+                                 src={
+                                   user.profilePic || "/placeholder.svg?height=40&width=40"
+                                 }
+                                 alt={user.name}
+                                 className="w-10 h-10 rounded-full mr-3"
+                               />
+                               {isUserOnline(user.id) && (
+                                 <div className="absolute bottom-0 right-2 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                               )}
+                             </div>
+                             <div className="flex-1 min-w-0">
+                               <div className="flex justify-between items-center">
+                                 <h4 className="font-medium text-sm truncate flex-1 min-w-0">
+                                   {user.name}
+                                 </h4>
+                                 {user.unread && (
+                                   <span className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center flex-shrink-0 ml-2">
+                                     {user.unreadCount || 1}
+                                   </span>
+                                 )}
+                               </div>
+                               <p className="text-sm text-gray-500 truncate">
+                                 {user.lastMessage || "No messages yet"}
+                               </p>
+                             </div>
+                           </div>
             ))}
           </div>
         </div>
@@ -704,7 +706,7 @@ export default function MessagesPage() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+            <div className="flex-1 p-4 max-w-[100vw]  space-y-3 overflow-y-auto">
               {isNewChat && messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-gray-500">
                   <div className="text-center">
@@ -725,7 +727,9 @@ export default function MessagesPage() {
                         : "bg-gray-100 text-left mr-auto"
                     )}
                   >
-                    <div>{msg.content}</div>
+                    <div className="break-words whitespace-pre-wrap">
+                      {msg.content}
+                    </div>{" "}
                     {msg.from === "me" && (
                       <div className="text-xs text-gray-500 mt-1 flex items-center justify-end gap-1">
                         {msg.status === "sending" && <span>⏳</span>}

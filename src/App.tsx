@@ -31,6 +31,7 @@ import PricingPage from "./pages/pricingPage";
 import CreatorCampaigns from "./pages/main/CreatorCampaign";
 import ForgotPassword from "./pages/auth/Forgot-password";
 import BrandPostDetails from "./brand/pages/Brand.specificPost";
+import CreatorProfilePage from "./pages/main/profile/CreatorSpecificProffilepage";
 export default function App() {
   return (
     <Routes>
@@ -49,6 +50,8 @@ export default function App() {
       {/* main - dashboard */}
       <Route path="/home" element={<Posts />} />
       <Route path="/post/:id" element={<PostDetails />} />
+            <Route path="/c/profile/:id" element={<CreatorProfilePage />} />
+
       <Route path="/profile/:id" element={<ProfilePage />} />
       <Route path="/messages" element={<MessagesPage />} />
       <Route path="/deals" element={<Dashboard />} />
