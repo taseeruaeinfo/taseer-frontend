@@ -648,11 +648,13 @@ export default function MessagesPage() {
                     <div className="absolute bottom-0 right-2 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                   )}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center">
-                    <h4 className="font-medium">{user.name}</h4>
+                    <h4 className="font-medium text-sm truncate flex-1 min-w-0">
+                      {user.name}
+                    </h4>
                     {user.unread && (
-                      <span className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      <span className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center flex-shrink-0 ml-2">
                         {user.unreadCount || 1}
                       </span>
                     )}
