@@ -174,7 +174,7 @@ export default function Navbar() {
               whileHover={{ scale: 1.05 }}
             >
               <BsFillPersonFill className="text-lg" />
-              Contact us
+              Contact us - local test
             </motion.a>
           </nav>
 
